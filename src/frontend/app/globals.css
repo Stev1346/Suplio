@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Primary */
+  --color-primary-50: #ecf0f8;
+  --color-primary-100: #dae1f1;
+  --color-primary-200: #b4c2e4;
+  --color-primary-300: #8fa4d6;
+  --color-primary-400: #6986c9;
+  --color-primary-500: #4468bb;
+  --color-primary-600: #365396;
+  --color-primary-700: #293e70;
+  --color-primary-800: #1b294b;
+  --color-primary-900: #0e1525;
+  --color-primary-950: #090e1a;
+
+  /* Secondary */
+  --color-secondary-50: #e8fcfa;
+  --color-secondary-100: #d1faf5;
+  --color-secondary-200: #a3f5eb;
+  --color-secondary-300: #75f0e1;
+  --color-secondary-400: #47ebd8;
+  --color-secondary-500: #19e6ce;
+  --color-secondary-600: #14b8a5;
+  --color-secondary-700: #0f8a7b;
+  --color-secondary-800: #0a5c52;
+  --color-secondary-900: #052e29;
+  --color-secondary-950: #04201d;
+
+  /* Tertiary */
+  --color-tertiary-50: #fef0e6;
+  --color-tertiary-100: #fee1cd;
+  --color-tertiary-200: #fcc49c;
+  --color-tertiary-300: #fba66a;
+  --color-tertiary-400: #fa8938;
+  --color-tertiary-500: #f96b06;
+  --color-tertiary-600: #c75605;
+  --color-tertiary-700: #954004;
+  --color-tertiary-800: #632b03;
+  --color-tertiary-900: #321501;
+  --color-tertiary-950: #230f01;
+
+  /* Muted */
+  --color-muted-50: #f0f2f4;
+  --color-muted-100: #e1e5ea;
+  --color-muted-200: #c4cbd4;
+  --color-muted-300: #a6b0bf;
+  --color-muted-400: #8996a9;
+  --color-muted-500: #6b7c94;
+  --color-muted-600: #566376;
+  --color-muted-700: #404a59;
+  --color-muted-800: #2b323b;
+  --color-muted-900: #15191e;
+  --color-muted-950: #0f1115;
+
+  /* Surface */
+  --color-surface-50: #f3f1f3;
+  --color-surface-100: #e6e4e7;
+  --color-surface-200: #cdc9cf;
+  --color-surface-300: #b4aeb7;
+  --color-surface-400: #9b939f;
+  --color-surface-500: #827887;
+  --color-surface-600: #68606c;
+  --color-surface-700: #4e4851;
+  --color-surface-800: #343036;
+  --color-surface-900: #1a181b;
+  --color-surface-950: #121113;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
