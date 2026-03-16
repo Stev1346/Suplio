@@ -4,103 +4,56 @@ import { TopRequestList } from "@/components/TopRequestList";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { PageShell } from "@/components/ui/PageShell";
-import { supabase } from "@/lib/supabase";
+import { useEvent } from "@/hooks/useEvent";
+import { useEventRequests } from "@/hooks/useEventRequests";
+import { updateEventAllowRequests } from "@/lib/events";
+import { updateRequestStatus } from "@/lib/requests";
 import { Database, EventStatus } from "@/types/database";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 type Props = { eventCode?: string };
 
-const STATUS_LABELS: Record<EventStatus, string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  rejected: "Rejected",
-  played: "Played",
-};
-
 export default function DashboardScreen({ eventCode }: Props) {
-  const [event, setEvent] = useState<{
-    id: string;
-    name: string;
-    allow_requests: boolean;
-  } | null>(null);
-  const [loading, setLoading] = useState(() => !!eventCode);
-  const [requests, setRequests] = useState<RequestRow[]>([]);
+  const {event, setEvent, loading: eventLoading} = useEvent(eventCode);
+  const {requests, setRequests, loading: requestsLoading} = useEventRequests(event?.id, {orderBy: "song_name", ascending: true});
   const [togglingAllow, setTogglingAllow] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const topRequested = requests
     .filter((r) => r.status === "pending" || r.status === "accepted")
     .sort((a, b) => b.votes - a.votes)
     .slice(0, 10);
+  const isLoading = !!eventCode && (eventLoading || requestsLoading);
 
-  const allRequested = requests.filter(
-    (r) => r.status === "pending" || r.status === "accepted",
-  );
-
-  useEffect(() => {
-    if (!eventCode) {
-      return;
-    }
-
-    async function load() {
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("id, name, allow_requests")
-        .eq("event_code", eventCode)
-        .single();
-
-      if (eventError || !eventData) {
-        setLoading(false);
-        return;
-      }
-      setEvent(eventData);
-
-      const { data: requestData } = await supabase
-        .from("requests")
-        .select("*")
-        .eq("event_id", eventData.id)
-        .order("song_name", { ascending: true });
-
-      setRequests(requestData ?? []);
-      setLoading(false);
-    }
-    load();
-  }, [eventCode]);
 
   async function handleToggleAllowRequests() {
     if (!event || togglingAllow) return;
 
     setTogglingAllow(true);
-    const allowRequest = !event.allow_requests;
-    const { error } = await supabase
-      .from("events")
-      .update({ allow_requests: allowRequest })
-      .eq("id", event.id);
+    const allowRequests = !event.allow_requests;
+    const { error } = await updateEventAllowRequests(event.id, allowRequests);
     setTogglingAllow(false);
 
     if (!error)
-      setEvent((e) => (e ? { ...e, allow_requests: allowRequest } : null));
+      setEvent((prev) => (prev ? { ...prev, allow_requests: allowRequests } : prev));
   }
 
   async function setRequestStatus(requestId: string, status: EventStatus) {
     if (!event || updatingId) return;
 
     setUpdatingId(requestId);
-    const { error } = await supabase
-      .from("requests")
-      .update({ status })
-      .eq("id", requestId);
+    const { error } = await updateRequestStatus(requestId, status);
     setUpdatingId(null);
 
     if (!error) {
-      setRequests((prev) =>
+      setRequests((prev: RequestRow[]) =>
         prev.map((r) => (r.id === requestId ? { ...r, status } : r)),
       );
     }
   }
 
-  if (eventCode && loading) {
+  if (isLoading) {
     return (
       <PageShell>
         <p className="text-muted-500">Loading...</p>

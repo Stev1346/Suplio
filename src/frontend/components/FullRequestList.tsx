@@ -44,15 +44,15 @@ export function FullRequestList({
         {requests.length === 0 && (
           <li className="text-muted-300">No requests yet.</li>
         )}
-        {requests.map((r, i) => (
+        {requests.map((r) => (
           <li
             key={r.id}
             className="bg-white rounded-lg shadow border border-muted-100 p-3 flex flex-col gap-2"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <span className="font-medium text-primary-900">
-                {r.song_name}
-                {r.artist ? ` - ${r.artist}` : ""}
+              <span className="font-medium text-primary-900 flex flex-row">
+                <p>{r.song_name} </p>
+                <p className="ml-1.5 text-surface-500">{r.artist ? `[${r.artist}]` : ""}</p>
               </span>
               <span className="text-tertiary-500 font-semibold text-sm shrink-0">
                 {r.votes} vote{r.votes === 1 ? "" : "s"}

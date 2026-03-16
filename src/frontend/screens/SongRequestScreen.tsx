@@ -4,78 +4,54 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { PageShell } from "@/components/ui/PageShell";
-import { supabase } from "@/lib/supabase";
-import { Database } from "@/types/database";
+import { useEvent } from "@/hooks/useEvent";
+import { useEventRequests } from "@/hooks/useEventRequests";
+import { insertRequest } from "@/lib/requests";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
+import { useState } from "react";
 
 type Props = { eventCode?: string };
 
 export default function SongRequestScreen({ eventCode }: Props) {
   const router = useRouter();
-  const [event, setEvent] = useState<{
-    id: string;
-    name: string;
-    allow_requests: boolean;
-  } | null>(null);
-  const [topRequests, setTopRequests] = useState<RequestRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { event, loading: eventLoading } = useEvent(eventCode);
+  const { requests: topRequests, loading: requestLoading } = useEventRequests(
+    event?.id,
+    {
+      statuses: ["pending", "accepted"],
+      orderBy: "votes",
+      ascending: false,
+      limit: 10,
+    },
+  );
   const [submitLoading, setSubmitLoading] = useState(false);
   const [songName, setSongName] = useState("");
   const [artist, setArtist] = useState("");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    async function load() {
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("id,name,allow_requests")
-        .eq("event_code", eventCode)
-        .single();
-
-      if (eventError || !eventData) {
-        setLoading(false);
-        return;
-      }
-      setEvent(eventData);
-
-      const { data: requestData } = await supabase
-        .from("requests")
-        .select("*")
-        .eq("event_id", eventData.id)
-        .in("status", ["pending", "accepted"])
-        .order("votes", { ascending: false })
-        .limit(10);
-
-      setTopRequests(requestData ?? []);
-      setLoading(false);
-    }
-    load();
-  }, [eventCode]);
+  const isLoading = !!eventCode && (requestLoading || eventLoading);
 
   async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     if (!event?.allow_requests || !event.id) return;
+
     setSubmitLoading(true);
 
-    const { error } = await supabase.from("requests").insert({
+    const {error} = await insertRequest({
       event_id: event.id,
       song_name: songName.trim(),
       artist: artist.trim() || null,
-      message: message.trim() || null,
+      message: message.trim() || null
     });
 
     setSubmitLoading(false);
-    if (error) return;
-    if (!eventCode) return;
 
-    router.push(`/event/${eventCode}/vote`);
+    if(!error && eventCode){
+      router.push(`/event/${eventCode}/vote`)
+    }
   }
 
-  if (eventCode && loading) {
+  if (isLoading) {
     return (
       <PageShell narrow>
         <p className="text-muted-500">Loading...</p>

@@ -2,49 +2,17 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { PageShell } from "@/components/ui/PageShell";
-import { generateEventCode } from "@/lib/event-code";
-import { supabase } from "@/lib/supabase";
+import { useCreateEvent } from "@/hooks/useCreateEvent";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function HomeScreen() {
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [createdCode, setCreatedCode] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const {submit, loading: createEventLoading, createdCode, error, setError} = useCreateEvent();
 
-  async function handleCreateEvent(e: { preventDefault(): void }) {
-    if(!name.trim()){
-      setError("Event name is required");
-      return;
-    }
+  async function handleCreateEvent(e :{preventDefault() : void}){
     e.preventDefault();
-    setError(null);
-    setLoading(true);
-    let code = generateEventCode(8);
-    const maxAttempts = 10;
-    for (let i = 0; i < maxAttempts; i++) {
-      const { data, error: insertError } = await supabase
-        .from("events")
-        .insert({ name: name.trim(), event_code: code })
-        .select("event_code")
-        .single();
-
-      if (!insertError) {
-        setCreatedCode(data.event_code);
-        setLoading(false);
-        return;
-      }
-      if (insertError.code === "23505") {
-        code = generateEventCode(8);
-        continue;
-      }
-      setError(insertError.message);
-      setLoading(false);
-      return;
-    }
-    setError("Could not generate unique code. Try again.");
-    setLoading(false);
+    await submit(name);
   }
 
   if (createdCode) {
@@ -84,8 +52,8 @@ export default function HomeScreen() {
           required
         />
         {error && <p className="text-red-700 text-sm">{error}</p>}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create event"}
+        <Button type="submit" disabled={createEventLoading}>
+          {createEventLoading ? "Creating..." : "Create event"}
         </Button>
       </form>
     </PageShell>
