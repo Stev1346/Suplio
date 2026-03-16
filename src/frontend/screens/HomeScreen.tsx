@@ -14,6 +14,10 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleCreateEvent(e: { preventDefault(): void }) {
+    if(!name.trim()){
+      setError("Event name is required");
+      return;
+    }
     e.preventDefault();
     setError(null);
     setLoading(true);

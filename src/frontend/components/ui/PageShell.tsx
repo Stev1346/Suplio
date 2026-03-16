@@ -1,5 +1,3 @@
-import { theme } from "@/lib/theme";
-
 type PageShellProps = {
   children: React.ReactNode;
   className?: string;

@@ -1,3 +1,4 @@
+import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
@@ -5,7 +6,7 @@ import { FormField } from "@/components/ui/FormField";
 import { PageShell } from "@/components/ui/PageShell";
 import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/database";
-import { SearchX } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -69,11 +70,12 @@ export default function SongRequestScreen({ eventCode }: Props) {
 
     setSubmitLoading(false);
     if (error) return;
+    if (!eventCode) return;
 
     router.push(`/event/${eventCode}/vote`);
   }
 
-  if (loading) {
+  if (eventCode && loading) {
     return (
       <PageShell narrow>
         <p className="text-muted-500">Loading...</p>
@@ -81,20 +83,13 @@ export default function SongRequestScreen({ eventCode }: Props) {
     );
   }
 
-  if (!event) {
-    return (
-      <PageShell narrow>
-        <AppHeader tagLine="Event not found." />
-        <p className="text-muted-500">
-          <SearchX /> We could not find an event with that code.
-        </p>
-      </PageShell>
-    );
+  if (!eventCode || !event) {
+    return <NotFound narrow variant="event" />;
   }
 
   return (
     <PageShell narrow>
-      <AppHeader />
+      <AppHeader tagLine="Request a song" />
       {!event.allow_requests ? (
         <p className="text-tertiary-500">Requests are paused for this event.</p>
       ) : (
@@ -122,7 +117,25 @@ export default function SongRequestScreen({ eventCode }: Props) {
           </Button>
         </form>
       )}
-      <TopRequestList requests={topRequests} title="Top requested tonight" />
+      <TopRequestList
+        requests={topRequests}
+        title="Top requested tonight"
+        className="mb-4 max-h-90 overflow-scroll no-scrollbar"
+      />
+      <div className="flex flex-row">
+        <Link
+          href={`/event/${eventCode}`}
+          className="text-secondary-700 text-lg hover:text-surface-300 mr-auto"
+        >
+          ← Share Event URL
+        </Link>
+        <Link
+          href={`/event/${eventCode}/vote`}
+          className="text-secondary-700 text-lg hover:text-surface-300 ml-auto"
+        >
+          View Request List →
+        </Link>
+      </div>
     </PageShell>
   );
 }

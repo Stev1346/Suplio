@@ -48,11 +48,13 @@ export interface Database {
           id: string;
           request_id: string;
           created_at: string;
+          voter_id: string | null;
         };
         Insert: {
           id?: string;
           request_id: string;
           created_at?: string;
+          voter_id?: string | null;
         };
         Update: Partial<Database['public']['Tables']['votes']['Insert']>;
       };
