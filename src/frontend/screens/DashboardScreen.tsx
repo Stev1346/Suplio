@@ -14,11 +14,18 @@ import { useState } from "react";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
-
 export default function DashboardScreen() {
   const eventCode = useEventCode();
-  const {event, setEvent, loading: eventLoading} = useEvent(eventCode);
-  const {requests, setRequests, loading: requestsLoading} = useEventRequests(event?.id, {orderBy: "song_name", ascending: true});
+  const { event, setEvent, loading: eventLoading } = useEvent(eventCode);
+  const {
+    requests,
+    setRequests,
+    loading: requestsLoading,
+  } = useEventRequests(
+    event?.id,
+    { orderBy: "song_name", ascending: true },
+    { realtime: true },
+  );
   const [togglingAllow, setTogglingAllow] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const topRequested = requests
@@ -26,7 +33,6 @@ export default function DashboardScreen() {
     .sort((a, b) => b.votes - a.votes)
     .slice(0, 10);
   const isLoading = !!eventCode && (eventLoading || requestsLoading);
-
 
   async function handleToggleAllowRequests() {
     if (!event || togglingAllow) return;
@@ -37,7 +43,9 @@ export default function DashboardScreen() {
     setTogglingAllow(false);
 
     if (!error)
-      setEvent((prev) => (prev ? { ...prev, allow_requests: allowRequests } : prev));
+      setEvent((prev) =>
+        prev ? { ...prev, allow_requests: allowRequests } : prev,
+      );
   }
 
   async function setRequestStatus(requestId: string, status: EventStatus) {
@@ -88,7 +96,9 @@ export default function DashboardScreen() {
           <TopRequestList title="Top Requested Songs" requests={topRequested} />
         </section>
         <section className="mb-8 w-2xl ml-auto">
-          <h2 className="text-lg font-semibold mb-3 text-muted-500">Request List</h2>
+          <h2 className="text-lg font-semibold mb-3 text-muted-500">
+            Request List
+          </h2>
           <FullRequestList
             requests={requests}
             hiddenTitle={true}

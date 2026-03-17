@@ -8,12 +8,23 @@ import { useEventRequests } from "@/hooks/useEventRequests";
 import { useVoting } from "@/hooks/useVoting";
 import Link from "next/link";
 
-
 export default function VoteScreen() {
   const eventCode = useEventCode();
-  const {event, loading: eventLoading} = useEvent(eventCode);
-  const {requests, refetch, loading: requestLoading} = useEventRequests(event?.id, {statuses: ["accepted", "pending"], orderBy: "votes", ascending: false});
-  const {handleVote, votedRequestIds, votingRequestId } = useVoting(event?.id, eventCode, refetch);
+  const { event, loading: eventLoading } = useEvent(eventCode);
+  const {
+    requests,
+    refetch,
+    loading: requestLoading,
+  } = useEventRequests(
+    event?.id,
+    { statuses: ["accepted", "pending"], orderBy: "votes", ascending: false },
+    { realtime: true },
+  );
+  const { handleVote, votedRequestIds, votingRequestId } = useVoting(
+    event?.id,
+    eventCode,
+    refetch,
+  );
   const isLoading = !!eventCode && (eventLoading || requestLoading);
 
   if (isLoading) {
@@ -54,12 +65,20 @@ export default function VoteScreen() {
             ))
           )}
         </ul>
-        <Link
-          href={`/event/${eventCode}/request`}
-          className="text-md font-semibold text-tertiary-500 ml-auto"
-        >
-          <h2>Submit another request</h2>
-        </Link>
+        <div className="flex flex-row">
+          <Link
+            href={`/event/${eventCode}`}
+            className="text-secondary-700 text-lg hover:text-secondary-500 mr-auto"
+          >
+            Share Event URL
+          </Link>
+          <Link
+            href={`/event/${eventCode}/request`}
+            className="text-lg text-tertiary-500 hover:text-tertiary-300 ml-auto"
+          >
+            <h2>Submit another request</h2>
+          </Link>
+        </div>
       </section>
     </PageShell>
   );

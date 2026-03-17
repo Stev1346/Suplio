@@ -24,6 +24,7 @@ export default function SongRequestScreen() {
       ascending: false,
       limit: 10,
     },
+    {realtime: true}
   );
   const [submitLoading, setSubmitLoading] = useState(false);
   const [songName, setSongName] = useState("");
@@ -101,15 +102,15 @@ export default function SongRequestScreen() {
       <div className="flex flex-row">
         <Link
           href={`/event/${eventCode}`}
-          className="text-secondary-700 text-lg hover:text-surface-300 mr-auto"
+          className="text-secondary-700 text-lg hover:text-secondary-300 mr-auto"
         >
-          ← Share Event URL
+          Share Event URL
         </Link>
         <Link
           href={`/event/${eventCode}/vote`}
-          className="text-secondary-700 text-lg hover:text-surface-300 ml-auto"
+          className="text-secondary-700 text-lg hover:text-secondary-300 ml-auto"
         >
-          View Request List →
+          View Request List
         </Link>
       </div>
     </PageShell>
