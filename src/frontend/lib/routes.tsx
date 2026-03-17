@@ -30,27 +30,24 @@ export function getRouteComponent(
 
   //"/event/[eventCode] or "/event/[eventCode]/request" or "/event/[eventCode]/vote"
   if (segments[0] === "event" && segments.length >= 2) {
-    const eventCode = segments[1];
-
     if (segments[2] === "request") {
       return {
         type: "event",
-        params: { eventCode },
+        params: {},
         Component: SongRequestScreen,
       };
     }
     if (segments[2] === "vote") {
-      return { type: "event", params: { eventCode }, Component: VoteScreen };
+      return { type: "event", params: {}, Component: VoteScreen };
     }
     if (segments[2] === "scan" || segments[2] === undefined) {
-      return { type: "event", params: { eventCode }, Component: ScanScreen };
+      return { type: "event", params: {}, Component: ScanScreen };
     }
   }
 
   // "/dashboard/[eventCode]"
-  if(segments[0] === "dashboard" && segments.length >= 2){
-    const eventCode = segments[1];
-    return{type: "dashboard", params: {eventCode}, Component: DashboardScreen};
+  if (segments[0] === "dashboard" && segments.length >= 2) {
+    return { type: "dashboard", params: {}, Component: DashboardScreen };
   }
 
   return null;

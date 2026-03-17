@@ -13,7 +13,7 @@ export default function AppPage(){
         return <NotFound variant="page"/>;
     }
 
-    const{Component, params: routeParams} = route;
+    const{Component } = route;
     
-    return<Component {...routeParams}/>;
+    return<Component />;
 }

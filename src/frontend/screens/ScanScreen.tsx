@@ -2,13 +2,14 @@ import { NotFound } from "@/components/NotFound";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { PageShell } from "@/components/ui/PageShell";
+import { useEventCode } from "@/contexts/EventContext";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-type Props = { eventCode?: string };
-export default function ScanScreen({ eventCode }: Props) {
+export default function ScanScreen() {
+  const eventCode = useEventCode();
   const [event, setEvent] = useState<{
     id: string;
     name: string;

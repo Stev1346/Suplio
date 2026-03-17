@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { PageShell } from "@/components/ui/PageShell";
+import { useEventCode } from "@/contexts/EventContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useEventRequests } from "@/hooks/useEventRequests";
 import { insertRequest } from "@/lib/requests";
@@ -11,9 +12,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-type Props = { eventCode?: string };
-
-export default function SongRequestScreen({ eventCode }: Props) {
+export default function SongRequestScreen() {
+  const eventCode = useEventCode();
   const router = useRouter();
   const { event, loading: eventLoading } = useEvent(eventCode);
   const { requests: topRequests, loading: requestLoading } = useEventRequests(

@@ -2,15 +2,15 @@ import { NotFound } from "@/components/NotFound";
 import { RequestCard } from "@/components/RequestCard";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { PageShell } from "@/components/ui/PageShell";
+import { useEventCode } from "@/contexts/EventContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useEventRequests } from "@/hooks/useEventRequests";
 import { useVoting } from "@/hooks/useVoting";
 import Link from "next/link";
 
 
-type Props = { eventCode?: string };
-
-export default function VoteScreen({ eventCode }: Props) {
+export default function VoteScreen() {
+  const eventCode = useEventCode();
   const {event, loading: eventLoading} = useEvent(eventCode);
   const {requests, refetch, loading: requestLoading} = useEventRequests(event?.id, {statuses: ["accepted", "pending"], orderBy: "votes", ascending: false});
   const {handleVote, votedRequestIds, votingRequestId } = useVoting(event?.id, eventCode, refetch);

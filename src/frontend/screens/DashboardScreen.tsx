@@ -4,6 +4,7 @@ import { TopRequestList } from "@/components/TopRequestList";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { PageShell } from "@/components/ui/PageShell";
+import { useEventCode } from "@/contexts/EventContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useEventRequests } from "@/hooks/useEventRequests";
 import { updateEventAllowRequests } from "@/lib/events";
@@ -13,9 +14,9 @@ import { useState } from "react";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
-type Props = { eventCode?: string };
 
-export default function DashboardScreen({ eventCode }: Props) {
+export default function DashboardScreen() {
+  const eventCode = useEventCode();
   const {event, setEvent, loading: eventLoading} = useEvent(eventCode);
   const {requests, setRequests, loading: requestsLoading} = useEventRequests(event?.id, {orderBy: "song_name", ascending: true});
   const [togglingAllow, setTogglingAllow] = useState(false);
