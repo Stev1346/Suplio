@@ -8,7 +8,7 @@ import { useState } from "react";
 
 export default function HomeScreen() {
   const [name, setName] = useState("");
-  const {submit, loading: createEventLoading, createdCode, error, setError} = useCreateEvent();
+  const {submit, loading: createEventLoading, createdCode, error } = useCreateEvent();
 
   async function handleCreateEvent(e :{preventDefault() : void}){
     e.preventDefault();

@@ -3,29 +3,39 @@ import { TopRequestList } from "@/components/TopRequestList";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEventCode } from "@/contexts/EventContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useEventRequests } from "@/hooks/useEventRequests";
+import { compareRankedRequests } from "@/lib/request-ranking";
 import { insertRequest } from "@/lib/requests";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function SongRequestScreen() {
   const eventCode = useEventCode();
   const router = useRouter();
-  const { event, loading: eventLoading } = useEvent(eventCode);
-  const { requests: topRequests, loading: requestLoading } = useEventRequests(
+  const {
+    event,
+    loading: eventLoading,
+    error: eventError,
+  } = useEvent(eventCode, { realtime: true });
+  const {
+    requests,
+    loading: requestLoading,
+    error: requestError,
+  } = useEventRequests(
     event?.id,
-    {
-      statuses: ["pending", "accepted"],
-      orderBy: "votes",
-      ascending: false,
-      limit: 10,
-    },
-    {realtime: true}
+    { orderBy: "song_name", ascending: true },
+    { realtime: true },
   );
+  const topRequests = requests
+    .filter((r) => r.status === "pending" || r.status === "accepted")
+    .sort(compareRankedRequests)
+    .slice(0, 10);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [songName, setSongName] = useState("");
   const [artist, setArtist] = useState("");
@@ -38,24 +48,28 @@ export default function SongRequestScreen() {
 
     setSubmitLoading(true);
 
-    const {error} = await insertRequest({
+    const { error } = await insertRequest({
       event_id: event.id,
       song_name: songName.trim(),
       artist: artist.trim() || null,
-      message: message.trim() || null
+      message: message.trim() || null,
     });
 
     setSubmitLoading(false);
+    if (error) {
+      toast.error("Could not submit request. Try again");
+      return;
+    }
 
-    if(!error && eventCode){
-      router.push(`/event/${eventCode}/vote`)
+    if (!error && eventCode) {
+      router.push(`/event/${eventCode}/vote`);
     }
   }
 
   if (isLoading) {
     return (
-      <PageShell narrow>
-        <p className="text-muted-500">Loading...</p>
+      <PageShell narrow centralize>
+        <LoadingSpinner />
       </PageShell>
     );
   }
@@ -67,8 +81,15 @@ export default function SongRequestScreen() {
   return (
     <PageShell narrow>
       <AppHeader tagLine="Request a song" />
+      {(eventError || requestError) && (
+        <p className="text-red-400 text-sm mb-2">
+          {requestError ?? eventError}
+        </p>
+      )}
       {!event.allow_requests ? (
-        <p className="text-tertiary-500">Requests are paused for this event.</p>
+        <h1 className="text-tertiary-500 text-3xl text-center mb-4">
+          Requests are paused for this event.
+        </h1>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 mb-10">
           <FormField
