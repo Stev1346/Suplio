@@ -1,11 +1,11 @@
 import { useSetEventCode } from "@/contexts/EventContext";
-import { createEvent } from "@/lib/events";
 import { useCallback, useState } from "react";
 
 export function useCreateEvent() {
   const setEventCode = useSetEventCode();
   const [loading, setLoading] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const [createdPin, setCreatedPin] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(async (name: string) => {
@@ -17,22 +17,38 @@ export function useCreateEvent() {
     setError(null);
     setLoading(true);
 
-    const { data, error: err } = await createEvent(name);
-    setLoading(false);
-    if (err) {
-      setError(err);
+    try {
+      const res = await fetch("/api/create-event", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      type CreateEventResponse = {
+        data?: { event_code: string; dj_pin: string };
+        error?: string;
+      };
+      
+      const body = (await res.json().catch(() => ({}))) as CreateEventResponse;
+      
+      if (!res.ok || !body.data) {
+        setError(body.error ?? "Could not create event");
+        return null;
+      }
+
+      setCreatedCode(body.data.event_code);
+      setCreatedPin(body.data.dj_pin);
+      setEventCode(body.data.event_code);
+
+      return body.data.event_code;
+    } catch {
+      setError("Could not create event");
       return null;
     }
-
-    if (data) {
-      setCreatedCode(data.event_code);
+    finally {
+      setLoading(false);
     }
-    if (data?.event_code) {
-      setEventCode(data.event_code)
-    }
-
-    return data?.event_code ?? null;
   }, [setEventCode]);
 
-  return { submit, loading, createdCode, error, setError }
+  return { submit, loading, createdCode, error, setError, createdPin }
 }

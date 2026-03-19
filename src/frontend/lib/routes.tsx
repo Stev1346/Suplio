@@ -6,6 +6,7 @@ import SongRequestScreen from "@/screens/SongRequestScreen";
 import VoteScreen from "@/screens/VoteScreen";
 import DashboardScreen from "@/screens/DashboardScreen";
 import { ComponentType } from "react";
+import DashboardLoginScreen from "@/screens/DashboardLoginScreen";
 
 export type RouteParams = {
   eventCode?: string;
@@ -47,7 +48,16 @@ export function getRouteComponent(
 
   // "/dashboard/[eventCode]"
   if (segments[0] === "dashboard" && segments.length >= 2) {
-    return { type: "dashboard", params: {}, Component: DashboardScreen };
+    if (segments[2] === "login") {
+      return {
+        type: "dashboard-login",
+        params: {},
+        Component: DashboardLoginScreen,
+      };
+    }
+    if (!segments[2]) {
+      return { type: "dashboard", params: {}, Component: DashboardScreen };
+    }
   }
 
   return null;

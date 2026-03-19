@@ -6,6 +6,19 @@ const COOKIE_NAME = "dj_session";
 
 // Module scope (persists per server instance)
 const attempts = new Map<string, { count: number; resetAt: number }>();
+const SWEEP_INTERVAL_MS = 60_000;
+let lastSweepAt = 0;
+
+function sweepExpiredAttempts(now = Date.now()) {
+  if (now - lastSweepAt < SWEEP_INTERVAL_MS) return;
+  lastSweepAt = now;
+
+  for (const [key, state] of attempts.entries()) {
+    if (state.resetAt <= now) {
+      attempts.delete(key);
+    }
+  }
+}
 
 function getClientIp(req: Request): string {
   const xff = req.headers.get("x-forwarded-for");
@@ -19,9 +32,11 @@ function getAttemptState(
   windowMs = 5 * 60_000,
 ): { blocked: boolean; max: number; windowMs: number } {
   const now = Date.now();
+  sweepExpiredAttempts(now);
   const curr = attempts.get(key);
 
   if (!curr || now > curr.resetAt) {
+    attempts.delete(key);
     attempts.set(key, { count: 0, resetAt: now + windowMs });
     return { blocked: false, max, windowMs };
   }
@@ -31,6 +46,7 @@ function getAttemptState(
 
 function registerFailedAttempt(key: string, windowMs = 5 * 60_000) {
   const now = Date.now();
+  sweepExpiredAttempts(now);
   const curr = attempts.get(key);
   if (!curr || now > curr.resetAt) {
     attempts.set(key, { count: 1, resetAt: now + windowMs });
@@ -48,8 +64,13 @@ function resetAttempts(key: string) {
 export async function POST(req: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRole) {
-    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  const sessionSecret = process.env.DASHBOARD_SESSION_SECRET;
+
+  if (!url || !serviceRole || !sessionSecret) {
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 },
+    );
   }
 
   const body = await req.json().catch(() => null);
@@ -82,10 +103,18 @@ export async function POST(req: Request) {
   // Successful login => clear failed attempts for this key
   resetAttempts(rateKey);
 
-  const token = signSession({
-    eventCode,
-    exp: Date.now() + 1000 * 60 * 60 * 12,
-  });
+  let token: string;
+  try {
+    token = signSession({
+      eventCode,
+      exp: Date.now() + 1000 * 60 * 60 * 12,
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 },
+    );
+  }
 
   const res = NextResponse.json({ ok: true }, { status: 200 });
   res.cookies.set(COOKIE_NAME, token, {

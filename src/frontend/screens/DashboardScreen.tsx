@@ -148,11 +148,11 @@ export default function DashboardScreen() {
           {requestError ?? eventError}
         </p>
       )}
-      <div className="flex gap-4 justify-center">
-        <section className="mb-8 w-2xl mr-auto max-h-150 overflow-scroll no-scrollbar">
+      <div className="flex gap-4 justify-center flex-1">
+        <section className="mb-8 w-2xl max-h-150 overflow-scroll no-scrollbar">
           <TopRequestList title="Top Requested Songs" requests={topRequested} />
         </section>
-        <section className="mb-8 w-2xl ml-auto">
+        <section className="mb-8 w-2xl">
           <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-500">
             Request List ({filteredRequests.length}/{totalCount})
           </h2>
