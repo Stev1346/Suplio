@@ -14,8 +14,8 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 - Lock auth choice options to evaluate in next phase.
 
 ### Tasks
-- Define route map (`/dj`, `/auth/login`, `/auth/signup`, `/dashboard`, `/dashboard/events/[id]`, `/dashboard/profile`).
-- Define profile fields (required vs optional).
+- Define route map (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventId]`, `/dj/profile`).
+- Define profile fields (required vs optional): `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
 - Confirm event ownership model (`events.dj_id` target state).
 
 ### Gap tasks covered
@@ -99,8 +99,8 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 ### Tasks
 - Build `/dj` landing page with Login/Create Account options.
-- Build `/auth/login` and `/auth/signup`.
-- Create profile bootstrap on signup.
+- Build `/dj/login` and `/dj/signup`.
+- Create profile bootstrap on signup, with required `stage_name` in the signup form.
 - Add logout and auth guard behavior.
 
 ### Gap tasks covered
@@ -152,7 +152,7 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 - DJs can manage a single event safely.
 
 ### Tasks
-- `/dashboard/events/[eventId]` management page.
+- `/dj/events/[eventId]` management page.
 - Rename event.
 - Toggle request availability.
 - See/manage request statuses and operations.
@@ -229,18 +229,6 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 0 - Foundation and Product Decisions
-**Target duration:** 0.5 day  
-**Definition of Done**
-- [ ] Route map is finalized and documented (`/dj`, `/auth/login`, `/auth/signup`, `/dashboard`, `/dashboard/events/[id]`, `/dashboard/profile`).
-- [ ] Guest navbar rule is finalized (`Are you a DJ?` CTA only).
-- [ ] Profile field scope (required vs optional) is frozen.
-- [ ] Event ownership target model (`events.dj_id`) is approved.
-
----
-
-### Backlog
-
 #### Phase 0.5 - Security/Auth Contract
 **Target duration:** 0.5 day  
 **Definition of Done**
@@ -250,6 +238,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] RLS matrix (table x action x role) is completed and approved.
 - [ ] Guest anti-abuse rules are defined (request throttle, vote throttle, duplicate-vote policy).
 - [ ] Account recovery baseline is finalized (password reset, verification stance, lockout/backoff).
+
+---
+
+### Backlog
 
 #### Phase 1 - UI Modernization (Joy UI + Branding)
 **Target duration:** 2.0-3.0 days  
@@ -276,8 +268,8 @@ Use this board as the execution tracker. Move each phase between sections as wor
 **Target duration:** 1.0-1.5 days  
 **Definition of Done**
 - [ ] `/dj` landing page is implemented with Login/Create Account options.
-- [ ] `/auth/login` and `/auth/signup` are implemented and functional.
-- [ ] Signup creates/bootstrap `dj_profiles` correctly.
+- [ ] `/dj/login` and `/dj/signup` are implemented and functional.
+- [ ] Signup form requires `stage_name`, and signup creates/bootstrap `dj_profiles` correctly.
 - [ ] Logout and route guards work consistently.
 - [ ] Password reset flow is implemented and tested.
 - [ ] Email verification behavior matches Phase 0.5 decision.
@@ -305,7 +297,7 @@ Use this board as the execution tracker. Move each phase between sections as wor
 #### Phase 6 - Event Management
 **Target duration:** 1.0-1.5 days  
 **Definition of Done**
-- [ ] `/dashboard/events/[eventId]` page is implemented.
+- [ ] `/dj/events/[eventId]` page is implemented.
 - [ ] DJ can edit event name.
 - [ ] DJ can toggle request availability.
 - [ ] DJ can manage request statuses and event operations.
@@ -354,4 +346,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### Done
 
-- _No completed phases yet._
+#### Phase 0 - Foundation and Product Decisions
+**Target duration:** 0.5 day  
+**Definition of Done**
+- [x] Route map is finalized and documented (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventId]`, `/dj/profile`).
+- [x] Guest navbar rule is finalized (`Are you a DJ?` CTA only).
+- [x] Profile field scope is frozen: `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
+- [x] Event ownership target model (`events.dj_id`) is approved.

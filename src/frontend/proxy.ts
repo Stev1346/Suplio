@@ -1,23 +1,26 @@
 // src/frontend/proxy.ts
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionEdge } from "@/lib/edge/dashboard-session";
+import { verifySessionEdge } from "@/lib/server/auth/dashboard-session";
 
 const COOKIE_NAME = "dj_session";
 
+function isDjPublicPath(pathname: string) {
+  return pathname === "/dj" || pathname === "/dj/login" || pathname === "/dj/signup";
+}
+
 export async function proxy(req: NextRequest) {
-  const parts = req.nextUrl.pathname.split("/").filter(Boolean);
-  const isDashboard = parts[0] === "dashboard" && parts[1];
-  const isLogin = isDashboard && parts[2] === "login";
+  const { pathname } = req.nextUrl;
 
-  if (!isDashboard || isLogin) return NextResponse.next();
+  if (!pathname.startsWith("/dj")) return NextResponse.next();
 
-  const eventCode = parts[1];
+  if (isDjPublicPath(pathname)) return NextResponse.next();
+
   const token = req.cookies.get(COOKIE_NAME)?.value;
   const session = await verifySessionEdge(token);
 
-  if (!session || session.eventCode !== eventCode) {
+  if (!session) {
     const url = req.nextUrl.clone();
-    url.pathname = `/dashboard/${eventCode}/login`;
+    url.pathname = `/dj/login`;
     return NextResponse.redirect(url);
   }
 
@@ -25,5 +28,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dj/dashboard/:path*", "/dj/events/:path*", "/dj/profile/:path*"],
 };
