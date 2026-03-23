@@ -58,20 +58,20 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 ---
 
-## Phase 1 - UI Modernization (Joy UI + Branding) (2.0-3.0 days)
+## Phase 1 - UI Modernization (shadcn/ui + Radix + Tailwind Branding) (2.0-3.0 days)
 
 ### Goals
 - Establish a modern, reusable design system before new features.
 
 ### Tasks
-- Add Joy UI providers/theme.
+- Add `shadcn/ui` with Radix primitives and Tailwind configuration.
 - Create tokenized theme (colors, typography, spacing, radii, shadows).
 - Replace shared primitives first (`Button`, `Input`, `Card`, etc.).
 - Build global navbar visual style and responsive behavior.
 - Accessibility pass (contrast, focus, keyboard).
 
 ### Gap tasks covered
-- Add SSR/hydration checkpoint for Joy UI with App Router.
+- Add SSR/hydration checkpoint for `shadcn/ui` + Radix with App Router.
 - Add mobile nav requirement explicitly (drawer/collapsed menu).
 - Add loading/skeleton/error visual standards for consistency.
 
@@ -233,10 +233,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 1 - UI Modernization (Joy UI + Branding)
+#### Phase 1 - UI Modernization (shadcn/ui + Radix + Tailwind Branding)
 **Target duration:** 2.0-3.0 days  
 **Definition of Done**
-- [ ] Joy UI provider/theme is integrated globally.
+- [ ] `shadcn/ui` + Radix + Tailwind foundation is integrated globally.
 - [ ] Theme tokens are defined (colors, typography, spacing, radii, shadows).
 - [ ] Shared primitives are migrated (`Button`, `Input`, `Card`, and core form/list states).
 - [ ] SSR/hydration check passes with App Router (no style flicker/hydration mismatch).
