@@ -29,21 +29,25 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 ### Goals
 - Eliminate the biggest architecture risks before coding.
 
-### Tasks
-- Decide single session strategy:
-  - Supabase Auth session only, or
-  - Custom cookie/session only (avoid mixed models).
-- Define migration policy: PIN flow sunset vs temporary dual-run.
-- Define ownership backfill strategy for existing events with no `dj_id`.
-- Create RLS matrix doc: table x action x role.
-- Define guest abuse controls:
-  - request throttling
-  - vote throttling
-  - duplicate-vote policy
-- Define account recovery baseline:
-  - reset password
-  - optional email verification
-  - lockout/backoff behavior
+### Finalized Decisions
+- **Session strategy:** Supabase Auth-only.
+- **PIN migration policy:** immediate sunset.
+- **Ownership backfill:** set `events.dj_id` to the admin account; admin is the first account created when user creation is enabled.
+- **RLS matrix direction:**
+  - `dj_profiles`: owner can `select/insert/update`; delete is admin-only.
+  - `events`: owner can `select/insert/update`; delete is admin-only.
+  - `requests`: guests create via server route; DJs update status (use `rejected` instead of delete for non-admin behavior); delete is admin-only.
+  - `votes`: guests can add/remove their own vote through server route; one active vote per (`request_id`, `voter_id`); delete row on vote removal is allowed; delete outside vote removal is admin-only.
+- **Guest anti-abuse controls:**
+  - request throttling: 60 seconds between requests per user.
+  - vote throttling: max one active vote per song/request per user, no time limit for keeping a vote.
+  - duplicate-vote policy: no double-voting on the same active request vote.
+  - enforcement: both client and server.
+- **Account recovery baseline:**
+  - password reset flow: email entry -> verify account exists -> send reset link -> set new password -> return to login.
+  - email verification required within 24 hours.
+  - login lockout/backoff: 5 failed attempts in 15 minutes triggers progressive backoff (30s, 60s, 120s, 300s, 600s). 10 failed attempts in 60 minutes triggers 30-minute lockout.
+- **DB constraint script:** `phase-0.5-votes-unique-constraint.sql` adds unique constraint `votes_request_id_voter_id_key` on `votes(request_id, voter_id)`.
 
 ### Gap tasks covered
 - Auth/session ambiguity
@@ -229,20 +233,6 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 0.5 - Security/Auth Contract
-**Target duration:** 0.5 day  
-**Definition of Done**
-- [ ] One session strategy is selected (Supabase Auth-only or custom cookie-only).
-- [ ] PIN migration policy is decided (sunset vs temporary dual-run).
-- [ ] Existing event ownership backfill strategy is documented.
-- [ ] RLS matrix (table x action x role) is completed and approved.
-- [ ] Guest anti-abuse rules are defined (request throttle, vote throttle, duplicate-vote policy).
-- [ ] Account recovery baseline is finalized (password reset, verification stance, lockout/backoff).
-
----
-
-### Backlog
-
 #### Phase 1 - UI Modernization (Joy UI + Branding)
 **Target duration:** 2.0-3.0 days  
 **Definition of Done**
@@ -252,6 +242,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] SSR/hydration check passes with App Router (no style flicker/hydration mismatch).
 - [ ] Mobile nav behavior is implemented (responsive collapse/drawer).
 - [ ] Accessibility baseline passes (contrast, focus visibility, keyboard navigation).
+
+---
+
+### Backlog
 
 #### Phase 2 - Data Model + Security Implementation
 **Target duration:** 1.0-1.5 days  
@@ -353,3 +347,13 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] Guest navbar rule is finalized (`Are you a DJ?` CTA only).
 - [x] Profile field scope is frozen: `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
 - [x] Event ownership target model (`events.dj_id`) is approved.
+
+#### Phase 0.5 - Security/Auth Contract
+**Target duration:** 0.5 day  
+**Definition of Done**
+- [x] One session strategy is selected (Supabase Auth-only or custom cookie-only).
+- [x] PIN migration policy is decided (sunset vs temporary dual-run).
+- [x] Existing event ownership backfill strategy is documented.
+- [x] RLS matrix (table x action x role) is completed and approved.
+- [x] Guest anti-abuse rules are defined (request throttle, vote throttle, duplicate-vote policy).
+- [x] Account recovery baseline is finalized (password reset, verification stance, lockout/backoff).
