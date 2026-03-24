@@ -60,7 +60,15 @@ export default function DashboardLoginScreen() {
           onSubmit={onSubmit}
           className="w-full max-w-sm space-y-4 flex flex-col justify-center"
         >
-          {!contextEventCode && (
+          {contextEventCode ? (
+            <FormField
+              label="Event code"
+              value={resolvedEventCode}
+              readOnly
+              disabled
+              className="opacity-80 cursor-not-allowed"
+            />
+          ) : (
             <FormField
               label="Event code"
               value={manualEventCode}
