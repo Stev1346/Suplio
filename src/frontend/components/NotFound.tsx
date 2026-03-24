@@ -7,10 +7,9 @@ import { SearchX } from "lucide-react";
 type NotFoundProps = {
   variant?: "page" | "event";
   message?: string;
-  narrow?: boolean;
 };
 
-export function NotFound({ variant = "page", message, narrow }: NotFoundProps) {
+export function NotFound({ variant = "page", message }: NotFoundProps) {
   const isEvent = variant === "event";
   const title = isEvent ? "Event not found" : "Page not found";
   const defaultMessage = isEvent
@@ -18,11 +17,11 @@ export function NotFound({ variant = "page", message, narrow }: NotFoundProps) {
     : "This page doesn't exist. Check the URL or return to home page";
 
   return (
-    <PageShell narrow={narrow} className="flex flex-col">
+    <PageShell className="flex flex-col">
       <AppHeader tagLine={title} />
 
       <div className="flex flex-1 flex-col items-center justify-center">
-        <p className="text-muted-500 mb-6 flex flex-row w-80">
+        <p className="text-muted-60 mb-6 flex flex-row w-80">
           <SearchX className="mr-2 size-15" /> {message ?? defaultMessage}
         </p>
         <Link href="/">

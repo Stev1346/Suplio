@@ -1,3 +1,5 @@
+"use client";
+
 import { NotFound } from "@/components/NotFound";
 import { RequestCard } from "@/components/RequestCard";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -37,31 +39,31 @@ export default function VoteScreen() {
 
   if (isLoading) {
     return (
-      <PageShell narrow centralize>
+      <PageShell centralize>
         <LoadingSpinner />
       </PageShell>
     );
   }
 
   if (!eventCode || !event) {
-    return <NotFound narrow variant="event" />;
+    return <NotFound variant="event" />;
   }
 
   return (
-    <PageShell narrow>
+    <PageShell centralize className="flex-col items-center">
       <AppHeader tagLine="Vote for the next song" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
         </p>
       )}
-      <section className="">
-        <h2 className="text-lg font-semibold mb-3 text-muted-500">
+      <section className="flex-1 flex-col items-center justify-center">
+        <h2 className="text-lg font-semibold mb-3 text-muted-60">
           Songs Requested Tonight
         </h2>
         <ul className="space-y-1 max-h-177 mb-2 overflow-scroll no-scrollbar">
           {requests.length === 0 ? (
-            <li className="text-muted-500 py-4">
+            <li className="text-muted-40 py-4">
               No requests yet. Be the first!
             </li>
           ) : (
@@ -81,13 +83,13 @@ export default function VoteScreen() {
         <div className="flex flex-row">
           <Link
             href={`/event/${eventCode}`}
-            className="text-secondary-700 text-lg hover:text-secondary-500 mr-auto"
+            className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
           >
             Share Event URL
           </Link>
           <Link
             href={`/event/${eventCode}/request`}
-            className="text-lg text-tertiary-500 hover:text-tertiary-300 ml-auto"
+            className="text-lg text-accent-60 hover:text-accent-40 ml-auto"
           >
             <h2>Submit another request</h2>
           </Link>

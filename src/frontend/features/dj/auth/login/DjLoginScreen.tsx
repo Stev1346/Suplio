@@ -1,3 +1,5 @@
+"use client";
+
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
@@ -9,21 +11,25 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function DashboardLoginScreen() {
-  const eventCode = useEventCode();
+  const contextEventCode = useEventCode();
+  const [manualEventCode, setManualEventCode] = useState("");
+  const resolvedEventCode = (contextEventCode ?? manualEventCode)
+    .trim()
+    .toUpperCase();
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!eventCode || loading) return;
+    if (!resolvedEventCode || loading) return;
     setLoading(true);
     setError(null);
 
     const res = await fetch("/api/dj/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ eventCode, pin }),
+      body: JSON.stringify({ eventCode: resolvedEventCode, pin }),
     });
     setLoading(false);
 
@@ -54,6 +60,14 @@ export default function DashboardLoginScreen() {
           onSubmit={onSubmit}
           className="w-full max-w-sm space-y-4 flex flex-col justify-center"
         >
+          {!contextEventCode && (
+            <FormField
+              label="Event code"
+              value={manualEventCode}
+              onChange={(e) => setManualEventCode(e.target.value)}
+              required
+            />
+          )}
           <FormField
             label="DJ PIN"
             value={pin}

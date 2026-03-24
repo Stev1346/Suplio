@@ -1,3 +1,5 @@
+"use client";
+
 import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -68,26 +70,27 @@ export default function SongRequestScreen() {
 
   if (isLoading) {
     return (
-      <PageShell narrow centralize>
+      <PageShell centralize>
         <LoadingSpinner />
       </PageShell>
     );
   }
 
   if (!eventCode || !event) {
-    return <NotFound narrow variant="event" />;
+    return <NotFound variant="event" />;
   }
 
   return (
-    <PageShell narrow>
+    <PageShell centralize className="flex-col">
       <AppHeader tagLine="Request a song" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
         </p>
       )}
+      <div className="flex-1 flex-col items-center">
       {!event.allow_requests ? (
-        <h1 className="text-tertiary-500 text-3xl text-center mb-4">
+        <h1 className="text-accent-60 text-3xl text-center mb-4">
           Requests are paused for this event.
         </h1>
       ) : (
@@ -123,16 +126,17 @@ export default function SongRequestScreen() {
       <div className="flex flex-row">
         <Link
           href={`/event/${eventCode}`}
-          className="text-secondary-700 text-lg hover:text-secondary-300 mr-auto"
+          className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
         >
           Share Event URL
         </Link>
         <Link
           href={`/event/${eventCode}/vote`}
-          className="text-secondary-700 text-lg hover:text-secondary-300 ml-auto"
+          className="text-secondary-60 text-lg hover:text-secondary-40 ml-auto"
         >
           View Request List
         </Link>
+      </div>
       </div>
     </PageShell>
   );

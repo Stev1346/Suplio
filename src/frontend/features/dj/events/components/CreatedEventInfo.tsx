@@ -26,7 +26,7 @@ export default function CreatedEventInfo({createdCode, createdPin}: CreatedEvent
     return(
         <div className="flex flex-col flex-1 items-center justify-center">
         <h1 className="text-2xl font-bold mb-2">Event created</h1>
-          <p className="text-muted-100">
+          <p className="text-secondary-60">
             Share this link or QR code with guests:
           </p>
           <Button
@@ -38,7 +38,7 @@ export default function CreatedEventInfo({createdCode, createdPin}: CreatedEvent
           </Button>
           <div
             className="w-full max-w-md mb-6 rounded-lg border p-4
-          flex flex-col items-center
+          flex flex-col items-center drop-shadow-xl drop-shadow-muted-20
           bg-amber-50 border-amber-300 text-amber-900"
           >
             <p className="font-semibold mb-1">DJ PIN (save this now)</p>

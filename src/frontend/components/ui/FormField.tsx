@@ -1,3 +1,6 @@
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
 type FormFieldProps = {
   label: string;
   required?: boolean;
@@ -9,18 +12,25 @@ export function FormField({
   required,
   optional,
   className = "",
+  id,
   ...inputProps
 }: FormFieldProps) {
+  const generatedId = React.useId();
+  const inputId = id ?? generatedId;
   const labelText = optional ? `${label} (optional)` : label;
 
   return (
-    <div>
-      <label className="block text-sm text-muted-500 mb-1">
+    <div className="space-y-1.5">
+      <label htmlFor={inputId} className="block text-sm text-muted-60">
         {labelText} {required ? "*" : ""}
       </label>
       <input
+        id={inputId}
         required={required}
-        className={`w-full px-4 py-2 rounded bg-secondary-900 border border-muted-500 text-white ${className}`}
+        className={cn(
+          "w-full rounded-md border border-muted-40 bg-primary-20 px-3 py-2 text-foreground placeholder:text-muted-60",
+          className,
+        )}
         {...inputProps}
       />
     </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { FullRequestList } from "@/components/FullRequestList";
 import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
@@ -130,9 +132,9 @@ export default function DashboardScreen() {
     <PageShell className="flex flex-col">
       <AppHeader title="GotATune Dashboard" />
       <header className="mb-8 flex flex-col justify-center items-center">
-        <h1 className="text-muted-500 text-3xl">{event.name}</h1>
-        <p className="text-surface-300">Event code: {eventCode}</p>
-        <p className="text-muted-700 text-sm mt-1">
+        <h1 className="text-muted-60 text-3xl">{event.name}</h1>
+        <p className="text-muted-40">Event code: {eventCode}</p>
+        <p className="text-muted-80 text-sm mt-1">
           Total requests: {requests.length}
         </p>
         <div className="mt-4">
@@ -153,7 +155,7 @@ export default function DashboardScreen() {
           <TopRequestList title="Top Requested Songs" requests={topRequested} />
         </section>
         <section className="mb-8 w-2xl">
-          <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-500">
+          <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-60">
             Request List ({filteredRequests.length}/{totalCount})
           </h2>
           <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -165,7 +167,7 @@ export default function DashboardScreen() {
                   type="button"
                   onClick={() => toggleStatus(status)}
                   className={`px-3 py-1 rounded text-sm font-medium transition 
-                    ${active ? "bg-white text-primary-900" : "bg-primary-700 text-white hover:bg-primary-600"}`}
+                    ${active ? "bg-white text-primary-90" : "bg-primary-60 text-white hover:bg-primary-60"}`}
                 >
                   <span className="inline-flex items-center gap-1">
                     <span className="capitalize">{status}</span>
@@ -181,7 +183,7 @@ export default function DashboardScreen() {
               type="button"
               onClick={clearFilters}
               disabled={selectedStatuses.size === 0}
-              className="px-3 py-1 rounded text-sm font-medium bg-secondary-600 text-white disabled:opacity-50"
+              className="px-3 py-1 rounded text-sm font-medium bg-secondary-60 text-white disabled:opacity-50"
             >
               Clear
             </button>
