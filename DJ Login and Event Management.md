@@ -236,21 +236,6 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 2 - Data Model + Security Implementation
-**Target duration:** 1.0-1.5 days  
-**Definition of Done**
-- [ ] `dj_profiles` table is created and validated.
-- [ ] `events.dj_id` FK and indexes are created.
-- [ ] Owner-based RLS is applied for DJ-owned resources.
-- [ ] Guest permissions are constrained to intended actions only.
-- [ ] DB lint remediations are applied (`search_path`, permissive policy cleanup).
-- [ ] Backfill and rollback SQL scripts exist and are tested in a safe environment.
-- [ ] RLS implementation matches the approved RLS matrix.
-
----
-
-### Backlog
-
 #### Phase 3 - Auth + DJ Entry Flow
 **Target duration:** 1.0-1.5 days  
 **Definition of Done**
@@ -261,6 +246,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] Password reset flow is implemented and tested.
 - [ ] Email verification behavior matches Phase 0.5 decision.
 - [ ] Login brute-force controls (lockout/backoff) are implemented.
+
+---
+
+### Backlog
 
 #### Phase 4 - Role-Aware Global Navbar
 **Target duration:** 0.75-1.0 day  
@@ -370,3 +359,14 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] RLS matrix (table x action x role) is completed and approved.
 - [x] Guest anti-abuse rules are defined (request throttle, vote throttle, duplicate-vote policy).
 - [x] Account recovery baseline is finalized (password reset, verification stance, lockout/backoff).
+
+#### Phase 2 - Data Model + Security Implementation
+**Target duration:** 1.0-1.5 days  
+**Definition of Done**
+- [x] `dj_profiles` table is created and validated.
+- [x] `events.dj_id` FK and indexes are created.
+- [x] Owner-based RLS is applied for DJ-owned resources.
+- [x] Guest permissions are constrained to intended actions only.
+- [x] DB lint remediations are applied (`search_path`, permissive policy cleanup).
+- [x] Backfill and rollback SQL scripts exist and are tested in a safe environment.
+- [x] RLS implementation matches the approved RLS matrix.
