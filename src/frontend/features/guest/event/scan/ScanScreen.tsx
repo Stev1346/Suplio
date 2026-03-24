@@ -1,3 +1,5 @@
+"use client";
+
 import { NotFound } from "@/components/NotFound";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
@@ -32,41 +34,43 @@ export default function ScanScreen() {
 
   if (eventCode && eventLoading) {
     return (
-      <PageShell narrow centralize>
+      <PageShell centralize>
         <LoadingSpinner />
       </PageShell>
     );
   }
 
   if (!eventCode || !event) {
-    return <NotFound narrow variant="event" />;
+    return <NotFound variant="event" />;
   }
 
   return (
-    <PageShell narrow className="flex flex-col items-center">
+    <PageShell className="flex flex-col items-center">
       <AppHeader tagLine="Scan to request a song" />
       {eventError && <p className="text-red-400 text-sm mb-3">{eventError}</p>}
-
-      <h1 className="text-3xl font-bold mb-2 text-center">
-        Welcome to <br />
-        {event.name}
-      </h1>
-        <p className="text-muted-100 text-lg mb-2">Scan to request a song:</p>
-      <div className="bg-white p-4 rounded-xl shadow mb-4">
-        <QRCodeSVG value={requestUrl} size={220} level="M" />
-      </div>
-      <p className="text-muted-100 mb-2">Share this link with others:</p>
-      <Button
-        variant="secondary"
-        onClick={handleCopyUrl}
-        className="px-4 py-2 rounded break-all mb-6"
-      >
-        {requestUrl}
-      </Button>
-      <div className="flex gap-4">
-        <Link href={`/event/${eventCode}/request`}>
-          <Button>Request a song</Button>
-        </Link>
+      
+      <div className="flex-1 flex flex-col items-center">
+        <h1 className="text-3xl font-bold mb-2 text-center">
+          Welcome to <br />
+          {event.name}
+        </h1>
+        <p className="text-muted-80 text-lg mb-2">Scan to request a song:</p>
+        <div className="bg-white p-4 rounded-xl shadow mb-4">
+          <QRCodeSVG value={requestUrl} size={220} level="M" />
+        </div>
+        <p className="text-muted-60 mb-2">Share this link with others:</p>
+        <Button
+          variant="secondary"
+          onClick={handleCopyUrl}
+          className="px-4 py-2 rounded break-all mb-6"
+        >
+          {requestUrl}
+        </Button>
+        <div className="flex gap-4">
+          <Link href={`/event/${eventCode}/request`}>
+            <Button>Request a song</Button>
+          </Link>
+        </div>
       </div>
     </PageShell>
   );

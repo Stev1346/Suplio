@@ -8,10 +8,10 @@ export function AppHeader({
   tagLine = "Scan. Request. Vote.",
 }: AppHeaderProps) {
   return (
-    <header className="mb-8 flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold">{title}</h1>
-      <p className="text-muted-500">{tagLine}</p>
-      <p className="text-muted-700 text-xs">
+    <header className="mb-8 space-y-1 text-center">
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+      <p className="text-muted-40">{tagLine}</p>
+      <p className="text-muted-80 text-xs">
         Remember, requests are suggestions not demands
       </p>
     </header>

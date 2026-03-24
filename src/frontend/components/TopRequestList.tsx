@@ -17,21 +17,21 @@ export function TopRequestList({
 }: TopRequestListProps) {
   return (
     <section className={className}>
-      <h2 className="text-lg font-semibold mb-3 text-muted-500" hidden={hiddenTitle}>{title}</h2>
+      <h2 className="text-lg font-semibold mb-3 text-muted-40" hidden={hiddenTitle}>{title}</h2>
       <ul className="space-y-2">
         {requests.length === 0 && (
-          <li className="text-muted-300">No requests yet.</li>
+          <li className="text-muted-60">No requests yet.</li>
         )}
         {requests.map((r, i) => (
           <li
             key={r.id}
-            className="flex justify-between items-center py-2 border-b border-muted-50"
+            className="flex justify-between items-center py-2 border-b border-muted-20"
           >
             <span>
                 {i+1}. {r.song_name}
                 {r.artist ? ` - ${r.artist}` : ""}
             </span>
-            <span className="text-surface-50 font-medium">{r.votes} vote{r.votes === 1 ? "" :"s"}</span>
+            <span className="text-accent-40 font-medium">{r.votes} vote{r.votes === 1 ? "" :"s"}</span>
           </li>
         ))}
       </ul>

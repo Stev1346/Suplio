@@ -1,3 +1,5 @@
+"use client";
+
 import CreatedEventInfo from "@/features/dj/events/components/CreatedEventInfo";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";

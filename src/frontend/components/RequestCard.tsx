@@ -24,17 +24,17 @@ export function RequestCard({
     <li className="bg-white rounded-lg shadow-md p-4 flex justify-between items-center gap-3">
       <div className="min-w-0">
         {rank != null && (
-          <span className="text-muted-500 text-sm font-medium">{rank}.</span>
+          <span className="text-muted-40 text-sm font-medium">{rank}.</span>
         )}{" "}
-        <span className="font-medium text-primary-900">
+        <span className="font-medium text-muted-20">
           {request.song_name}
         </span>
         {request.artist && (
-          <span className="text-muted-500"> - {request.artist}</span>
+          <span className="text-muted-40"> - {request.artist}</span>
         )}
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <span className="text-tertiary-500 font-semibold">
+        <span className="text-accent-60 font-semibold">
         {request.votes} vote{request.votes === 1 ? "" :"s"}
         </span>
         {showVoteButton &&

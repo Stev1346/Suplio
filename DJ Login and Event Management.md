@@ -66,6 +66,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 ### Tasks
 - Add `shadcn/ui` with Radix primitives and Tailwind configuration.
 - Create tokenized theme (colors, typography, spacing, radii, shadows).
+- Switch design tokens to an HSL color system with hue-driven variables.
+- Rename `tertiary`/`auxiliary` color naming to `accent`.
+- Remove `narrow` layout behavior and make all screens responsive (no hardcoded page widths).
 - Replace shared primitives first (`Button`, `Input`, `Card`, etc.).
 - Build global navbar visual style and responsive behavior.
 - Accessibility pass (contrast, focus, keyboard).
@@ -233,20 +236,6 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 1 - UI Modernization (shadcn/ui + Radix + Tailwind Branding)
-**Target duration:** 2.0-3.0 days  
-**Definition of Done**
-- [ ] `shadcn/ui` + Radix + Tailwind foundation is integrated globally.
-- [ ] Theme tokens are defined (colors, typography, spacing, radii, shadows).
-- [ ] Shared primitives are migrated (`Button`, `Input`, `Card`, and core form/list states).
-- [ ] SSR/hydration check passes with App Router (no style flicker/hydration mismatch).
-- [ ] Mobile nav behavior is implemented (responsive collapse/drawer).
-- [ ] Accessibility baseline passes (contrast, focus visibility, keyboard navigation).
-
----
-
-### Backlog
-
 #### Phase 2 - Data Model + Security Implementation
 **Target duration:** 1.0-1.5 days  
 **Definition of Done**
@@ -257,6 +246,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] DB lint remediations are applied (`search_path`, permissive policy cleanup).
 - [ ] Backfill and rollback SQL scripts exist and are tested in a safe environment.
 - [ ] RLS implementation matches the approved RLS matrix.
+
+---
+
+### Backlog
 
 #### Phase 3 - Auth + DJ Entry Flow
 **Target duration:** 1.0-1.5 days  
@@ -339,6 +332,26 @@ Use this board as the execution tracker. Move each phase between sections as wor
 ---
 
 ### Done
+
+#### Phase 1 - UI Modernization (shadcn/ui + Radix + Tailwind Branding)
+**Target duration:** 2.0-3.0 days  
+**Definition of Done**
+- [x] `shadcn/ui` + Radix + Tailwind foundation is integrated globally.
+- [x] Theme tokens are defined (colors, typography, spacing, radii, shadows).
+- [x] HSL token system is implemented for primary/secondary/accent/muted.
+- [x] All `tertiary`/`auxiliary`/`surface` references are migrated to `accent` naming.
+- [x] `PageShell` no longer supports `narrow`; all screens are responsive at mobile/tablet/desktop breakpoints.
+- [x] Shared primitives are migrated (`Button`, `Input`, `Card`, and core form/list states).
+- [x] SSR/hydration check passes with App Router (no style flicker/hydration mismatch).
+- [x] Mobile nav behavior is implemented (responsive collapse/drawer).
+- [x] Accessibility baseline passes (contrast, focus visibility, keyboard navigation).
+
+**Validation checklist (run at end of phase):**
+- [x] `npm run dev` in `src/frontend` starts without errors.
+- [x] Browser console shows no hydration warnings.
+- [x] Keyboard focus visibility works on inputs, buttons, links, and switch.
+- [x] Responsive behavior verified at mobile (~375px), tablet (~768px), and desktop (~1280px).
+- [x] Key routes render correctly: `/dj`, `/dj/login`, `/event/[eventCode]`, `/event/[eventCode]/request`, `/event/[eventCode]/vote`.
 
 #### Phase 0 - Foundation and Product Decisions
 **Target duration:** 0.5 day  
