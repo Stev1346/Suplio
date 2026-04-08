@@ -4,12 +4,14 @@ import { cn } from "@/lib/utils";
 type FormFieldProps = {
   label: string;
   required?: boolean;
+  type?: string;
   optional?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
 export function FormField({
   label,
   required,
+  type,
   optional,
   className = "",
   id,
@@ -26,6 +28,7 @@ export function FormField({
       </label>
       <input
         id={inputId}
+        type={type}
         required={required}
         className={cn(
           "w-full rounded-md border border-muted-40 bg-primary-20 px-3 py-2 text-foreground placeholder:text-muted-60",

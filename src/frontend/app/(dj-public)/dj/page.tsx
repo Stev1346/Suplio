@@ -1,5 +1,5 @@
-import DjEntryScreen from "@/features/dj/entry/DjEntryScreen";
+import DjLandingScreen from "@/features/dj/entry/DjLandingScreen";
 
 export default function DjEntryPage() {
-  return <DjEntryScreen />;
+  return <DjLandingScreen />;
 }

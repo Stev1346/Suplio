@@ -7,7 +7,6 @@ import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
-import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { updateEventAllowRequests } from "@/lib/client/api/events";
@@ -16,9 +15,19 @@ import { updateRequestStatus } from "@/lib/client/api/requests";
 import { EventStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { useParams } from "next/navigation";
 
-export default function DashboardScreen() {
-  const eventCode = useEventCode();
+function eventSlugFromParams(
+  raw: string | string[] | undefined
+): string | undefined {
+  if (typeof raw === "string") return raw;
+  if (Array.isArray(raw) && raw[0]) return raw[0];
+  return undefined;
+}
+
+export default function DjEventManageScreen() {
+  const params = useParams();
+  const eventCode = eventSlugFromParams(params.eventId);
   const {
     event,
     setEvent,

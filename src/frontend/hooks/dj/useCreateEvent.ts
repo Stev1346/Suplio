@@ -5,7 +5,6 @@ export function useCreateEvent() {
   const setEventCode = useSetEventCode();
   const [loading, setLoading] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
-  const [createdPin, setCreatedPin] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(async (name: string) => {
@@ -20,12 +19,13 @@ export function useCreateEvent() {
     try {
       const res = await fetch("/api/dj/events", {
         method: "POST",
+        credentials: "include",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name }),
       });
 
       type CreateEventResponse = {
-        data?: { event_code: string; dj_pin: string };
+        data?: { event_code: string };
         error?: string;
       };
       
@@ -37,7 +37,6 @@ export function useCreateEvent() {
       }
 
       setCreatedCode(body.data.event_code);
-      setCreatedPin(body.data.dj_pin);
       setEventCode(body.data.event_code);
 
       return body.data.event_code;
@@ -50,5 +49,5 @@ export function useCreateEvent() {
     }
   }, [setEventCode]);
 
-  return { submit, loading, createdCode, error, setError, createdPin }
+  return { submit, loading, createdCode, error, setError }
 }

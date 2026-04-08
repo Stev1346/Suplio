@@ -1,3 +1,5 @@
+import DjSignupScreen from "@/features/dj/auth/signup/DjSignupScreen";
+
 export default function DjSignupPage() {
-    return <main className="p-6">DJ signup page coming next phase.</main>;
+    return <DjSignupScreen/>;
   }

@@ -6,7 +6,9 @@ export const routes = {
         dashboard: "/dj/dashboard",
         events: "/dj/events",
         eventDetail: (eventId: string) => `/dj/events/${eventId}`,
-        profile: "/dj/profile"
+        profile: "/dj/profile",
+        forgotPassword: "/dj/forgot-password",
+        updatePassword: "/dj/update-password"
     },
     guest:{
         eventLanding: (eventCode: string) => `/event/${eventCode}`,
