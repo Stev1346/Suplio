@@ -5,10 +5,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+function isDjPrivateChrome(pathname: string | null) {
+  if (!pathname) return false;
+  return (
+    pathname.startsWith("/dj/dashboard") ||
+    pathname.startsWith("/dj/events") ||
+    pathname.startsWith("/dj/profile")
+  );
+}
+
 export function TopNavShell() {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
+
+  if (isDjPrivateChrome(pathname)) {
+    return null;
+  }
 
   return (
     <nav className=" text-secondary-80 border border-muted-10 bg-muted-10 p-3">
@@ -33,6 +46,7 @@ export function TopNavShell() {
           <Link href="/event/demo" className="hover:text-secondary-60">
             Guest
           </Link>
+          
         </div>
       </div>
       {isOpen && (

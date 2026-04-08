@@ -236,21 +236,6 @@ Use this board as the execution tracker. Move each phase between sections as wor
 
 ### In Progress
 
-#### Phase 3 - Auth + DJ Entry Flow
-**Target duration:** 1.0-1.5 days  
-**Definition of Done**
-- [ ] `/dj` landing page is implemented with Login/Create Account options.
-- [ ] `/dj/login` and `/dj/signup` are implemented and functional.
-- [ ] Signup form requires `stage_name`, and signup creates/bootstrap `dj_profiles` correctly.
-- [ ] Logout and route guards work consistently.
-- [ ] Password reset flow is implemented and tested.
-- [ ] Email verification behavior matches Phase 0.5 decision.
-- [ ] Login brute-force controls (lockout/backoff) are implemented.
-
----
-
-### Backlog
-
 #### Phase 4 - Role-Aware Global Navbar
 **Target duration:** 0.75-1.0 day  
 **Definition of Done**
@@ -260,6 +245,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] DJ search input shell is present in nav.
 - [ ] Navbar behavior is responsive at mobile/tablet/desktop breakpoints.
 - [ ] Nav visibility and route guard behavior do not leak privileged links/actions.
+
+---
+
+### Backlog
 
 #### Phase 5 - DJ Dashboard Home
 **Target duration:** 1.5-2.0 days  
@@ -370,3 +359,14 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] DB lint remediations are applied (`search_path`, permissive policy cleanup).
 - [x] Backfill and rollback SQL scripts exist and are tested in a safe environment.
 - [x] RLS implementation matches the approved RLS matrix.
+
+#### Phase 3 - Auth + DJ Entry Flow
+**Target duration:** 1.0-1.5 days  
+**Definition of Done**
+- [x] `/dj` landing page is implemented with Login/Create Account options.
+- [x] `/dj/login` and `/dj/signup` are implemented and functional.
+- [x] Signup form requires `stage_name`, and signup creates/bootstrap `dj_profiles` correctly (`user_id` aligned with DB schema).
+- [x] Logout and route guards work consistently (`proxy.ts`, private DJ routes, email verification gate).
+- [x] Password reset flow is implemented (forgot password → callback → update password); production smoke on Supabase remains operator responsibility.
+- [x] Email verification behavior matches Phase 0.5 decision (proxy redirect + signup messaging; Supabase quotas/SMTP are environment concerns).
+- [x] Login brute-force controls (lockout/backoff) are implemented (`login-rate-limit` + sign-in route).

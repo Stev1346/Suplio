@@ -5,32 +5,80 @@ import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
-import { useEventCode } from "@/contexts/GuestEventContext";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { PasswordFormField } from "@/components/ui/PasswordFormField";
+import { routes } from "@/lib/shared/constants/routes";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 
-export default function DashboardLoginScreen() {
-  const contextEventCode = useEventCode();
-  const [manualEventCode, setManualEventCode] = useState("");
-  const resolvedEventCode = (contextEventCode ?? manualEventCode)
-    .trim()
-    .toUpperCase();
+const ERROR_MESSAGES: Record<string, string> = {
+  verify_email:
+    "Confirm your email before using the DJ dashboard. Check your inbox.",
+  auth: "That sign-in link expired or is invalid. Sign in with email and password.",
+};
+
+export default function DjLoginScreen() {
   const router = useRouter();
-  const [pin, setPin] = useState("");
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/dj/dashboard";
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [persistedFlash, setPersistedFlash] = useState<string | null>(null);
+
+  const code = searchParams.get("error");
+  const derivedFlash = code
+    ? (ERROR_MESSAGES[code] ?? "Something went wrong. Try signing in again.")
+    : null;
+
+  const urlError = persistedFlash ?? derivedFlash;
+  const stripOnceRef = useRef(false);
+
+  useEffect(() => {
+    if (!code) {
+      stripOnceRef.current = false;
+      return;
+    }
+    if (stripOnceRef.current) return;
+    stripOnceRef.current = true;
+
+    const msg =
+      ERROR_MESSAGES[code] ?? "Something went wrong. Try signing in again.";
+    startTransition(() => {
+      setPersistedFlash(msg);
+    });
+    toast.error(msg);
+
+    const q = new URLSearchParams();
+    if (searchParams.get("next")) {
+      q.set("next", searchParams.get("next")!);
+    }
+    const qs = q.toString();
+    router.replace(qs ? `/dj/login?${qs}` : "/dj/login");
+  }, [code, router, searchParams]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!resolvedEventCode || loading) return;
+    if (loading) return;
     setLoading(true);
     setError(null);
+    startTransition(() => setPersistedFlash(null));
 
-    const res = await fetch("/api/dj/auth/login", {
+    const res = await fetch("/auth/sign-in", {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ eventCode: resolvedEventCode, pin }),
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
+
     setLoading(false);
 
     if (!res.ok) {
@@ -41,7 +89,8 @@ export default function DashboardLoginScreen() {
       toast.error(msg);
       return;
     }
-    router.push(`/dj/dashboard`);
+    router.push(next);
+    router.refresh();
   }
 
   if (loading) {
@@ -53,42 +102,48 @@ export default function DashboardLoginScreen() {
   }
 
   return (
-    <PageShell className="flex flex-col justify-center items-center">
-      <AppHeader title="DJ Dashboard Login" />
-      <div className="flex flex-1">
-        <form
-          onSubmit={onSubmit}
-          className="w-full max-w-sm space-y-4 flex flex-col justify-center"
-        >
-          {contextEventCode ? (
-            <FormField
-              label="Event code"
-              value={resolvedEventCode}
-              readOnly
-              disabled
-              className="opacity-80 cursor-not-allowed"
-            />
-          ) : (
-            <FormField
-              label="Event code"
-              value={manualEventCode}
-              onChange={(e) => setManualEventCode(e.target.value)}
-              required
-            />
+    <PageShell className="flex-col">
+      <AppHeader title="Log In" />
+      <div className="flex-1 space-y-4 items-center justify-center flex flex-col">
+        <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
+          {urlError && (
+            <p className="text-amber-800 dark:text-amber-200 text-sm">
+              {urlError}
+            </p>
           )}
           <FormField
-            label="DJ PIN"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            inputMode="numeric"
-            placeholder="Enter PIN"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
+          <PasswordFormField
+            label="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
           {error && <p className="text-red-700 text-sm">{error}</p>}
           <Button type="submit" disabled={loading}>
-            {loading ? "Checking..." : "Enter Dashboard"}
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+        <div className="flex-1 flex flex-col items-center">
+        <Link
+          href={routes.dj.forgotPassword}
+          className="text-accent-60 mb-1.5 hover:cursor-pointer hover:underline"
+        >
+          Forgot Password?
+        </Link>
+        <Link
+          href={routes.dj.signup}
+          className="text-accent-80 hover:cursor-pointer hover:underline"
+        >
+          No account? Sign Up Here
+        </Link>
+        </div>
       </div>
     </PageShell>
   );

@@ -1,5 +1,4 @@
-import { generatePin, hashPin } from "@/lib/server/auth/dashboard-pin";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 function generateEventCode(length = 8): string {
@@ -12,10 +11,25 @@ function generateEventCode(length = 8): string {
 }
 
 export async function POST(req: Request) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !serviceRole) {
-        return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
+    const supabase = await createClient();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { data: profile, error: profileError } = await supabase
+        .from("dj_profiles")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    if (profileError || !profile) {
+        return NextResponse.json(
+            { error: "DJ profile not found" },
+            { status: 403 }
+        );
     }
 
     const body = await req.json().catch(() => null);
@@ -24,27 +38,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Event name is required" }, { status: 400 })
     }
 
-    const supabase = createClient(url, serviceRole);
-
     let eventCode = generateEventCode(8);
-    const pin = generatePin(6);
-    const djPinHash = hashPin(pin);
 
     for (let i = 0; i < 10; i++) {
         const { data, error } = await supabase
             .from("events")
-            .insert({ name, event_code: eventCode, dj_pin_hash: djPinHash })
+            .insert({ name, event_code: eventCode, dj_id: user.id })
             .select("event_code")
             .single();
 
         if (!error) {
-            return NextResponse.json({ data: { event_code: data.event_code, dj_pin: pin } }, {})
+            const code = data?.event_code ?? eventCode;
+            return NextResponse.json({ data: { event_code: code } }, { status: 201 })
         }
         if (error.code === "23505") {
             eventCode = generateEventCode(8);
             continue;
         }
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        return NextResponse.json({ error: error.message }, { status: 400 })
     }
     return NextResponse.json({ error: "Could not generate unique code. Try again." }, { status: 500 });
 }

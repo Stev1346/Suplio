@@ -5,10 +5,9 @@ import toast from "react-hot-toast";
 
 type CreatedEventInfoProps = {
     createdCode: string;
-    createdPin: string | null;
 }
 
-export default function CreatedEventInfo({createdCode, createdPin}: CreatedEventInfoProps){
+export default function CreatedEventInfo({createdCode}: CreatedEventInfoProps){
     const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
     const requestUrl = `${baseUrl}/event/${createdCode}/request`;
 
@@ -36,19 +35,6 @@ export default function CreatedEventInfo({createdCode, createdPin}: CreatedEvent
           >
             {requestUrl}
           </Button>
-          <div
-            className="w-full max-w-md mb-6 rounded-lg border p-4
-          flex flex-col items-center drop-shadow-xl drop-shadow-muted-20
-          bg-amber-50 border-amber-300 text-amber-900"
-          >
-            <p className="font-semibold mb-1">DJ PIN (save this now)</p>
-            <p className="text-2xl tracking-widest font-bold">
-              {createdPin ?? "-------"}
-            </p>
-            <p className="text-sm mt-2">
-              This PIN protects the dashboard and may only be shown once
-            </p>
-          </div>
           <div className="flex gap-4">
             <Link href={routes.guest.eventLanding(createdCode)}>
               <Button>Open guest page</Button>

@@ -1,32 +1,68 @@
-// src/frontend/proxy.ts
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionEdge } from "@/lib/server/auth/dashboard-session";
+import { updateSession } from "./lib/supabase/proxy";
 
-const COOKIE_NAME = "dj_session";
-
-function isDjPublicPath(pathname: string) {
-  return pathname === "/dj" || pathname === "/dj/login" || pathname === "/dj/signup";
-}
-
-export async function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-
-  if (!pathname.startsWith("/dj")) return NextResponse.next();
-
-  if (isDjPublicPath(pathname)) return NextResponse.next();
-
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  const session = await verifySessionEdge(token);
-
-  if (!session) {
-    const url = req.nextUrl.clone();
-    url.pathname = `/dj/login`;
-    return NextResponse.redirect(url);
+function isDjLandingPath(pathname: string) {
+    return pathname === "/dj" || pathname === "/dj/";
   }
 
-  return NextResponse.next();
+export async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+    const { supabaseResponse, user } = await updateSession(request);
+
+    const needsVerify = user && user.email && !user.email_confirmed_at;
+    const verifySafe = pathname.startsWith("/dj/login") ||
+                       pathname.startsWith("/dj/signup") ||
+                       pathname.startsWith("/auth/") ||
+                       isDjLandingPath(pathname) ||
+                       pathname.startsWith("/dj/forgot-password") ||
+                       pathname.startsWith("/dj/update-password");
+
+    if(needsVerify && !verifySafe){
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/login";
+        url.searchParams.set("error", "verify_email");
+        return NextResponse.redirect(url);
+    }
+
+    if (pathname.startsWith("/auth/")) {
+        return supabaseResponse;
+    }
+
+    const isDjPrivate =
+        pathname.startsWith("/dj/dashboard") ||
+        pathname.startsWith("/dj/events") ||
+        pathname.startsWith("/dj/profile");
+
+    if (isDjPrivate && !user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/login";
+        url.searchParams.set("next", pathname);
+        return NextResponse.redirect(url);
+    }
+
+    if ((pathname === "/dj/signup") && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    if ((pathname === "/dj/login") && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    if (isDjLandingPath(pathname) && user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/dj/dashboard/:path*", "/dj/events/:path*", "/dj/profile/:path*"],
-};
+    matcher: [
+        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    ]
+}
