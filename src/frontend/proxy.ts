@@ -10,6 +10,7 @@ export async function proxy(request: NextRequest) {
     const { supabaseResponse, user } = await updateSession(request);
 
     const needsVerify = user && user.email && !user.email_confirmed_at;
+    const canAccessDjApp = Boolean(user && !needsVerify);
     const verifySafe = pathname.startsWith("/dj/login") ||
                        pathname.startsWith("/dj/signup") ||
                        pathname.startsWith("/auth/") ||
@@ -40,19 +41,19 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    if ((pathname === "/dj/signup") && user) {
+    if ((pathname === "/dj/signup") && canAccessDjApp) {
         const url = request.nextUrl.clone();
         url.pathname = "/dj/dashboard";
         return NextResponse.redirect(url);
     }
 
-    if ((pathname === "/dj/login") && user) {
+    if ((pathname === "/dj/login") && canAccessDjApp) {
         const url = request.nextUrl.clone();
         url.pathname = "/dj/dashboard";
         return NextResponse.redirect(url);
     }
 
-    if (isDjLandingPath(pathname) && user) {
+    if (isDjLandingPath(pathname) && canAccessDjApp) {
         const url = request.nextUrl.clone();
         url.pathname = "/dj/dashboard";
         return NextResponse.redirect(url);
