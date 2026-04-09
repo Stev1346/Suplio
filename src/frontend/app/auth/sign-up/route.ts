@@ -1,3 +1,5 @@
+import { checkSignupAllowed, recordSignupAttempt } from "@/lib/server/auth/signup-rate-limit";
+import { getClientIp } from "@/lib/server/client-ip";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -15,6 +17,19 @@ export async function POST(req: Request) {
             { status: 400 }
         );
     }
+
+    const signupKey = `signup:${getClientIp(req)}`;
+    const throttle = checkSignupAllowed(signupKey);
+    if (!throttle.ok) {
+        return NextResponse.json(
+            { error: throttle.message },
+            {
+                status: throttle.status,
+                headers: { "Retry-After": String(throttle.retryAfterSec) },
+            }
+        );
+    }
+    recordSignupAttempt(signupKey);
 
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({

@@ -10,14 +10,16 @@ import { PageShell } from "@/components/ui/PageShell";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
-import { compareRankedRequests } from "@/lib/request-ranking";
+import { useSupabaseBrowser } from "@/hooks/useSupabaseBrowser";
 import { insertRequest } from "@/lib/client/api/requests";
+import { compareRankedRequests } from "@/lib/request-ranking";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function SongRequestScreen() {
+  const supabase = useSupabaseBrowser();
   const eventCode = useEventCode();
   const router = useRouter();
   const {
@@ -50,7 +52,7 @@ export default function SongRequestScreen() {
 
     setSubmitLoading(true);
 
-    const { error } = await insertRequest({
+    const { error } = await insertRequest(supabase, {
       event_id: event.id,
       song_name: songName.trim(),
       artist: artist.trim() || null,

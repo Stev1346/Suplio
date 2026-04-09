@@ -1,43 +1,45 @@
-import { Database, EventStatus } from "@/types/database";
-import { supabase } from "@/lib/supabase";
+import type { AppSupabaseClient } from "@/lib/supabase/app-client";
+import type { Database, EventStatus } from "@/types/database";
 
 export type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 export type FetchRequestsOptions = {
-    statuses?: EventStatus[];
-    orderBy?: string;
-    ascending?: boolean;
-    limit?: number;
+  statuses?: EventStatus[];
+  orderBy?: string;
+  ascending?: boolean;
+  limit?: number;
 };
 
-export async function fetchRequestsForEvent(eventId: string, options: FetchRequestsOptions = {}): Promise<RequestRow[]> {
-    const { statuses, orderBy = "song_name", ascending = true, limit } = options;
-    let q = supabase.from("requests").select("*").eq("event_id", eventId);
+export async function fetchRequestsForEvent(
+  supabase: AppSupabaseClient,
+  eventId: string,
+  options: FetchRequestsOptions = {}
+): Promise<RequestRow[]> {
+  const { statuses, orderBy = "song_name", ascending = true, limit } = options;
+  let q = supabase.from("requests").select("*").eq("event_id", eventId);
 
-    if (statuses?.length) q = q.in("status", statuses);
-    
-    q = q.order(orderBy, { ascending });
-    
-    if (limit != null) q = q.limit(limit);
-    
-    const { data } = await q;
-    return data ?? [];
+  if (statuses?.length) q = q.in("status", statuses);
+
+  q = q.order(orderBy, { ascending });
+
+  if (limit != null) q = q.limit(limit);
+
+  const { data } = await q;
+  return data ?? [];
 }
 
-export async function updateRequestStatus(requestId:string, status: EventStatus) {
-    const {error} = await supabase
-        .from("requests")
-        .update({status})
-        .eq("id", requestId)
-    return {error};
-}
-
-export async function insertRequest(params:{
+export async function insertRequest(
+  supabase: AppSupabaseClient,
+  params: {
     event_id: string;
     song_name: string;
     artist?: string | null;
     message?: string | null;
-}) {
-    const {error} = await supabase.from("requests").insert(params);
-    return{error};
+  }
+) {
+  const { error } = await supabase
+    .from("requests")
+    // Insert typing: local Database type omits relationship metadata expected by @supabase/supabase-js.
+    .insert(params as never);
+  return { error };
 }

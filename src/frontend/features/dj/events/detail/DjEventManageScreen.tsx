@@ -9,9 +9,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
-import { updateEventAllowRequests } from "@/lib/client/api/events";
+import {
+  patchEventAllowRequests,
+  patchRequestStatus,
+} from "@/lib/client/api/dj";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { updateRequestStatus } from "@/lib/client/api/requests";
 import { EventStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -82,7 +84,7 @@ export default function DjEventManageScreen() {
 
     setTogglingAllow(true);
     const allowRequests = !event.allow_requests;
-    const { error } = await updateEventAllowRequests(event.id, allowRequests);
+    const { error } = await patchEventAllowRequests(event.id, allowRequests);
     setTogglingAllow(false);
 
     if (!error) {
@@ -98,7 +100,7 @@ export default function DjEventManageScreen() {
     if (!event || updatingId) return;
 
     setUpdatingId(requestId);
-    const { error } = await updateRequestStatus(requestId, status);
+    const { error } = await patchRequestStatus(requestId, status);
     setUpdatingId(null);
 
     if (!error) {
