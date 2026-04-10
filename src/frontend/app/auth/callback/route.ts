@@ -10,9 +10,17 @@ const OTP_TYPES = new Set([
     "magiclink",
 ]);
 
+function sanitizeNextPath(raw: string | null): string {
+    const fallback = "/dj/dashboard";
+    if (!raw) return fallback;
+    if (!raw.startsWith("/")) return fallback;
+    if (raw.startsWith("//")) return fallback;
+    return raw;
+  }
+
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
-    const next = searchParams.get("next") ?? "/dj/dashboard";
+    const nextPath = sanitizeNextPath(searchParams.get("next") );
     const token_hash = searchParams.get("token_hash");
     const type = searchParams.get("type");
     const code = searchParams.get("code");
@@ -34,7 +42,7 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${origin}/dj/login?error=auth`);
         }
 
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(new URL(nextPath, origin));
     }
 
     if (!code) {
@@ -46,6 +54,6 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/dj/login?error=auth`);
     }
 
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(new URL(nextPath, origin));
 
 }

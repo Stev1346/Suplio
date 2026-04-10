@@ -1,4 +1,4 @@
-import { createHmac, createHash, randomUUID } from "crypto";
+import { createHmac, createHash, randomUUID, timingSafeEqual } from "crypto";
 import type { NextRequest } from "next/server";
 
 export const GUEST_COOKIE_NAME = "gt_guest";
@@ -10,6 +10,13 @@ function sha256Hex(text: string): string {
 function signGuestId(id: string, secret: string): string {
   return createHmac("sha256", secret).update(id, "utf8").digest("hex");
 }
+function constantTimeSigMatch(expectedHex: string, providedHex: string): boolean {
+  if (!/^[a-f0-9]{64}$/i.test(providedHex)) return false;
+  const expected = Buffer.from(expectedHex, "hex");
+  const provided = Buffer.from(providedHex.toLowerCase(), "hex");
+  if (expected.length !== provided.length) return false;
+  return timingSafeEqual(expected, provided);
+}
 
 export function parseGuestCookie(
   raw: string | undefined,
@@ -20,8 +27,8 @@ export function parseGuestCookie(
   if (dot <= 0) return null;
   const id = raw.slice(0, dot);
   const sig = raw.slice(dot + 1);
-  if (!id || !sig || id.length > 128) return null;
-  if (signGuestId(id, secret) !== sig) return null;
+  const expectedSig = signGuestId(id, secret);
+  if (!constantTimeSigMatch(expectedSig, sig)) return null;
   return id;
 }
 
