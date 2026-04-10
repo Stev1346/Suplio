@@ -7,15 +7,12 @@ import { Button } from "../ui/Button";
 import { useState } from "react";
 import { Menu, Plus, Search } from "lucide-react";
 import { Input } from "../ui/input";
+import { isActivePath } from "@/lib/shared/routing/isActivePath";
 
 type DjNavLink = {
   label: string;
   href: string;
 };
-function isActive(pathname: string | null, href: string): boolean {
-  if (!pathname) return false;
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 export function DjPrivateNav() {
   const pathname = usePathname();
@@ -50,7 +47,7 @@ export function DjPrivateNav() {
 
   const linkClass = (href: string) =>
     `text-sm transition-colors hover:text-secondary-40 ${
-      isActive(pathname, href)
+      isActivePath(pathname, href)
         ? "font-semibold text-secondary-80"
         : "text-secondary-60"
     }`;
@@ -180,3 +177,4 @@ export function DjPrivateNav() {
     </header>
   );
 }
+

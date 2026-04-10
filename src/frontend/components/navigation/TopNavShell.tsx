@@ -2,6 +2,7 @@
 
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { routes } from "@/lib/shared/constants/routes";
+import { isActivePath } from "@/lib/shared/routing/isActivePath";
 import {
   isDjPrivatePath,
   isGuestEventPath,
@@ -15,12 +16,6 @@ type NavLink = {
   label: string;
   href: string;
 };
-
-function isActive(pathname: string | null, href: string): boolean {
-  if (!pathname) return false;
-
-  return pathname === href || pathname.startsWith(`${href}/`);
-}
 
 export function TopNavShell() {
   const pathname = usePathname();
@@ -43,7 +38,7 @@ export function TopNavShell() {
 
   const desktopLinkClass = (href: string) =>
     `text-sm transition-colors hover:text-secondary-40 ${
-      isActive(pathname, href)
+      isActivePath(pathname, href)
         ? "font-semibold text-secondary-80"
         : "text-secondary-60"
     }`;
