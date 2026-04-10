@@ -1,35 +1,63 @@
 "use client";
 
+import { useEventCode } from "@/contexts/GuestEventContext";
+import { routes } from "@/lib/shared/constants/routes";
+import {
+  isDjPrivatePath,
+  isGuestEventPath,
+} from "@/lib/shared/routing/routeGroups";
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-function isDjPrivateChrome(pathname: string | null) {
+type NavLink = {
+  label: string;
+  href: string;
+};
+
+function isActive(pathname: string | null, href: string): boolean {
   if (!pathname) return false;
-  return (
-    pathname.startsWith("/dj/dashboard") ||
-    pathname.startsWith("/dj/events") ||
-    pathname.startsWith("/dj/profile")
-  );
+
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function TopNavShell() {
   const pathname = usePathname();
+  const eventCode = useEventCode();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
 
-  if (isDjPrivateChrome(pathname)) {
+  if (isDjPrivatePath(pathname)) {
     return null;
   }
 
+  const guestLinks: NavLink[] =
+    eventCode && isGuestEventPath(pathname)
+      ? [
+          { label: "Scan", href: routes.guest.scan(eventCode) },
+          { label: "Request", href: routes.guest.request(eventCode) },
+          { label: "Vote", href: routes.guest.vote(eventCode) },
+        ]
+      : [];
+
+  const desktopLinkClass = (href: string) =>
+    `text-sm transition-colors hover:text-secondary-40 ${
+      isActive(pathname, href)
+        ? "font-semibold text-secondary-80"
+        : "text-secondary-60"
+    }`;
+
   return (
-    <nav className=" text-secondary-80 border border-muted-10 bg-muted-10 p-3">
-      <div className="flex items-center justify-between">
-        <span className="font-semibold">GotATune</span>
+    <nav className="border-b text-secondary-80 border-muted-10 bg-muted-10 px-4 py-3">
+      <div className="mx-auto flex items-center">
+        <Link href={"/"} className="font-semibold tracking-tight">
+          GotATune
+        </Link>
+
         <button
           type="button"
-          className="sm:hidden"
+          className="sm:hidden ml-auto rounded-md p-2 hover:bg-muted-20"
           onClick={() =>
             setOpenPath((prev) => (prev === pathname ? null : pathname))
           }
@@ -39,26 +67,45 @@ export function TopNavShell() {
         >
           <Menu />
         </button>
-        <div className="hidden gap-4 sm:flex ">
-          <Link href="/dj" className="hover:text-secondary-60">
-            DJ
+        <div className="hidden ml-auto items-center gap-4 sm:flex ">
+          {guestLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={desktopLinkClass(link.href)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <Link
+            href={routes.dj.entry}
+            className={desktopLinkClass(routes.dj.entry)}
+          >
+            Are you a DJ?
           </Link>
-          <Link href="/event/demo" className="hover:text-secondary-60">
-            Guest
-          </Link>
-          
         </div>
       </div>
       {isOpen && (
         <div
           id="mobile-nav-links"
-          className="mt-3 flex flex-col gap-2 sm:hidden"
+          className="mt-3 flex flex-col gap-2 items-center border-t border-muted-10 pt-3 sm:hidden"
         >
-          <Link href="/dj" className="hover:text-secondary-60">
-            DJ
-          </Link>
-          <Link href="/event/demo" className="hover:text-secondary-60">
-            Guest
+          {guestLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-md px-2 py-1 text-sm hover:bg-muted-20"
+              onClick={() => setOpenPath(null)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <Link
+            href={routes.dj.entry}
+            className="rounded-md px-2 py-1 text-sm font-medium hover:bg-muted-20"
+            onClick={() => setOpenPath(null)}
+          >
+            Are you a DJ?
           </Link>
         </div>
       )}

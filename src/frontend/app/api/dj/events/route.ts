@@ -48,8 +48,7 @@ export async function POST(req: Request) {
             .single();
 
         if (!error) {
-            const code = data?.event_code ?? eventCode;
-            return NextResponse.json({ data: { event_code: code } }, { status: 201 })
+            return NextResponse.json({ data: { event_code: data.event_code } }, { status: 201 })
         }
         if (error.code === "23505") {
             eventCode = generateEventCode(8);

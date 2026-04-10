@@ -234,21 +234,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
+**Sprint status:** Phase 4 (Role-Aware Global Navbar) is **complete**. **In progress:** Phase 5 — DJ Dashboard Home.
+
 ### In Progress
-
-#### Phase 4 - Role-Aware Global Navbar
-**Target duration:** 0.75-1.0 day  
-**Definition of Done**
-- [ ] Shared top nav is wired in app layout.
-- [ ] Guest nav shows event-local links and `Are you a DJ?` -> `/dj`.
-- [ ] DJ nav shows `Dashboard`, `My Events`, `Create Event`, `Profile`, `Logout`.
-- [ ] DJ search input shell is present in nav.
-- [ ] Navbar behavior is responsive at mobile/tablet/desktop breakpoints.
-- [ ] Nav visibility and route guard behavior do not leak privileged links/actions.
-
----
-
-### Backlog
 
 #### Phase 5 - DJ Dashboard Home
 **Target duration:** 1.5-2.0 days  
@@ -258,6 +246,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] Core metrics cards are implemented and populated.
 - [ ] API/use-cases for dashboard aggregates are implemented cleanly.
 - [ ] Metrics source-of-truth approach (live query vs cached/materialized view) is finalized.
+
+---
+
+### Backlog
 
 #### Phase 6 - Event Management
 **Target duration:** 1.0-1.5 days  
@@ -370,3 +362,18 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] Password reset flow is implemented (forgot password → callback → update password); production smoke on Supabase remains operator responsibility.
 - [x] Email verification behavior matches Phase 0.5 decision (proxy redirect + signup messaging; Supabase quotas/SMTP are environment concerns).
 - [x] Login brute-force controls (lockout/backoff) are implemented (`login-rate-limit` + sign-in route).
+
+#### Phase 4 - Role-Aware Global Navbar
+**Target duration:** 0.75-1.0 day  
+**Definition of Done**
+- [x] Shared top nav is wired in app layout.
+- [x] Guest nav shows event-local links and `Are you a DJ?` -> `/dj`.
+- [x] DJ nav shows `Dashboard`, `My Events`, `Create Event`, `Profile`, `Logout`.
+- [x] DJ search input shell is present in nav.
+- [x] Navbar behavior is responsive at mobile/tablet/desktop breakpoints.
+- [x] Nav visibility and route guard behavior do not leak privileged links/actions.
+
+**Validation checklist (run at end of phase):**
+- [x] Guest `/event/[eventCode]` routes show Scan, Request, Vote; DJ private routes hide guest shell.
+- [x] Unauthenticated `/dj/*` private routes redirect to `/dj/login`; `routeGroups` + `proxy` stay aligned.
+- [x] Optional: `npm run test:e2e` in `src/frontend` with `E2E_DJ_EMAIL` / `E2E_DJ_PASSWORD` for authenticated nav coverage.

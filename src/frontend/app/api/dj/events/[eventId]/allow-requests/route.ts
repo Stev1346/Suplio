@@ -19,13 +19,13 @@ export async function PATCH(req: Request, context: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: event, error: evError } = await supabase
+  const { data: event, error: eventError } = await supabase
     .from("events")
     .select("id, dj_id")
     .eq("id", eventId)
     .single();
 
-  if (evError || !event || event.dj_id !== user.id) {
+  if (eventError || !event || event.dj_id !== user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
