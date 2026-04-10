@@ -1,21 +1,46 @@
+import {
+  GUEST_COOKIE_NAME,
+  getOrMintGuestSession,
+  guestCookieOptions,
+} from "@/lib/server/guest-cookie";
+import { getClientIp } from "@/lib/server/client-ip";
+import { consumeVoteRateLimit } from "@/lib/server/vote-rate-limit";
 import { createClient } from "@supabase/supabase-js";
-import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-function getClientIp(req: NextRequest): string {
-  const xff = req.headers.get("x-forwarded-for");
-  const ip = xff ? xff.split(",")[0].trim() : req.headers.get("x-real-ip") ?? "";
-  return ip || "unknown";
-}
+type RouteContext = { params: Promise<{ eventCode: string }> };
 
-function sha256Hex(text: string): string {
-  return createHash("sha256").update(text, "utf8").digest("hex");
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, context: RouteContext) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !serviceRoleKey) {
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
+  const { eventCode } = await context.params;
+  if (!eventCode) {
+    return NextResponse.json({ error: "Missing event" }, { status: 400 });
+  }
+
+  const rateKey = `${getClientIp(req)}:${eventCode}`;
+  const burst = consumeVoteRateLimit(rateKey);
+  if (!burst.ok) {
+    return NextResponse.json(
+      { error: burst.message },
+      {
+        status: 429,
+        headers: { "Retry-After": String(burst.retryAfterSec) },
+      }
+    );
+  }
+
+  let guestSession: { voterId: string; cookieToSet?: string };
+  try {
+    guestSession = getOrMintGuestSession(req);
+  } catch {
     return NextResponse.json(
       { error: "Server configuration error" },
       { status: 500 }
@@ -33,9 +58,40 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const clientIp = getClientIp(req);
-  const voterId = sha256Hex(clientIp);
+  const voterId = guestSession.voterId;
   const supabase = createClient(url, serviceRoleKey);
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("id")
+    .eq("event_code", eventCode)
+    .single();
+
+  if (!event) {
+    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  const { data: reqRow } = await supabase
+    .from("requests")
+    .select("id, event_id")
+    .eq("id", requestId)
+    .single();
+
+  if (!reqRow || reqRow.event_id !== event.id) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const jsonResponse = (init: { status?: number; body: object }) => {
+    const res = NextResponse.json(init.body, { status: init.status ?? 200 });
+    if (guestSession.cookieToSet) {
+      res.cookies.set(
+        GUEST_COOKIE_NAME,
+        guestSession.cookieToSet,
+        guestCookieOptions()
+      );
+    }
+    return res;
+  };
 
   if (action === "add") {
     const { data: existing } = await supabase
@@ -46,10 +102,10 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (existing) {
-      return NextResponse.json(
-        { error: "Already voted", data: { id: existing.id } },
-        { status: 409 }
-      );
+      return jsonResponse({
+        status: 409,
+        body: { error: "Already voted", data: { id: existing.id } },
+      });
     }
 
     const { data, error } = await supabase
@@ -59,9 +115,9 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return jsonResponse({ status: 400, body: { error: error.message } });
     }
-    return NextResponse.json({ data: { id: data.id } }, { status: 200 });
+    return jsonResponse({ body: { data: { id: data.id } } });
   }
 
   if (action === "remove") {
@@ -72,10 +128,10 @@ export async function POST(req: NextRequest) {
       .eq("voter_id", voterId);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return jsonResponse({ status: 400, body: { error: error.message } });
     }
-    return NextResponse.json({ ok: true }, { status: 200 });
+    return jsonResponse({ body: { ok: true } });
   }
 
-  return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  return jsonResponse({ status: 400, body: { error: "Invalid action" } });
 }

@@ -1,21 +1,59 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
+const OTP_TYPES = new Set([
+    "recovery",
+    "signup",
+    "email",
+    "email_change",
+    "invite",
+    "magiclink",
+]);
+
+function sanitizeNextPath(raw: string | null): string {
+    const fallback = "/dj/dashboard";
+    if (!raw) return fallback;
+    if (!raw.startsWith("/")) return fallback;
+    if (raw.startsWith("//")) return fallback;
+    return raw;
+  }
+
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
+    const nextPath = sanitizeNextPath(searchParams.get("next") );
+    const token_hash = searchParams.get("token_hash");
+    const type = searchParams.get("type");
     const code = searchParams.get("code");
-    const next = searchParams.get("next") ?? "/dj/dashboard";
+
+    const supabase = await createClient();
+    if (token_hash && type && OTP_TYPES.has(type)) {
+        const { error } = await supabase.auth.verifyOtp({
+            type: type as
+                | "recovery"
+                | "signup"
+                | "email"
+                | "email_change"
+                | "invite"
+                | "magiclink",
+            token_hash,
+        });
+
+        if (error) {
+            return NextResponse.redirect(`${origin}/dj/login?error=auth`);
+        }
+
+        return NextResponse.redirect(new URL(nextPath, origin));
+    }
 
     if (!code) {
         return NextResponse.redirect(`${origin}/dj/login?error=auth`)
     }
 
-    const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-
     if (error) {
         return NextResponse.redirect(`${origin}/dj/login?error=auth`);
     }
 
-    return NextResponse.redirect(`${origin}${next}`);
+    return NextResponse.redirect(new URL(nextPath, origin));
+
 }

@@ -7,6 +7,11 @@ function isDjLandingPath(pathname: string) {
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
+    if (pathname === "/auth/callback" || pathname === "/auth/callback/" ) {
+        return NextResponse.next({ request });
+      }
+
     const { supabaseResponse, user } = await updateSession(request);
 
     const needsVerify = user && user.email && !user.email_confirmed_at;
