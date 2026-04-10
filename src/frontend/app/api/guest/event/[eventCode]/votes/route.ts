@@ -61,23 +61,23 @@ export async function POST(req: NextRequest, context: RouteContext) {
   const voterId = guestSession.voterId;
   const supabase = createClient(url, serviceRoleKey);
 
-  const { data: event } = await supabase
+  const { data: event, error: eventError } = await supabase
     .from("events")
     .select("id")
     .eq("event_code", eventCode)
     .single();
 
-  if (!event) {
+  if (eventError || !event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  const { data: reqRow } = await supabase
+  const { data: reqRow, error: reqError } = await supabase
     .from("requests")
     .select("id, event_id")
     .eq("id", requestId)
     .single();
 
-  if (!reqRow || reqRow.event_id !== event.id) {
+  if (reqError || !reqRow || reqRow.event_id !== event.id) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 

@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     }
 
     if (!code) {
-        return NextResponse.redirect(`${origin}/dj/login?error=auth`)
+        return NextResponse.redirect(`${origin}/dj/login?error=auth`);
     }
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);

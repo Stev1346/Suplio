@@ -33,8 +33,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TopNavShell />
-        <EventCodeProvider>{children}</EventCodeProvider>
+        <EventCodeProvider>
+          <TopNavShell />
+          {children}
+        </EventCodeProvider>
         <Toaster position="top-center" />
       </body>
     </html>

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/proxy";
-
-function isDjLandingPath(pathname: string) {
-    return pathname === "/dj" || pathname === "/dj/";
-  }
+import { isDjLandingPath, isDjPrivatePath, isDjPublicPath } from "./lib/shared/routing/routeGroups";
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -16,12 +13,7 @@ export async function proxy(request: NextRequest) {
 
     const needsVerify = user && user.email && !user.email_confirmed_at;
     const canAccessDjApp = Boolean(user && !needsVerify);
-    const verifySafe = pathname.startsWith("/dj/login") ||
-                       pathname.startsWith("/dj/signup") ||
-                       pathname.startsWith("/auth/") ||
-                       isDjLandingPath(pathname) ||
-                       pathname.startsWith("/dj/forgot-password") ||
-                       pathname.startsWith("/dj/update-password");
+    const verifySafe = isDjPublicPath(pathname) || isDjLandingPath(pathname) || pathname.startsWith("/auth/");
 
     if(needsVerify && !verifySafe){
         const url = request.nextUrl.clone();
@@ -34,10 +26,7 @@ export async function proxy(request: NextRequest) {
         return supabaseResponse;
     }
 
-    const isDjPrivate =
-        pathname.startsWith("/dj/dashboard") ||
-        pathname.startsWith("/dj/events") ||
-        pathname.startsWith("/dj/profile");
+    const isDjPrivate = isDjPrivatePath(pathname);
 
     if (isDjPrivate && !user) {
         const url = request.nextUrl.clone();
