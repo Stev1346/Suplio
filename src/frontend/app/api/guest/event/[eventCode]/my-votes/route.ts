@@ -36,14 +36,14 @@ export async function GET(req: NextRequest, context: RouteContext) {
   const supabase = createClient(url, serviceRoleKey);
 
   const { data: event, error: eventError } = await supabase
-  .from("events")
-  .select("id")
-  .eq("event_code", eventCode)
-  .single();
-  
-if (eventError || !event) {
-  return NextResponse.json({ error: "Event not found" }, { status: 404 });
-}
+    .from("events")
+    .select("id")
+    .eq("event_code", eventCode)
+    .single();
+
+  if (eventError || !event) {
+    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
 
   const { data: requests } = await supabase
     .from("requests")
