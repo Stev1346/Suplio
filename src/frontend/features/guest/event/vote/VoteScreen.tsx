@@ -52,7 +52,7 @@ export default function VoteScreen() {
 
   return (
     <PageShell centralize className="flex-col items-center">
-      <AppHeader tagLine="Vote for the next song" />
+      <AppHeader tagLine="Vote for your favourite songs" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
@@ -60,7 +60,7 @@ export default function VoteScreen() {
       )}
       <section className="flex-1 flex-col items-center justify-center">
         <h2 className="text-lg font-semibold mb-3 text-muted-60">
-          Songs Requested Tonight
+          Song Request Queue
         </h2>
         <ul className="space-y-1 max-h-177 mb-2 overflow-scroll no-scrollbar">
           {requests.length === 0 ? (

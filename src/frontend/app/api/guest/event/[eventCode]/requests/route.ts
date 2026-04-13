@@ -1,5 +1,5 @@
 import { getClientIp } from "@/lib/server/client-ip";
-import { getOrMintGuestSession, GUEST_COOKIE_NAME, guestCookieOptions } from "@/lib/server/guest-cookie";
+import { attachGuestCookie, getOrMintGuestSession } from "@/lib/server/guest-cookie";
 import { submitGuestRequest } from "@/lib/server/guest/submit-request";
 import { consumeRequestRateLimit } from "@/lib/server/request-rate-limit";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,9 +18,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Missing event code or song name" }, { status: 400 });
     }
 
-    let guest: { voterId: string; cookieToSet?: string };
+    let guestSession: { voterId: string; cookieToSet?: string };
     try {
-        guest = getOrMintGuestSession(req);
+        guestSession = getOrMintGuestSession(req);
     } catch {
         return NextResponse.json(
             { error: "Server configuration error" },
@@ -28,14 +28,14 @@ export async function POST(req: NextRequest, context: RouteContext) {
         );
     }
 
-    const rateKey = `${getClientIp(req)}:${guest.voterId}:${eventCode}`;
+    const rateKey = `${getClientIp(req)}:${guestSession.voterId}:${eventCode}`;
     const limit = consumeRequestRateLimit(rateKey);
 
     if (!limit.ok) {
-        return NextResponse.json(
+        return attachGuestCookie(NextResponse.json(
             { error: limit.message },
             { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
-        );
+        ), guestSession);
     }
 
     const result = await submitGuestRequest({
@@ -49,9 +49,5 @@ export async function POST(req: NextRequest, context: RouteContext) {
         ? NextResponse.json({ ok: true })
         : NextResponse.json({ error: result.error }, { status: result.status });
 
-    if (guest.cookieToSet) {
-        response.cookies.set(GUEST_COOKIE_NAME, guest.cookieToSet, guestCookieOptions());
-    }
-
-    return response;
+    return attachGuestCookie(response, guestSession);
 }

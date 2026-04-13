@@ -65,6 +65,7 @@ export type DjDashboardResponse = {
     pendingRequests: number;
     acceptedRequests: number;
     playedRequests: number;
+    rejectedRequests: number;
   };
   recentEvents: DjEventListItem[];
   eventIds: string[];

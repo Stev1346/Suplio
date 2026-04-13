@@ -1,9 +1,7 @@
 import {
-  GUEST_COOKIE_NAME,
+  attachGuestCookie,
   getOrMintGuestSession,
-  guestCookieOptions,
 } from "@/lib/server/guest-cookie";
-import { getClientIp } from "@/lib/server/client-ip";
 import { consumeVoteRateLimit } from "@/lib/server/vote-rate-limit";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
@@ -25,18 +23,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Missing event" }, { status: 400 });
   }
 
-  const rateKey = `${getClientIp(req)}:${eventCode}`;
-  const burst = consumeVoteRateLimit(rateKey);
-  if (!burst.ok) {
-    return NextResponse.json(
-      { error: burst.message },
-      {
-        status: 429,
-        headers: { "Retry-After": String(burst.retryAfterSec) },
-      }
-    );
-  }
-
   let guestSession: { voterId: string; cookieToSet?: string };
   try {
     guestSession = getOrMintGuestSession(req);
@@ -47,14 +33,31 @@ export async function POST(req: NextRequest, context: RouteContext) {
     );
   }
 
+  const rateKey = `${guestSession.voterId}:${eventCode}`;
+  const burst = consumeVoteRateLimit(rateKey);
+  if (!burst.ok) {
+    return attachGuestCookie(
+      NextResponse.json(
+        { error: burst.message },
+        {
+          status: 429,
+          headers: { "Retry-After": String(burst.retryAfterSec) },
+        }
+      ),
+      guestSession
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const requestId = body?.request_id;
   const action = body?.action;
 
   if (!requestId || !action || !["add", "remove"].includes(action)) {
-    return NextResponse.json(
+    return attachGuestCookie(NextResponse.json(
       { error: "Missing request_id or action" },
       { status: 400 }
+    ),
+      guestSession
     );
   }
 
@@ -68,7 +71,10 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .single();
 
   if (eventError || !event) {
-    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    return attachGuestCookie(
+      NextResponse.json(
+        { error: "Event not found" }, { status: 404 }),
+      guestSession);
   }
 
   const { data: reqRow, error: reqError } = await supabase
@@ -78,19 +84,15 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .single();
 
   if (reqError || !reqRow || reqRow.event_id !== event.id) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return attachGuestCookie(
+      NextResponse.json(
+        { error: "Invalid request" }, { status: 400 }),
+      guestSession);
   }
 
   const jsonResponse = (init: { status?: number; body: object }) => {
     const res = NextResponse.json(init.body, { status: init.status ?? 200 });
-    if (guestSession.cookieToSet) {
-      res.cookies.set(
-        GUEST_COOKIE_NAME,
-        guestSession.cookieToSet,
-        guestCookieOptions()
-      );
-    }
-    return res;
+    return attachGuestCookie(res, guestSession);
   };
 
   if (action === "add") {
@@ -115,6 +117,21 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .single();
 
     if (error) {
+      if (error.code === "23505") {
+        const { data: row } = await supabase
+          .from("votes")
+          .select("id")
+          .eq("request_id", requestId)
+          .eq("voter_id", voterId)
+          .maybeSingle();
+        return jsonResponse({
+          status: 409,
+          body: {
+            error: "Already voted",
+            ...(row ? { data: { id: row.id } } : {}),
+          },
+        });
+      }
       return jsonResponse({ status: 400, body: { error: error.message } });
     }
     return jsonResponse({ body: { data: { id: data.id } } });

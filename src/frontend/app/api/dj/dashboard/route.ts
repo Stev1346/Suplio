@@ -9,6 +9,7 @@ type DashboardMetrics = {
     pendingRequests: number;
     acceptedRequests: number;
     playedRequests: number;
+    rejectedRequests:number;
 }
 
 export async function GET(){
@@ -39,6 +40,7 @@ export async function GET(){
     let pendingRequests = 0;
     let acceptedRequests = 0;
     let playedRequests = 0;
+    let rejectedRequests = 0;
 
     if(eventIds.length > 0){
         const {data: requests, error: requestsError} = await supabase
@@ -54,6 +56,7 @@ export async function GET(){
             if(request.status === requestStatus.lower.pending) pendingRequests += 1;
             if(request.status === requestStatus.lower.accepted) acceptedRequests += 1;
             if(request.status === requestStatus.lower.played) playedRequests += 1;
+            if(request.status === requestStatus.lower.rejected) rejectedRequests += 1;
         }
     }
 
@@ -63,7 +66,8 @@ export async function GET(){
         totalRequests,
         pendingRequests,
         acceptedRequests,
-        playedRequests
+        playedRequests,
+        rejectedRequests
     };
 
     return NextResponse.json({

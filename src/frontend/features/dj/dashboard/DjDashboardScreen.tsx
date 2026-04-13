@@ -26,6 +26,7 @@ export default function DjDashboardScreen() {
     pendingRequests: 0,
     acceptedRequests: 0,
     playedRequests: 0,
+    rejectedRequests: 0
   };
 
   return (
@@ -52,6 +53,10 @@ export default function DjDashboardScreen() {
             <MetricCard
               title="Played Requests"
               value={metrics.playedRequests}
+            />
+            <MetricCard
+              title="Rejected Requests"
+              value={metrics.rejectedRequests}
             />
           </section>
         </div>

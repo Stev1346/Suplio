@@ -1,7 +1,6 @@
 import {
-  GUEST_COOKIE_NAME,
+  attachGuestCookie,
   getOrMintGuestSession,
-  guestCookieOptions,
 } from "@/lib/server/guest-cookie";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
@@ -30,7 +29,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   const { eventCode } = await context.params;
   if (!eventCode) {
-    return NextResponse.json({ error: "Missing event" }, { status: 400 });
+    return attachGuestCookie(NextResponse.json({ error: "Missing event" }, { status: 400 }), guestSession);
   }
 
   const supabase = createClient(url, serviceRoleKey);
@@ -42,7 +41,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     .single();
 
   if (eventError || !event) {
-    return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    return attachGuestCookie(NextResponse.json({ error: "Event not found" }, { status: 404 }), guestSession);
   }
 
   const { data: requests } = await supabase
@@ -53,14 +52,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
   const requestIds = (requests ?? []).map((r) => r.id);
   if (requestIds.length === 0) {
     const res = NextResponse.json({ votes: [] }, { status: 200 });
-    if (guestSession.cookieToSet) {
-      res.cookies.set(
-        GUEST_COOKIE_NAME,
-        guestSession.cookieToSet,
-        guestCookieOptions()
-      );
-    }
-    return res;
+    return attachGuestCookie(res, guestSession);
   }
 
   const { data: votes, error } = await supabase
@@ -70,16 +62,9 @@ export async function GET(req: NextRequest, context: RouteContext) {
     .in("request_id", requestIds);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return attachGuestCookie(NextResponse.json({ error: error.message }, { status: 400 }), guestSession);
   }
 
   const res = NextResponse.json({ votes: votes ?? [] }, { status: 200 });
-  if (guestSession.cookieToSet) {
-    res.cookies.set(
-      GUEST_COOKIE_NAME,
-      guestSession.cookieToSet,
-      guestCookieOptions()
-    );
-  }
-  return res;
+  return attachGuestCookie(res, guestSession);
 }
