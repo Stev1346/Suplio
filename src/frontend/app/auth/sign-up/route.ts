@@ -29,7 +29,6 @@ export async function POST(req: Request) {
             }
         );
     }
-    recordSignupAttempt(signupKey);
 
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signUp({
@@ -53,32 +52,24 @@ export async function POST(req: Request) {
         );
     }
 
-    if(user && !session){
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if(!url || !serviceRole){
-            return NextResponse.json({error: "Server configuration error"}, {status: 500});
-        }
-        const admin = createSupabaseAdmin(url,serviceRole);
-        const {error: profileError} = await admin.from("dj_profiles").insert({
-            user_id: user.id,
-            stage_name: stageName
-        });
+    recordSignupAttempt(signupKey);
 
-        if(profileError){
-            return NextResponse.json({error: profileError.message}, {status: 400})
-        }
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceRole) {
+        return NextResponse.json(
+            { error: "Server configuration error" },
+            { status: 500 },
+        );
     }
+    const admin = createSupabaseAdmin(url, serviceRole);
+    const { error: profileError } = await admin.from("dj_profiles").upsert(
+        { user_id: user.id, stage_name: stageName },
+        { onConflict: "user_id" },
+    );
 
-    if (user && session) {
-        const { error: profileError } = await supabase.from("dj_profiles").insert({
-            user_id: user.id,
-            stage_name: stageName,
-        });
-        
-        if (profileError) {
-            return NextResponse.json({ error: profileError.message }, { status: 400 });
-        }
+    if (profileError) {
+        return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
 
     return NextResponse.json({

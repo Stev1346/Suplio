@@ -20,7 +20,7 @@ export function consumeRequestRateLimit(
     if(pruned.length >= MAX_ACTIONS_PER_WINDOW) {
         const oldest = Math.min(...pruned);
         const retryAfterSec = Math.max(
-            1, Math.ceil(( - (now - oldest))/1000)
+            1, Math.ceil((WINDOW_MS - (now - oldest))/1000)
         );
 
         return{
