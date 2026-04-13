@@ -29,17 +29,28 @@ export async function fetchRequestsForEvent(
 }
 
 export async function insertRequest(
-  supabase: AppSupabaseClient,
+  eventCode: string,
   params: {
-    event_id: string;
     song_name: string;
     artist?: string | null;
     message?: string | null;
+  },
+): Promise<{ error: string | null }> {
+  const res = await fetch(
+    `/api/guest/event/${encodeURIComponent(eventCode)}/requests`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    },
+  );
+
+  const data = (await res.json().catch(() => ({}))) as { error?: string };
+
+  if (!res.ok) {
+    return { error: data.error ?? "Could not submit request" };
   }
-) {
-  const { error } = await supabase
-    .from("requests")
-    // Insert typing: local Database type omits relationship metadata expected by @supabase/supabase-js.
-    .insert(params as never);
-  return { error };
+
+  return { error: null };
 }

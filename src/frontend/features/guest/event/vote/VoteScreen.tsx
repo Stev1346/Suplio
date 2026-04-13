@@ -10,6 +10,7 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useVoting } from "@/hooks/guest/useVoting";
 import { compareRankedRequests } from "@/lib/request-ranking";
+import { requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 
 export default function VoteScreen() {
@@ -26,7 +27,7 @@ export default function VoteScreen() {
     error: requestError,
   } = useEventRequests(
     event?.id,
-    { statuses: ["accepted", "pending"], orderBy: "votes", ascending: false },
+    { statuses: [requestStatus.lower.accepted], orderBy: "votes", ascending: false },
     { realtime: true },
   );
   const { handleVote, votedRequestIds, votingRequestId } = useVoting(
@@ -80,7 +81,7 @@ export default function VoteScreen() {
             ))
           )}
         </ul>
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-6">
           <Link
             href={`/event/${eventCode}`}
             className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
@@ -89,7 +90,7 @@ export default function VoteScreen() {
           </Link>
           <Link
             href={`/event/${eventCode}/request`}
-            className="text-lg text-accent-60 hover:text-accent-40 ml-auto"
+            className="text-lg text-accent-80 hover:text-accent-60 ml-auto"
           >
             <h2>Submit another request</h2>
           </Link>

@@ -10,16 +10,15 @@ import { PageShell } from "@/components/ui/PageShell";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
-import { useSupabaseBrowser } from "@/hooks/useSupabaseBrowser";
 import { insertRequest } from "@/lib/client/api/requests";
 import { compareRankedRequests } from "@/lib/request-ranking";
+import { requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 export default function SongRequestScreen() {
-  const supabase = useSupabaseBrowser();
   const eventCode = useEventCode();
   const router = useRouter();
   const {
@@ -37,7 +36,7 @@ export default function SongRequestScreen() {
     { realtime: true },
   );
   const topRequests = requests
-    .filter((r) => r.status === "pending" || r.status === "accepted")
+    .filter((r) => r.status === requestStatus.lower.played || r.status === requestStatus.lower.accepted)
     .sort(compareRankedRequests)
     .slice(0, 10);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -52,11 +51,12 @@ export default function SongRequestScreen() {
 
     setSubmitLoading(true);
 
-    const { error } = await insertRequest(supabase, {
-      event_id: event.id,
+    if(!eventCode || !event?.allow_requests) return;
+    
+    const { error } = await insertRequest(eventCode, {
       song_name: songName.trim(),
       artist: artist.trim() || null,
-      message: message.trim() || null,
+      message: message.trim() || null
     });
 
     setSubmitLoading(false);
@@ -93,7 +93,7 @@ export default function SongRequestScreen() {
       <div className="flex-1 flex-col items-center">
       {!event.allow_requests ? (
         <h1 className="text-accent-60 text-3xl text-center mb-4">
-          Requests are paused for this event.
+          Requests are paused for {event.name}.
         </h1>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4 mb-10">
@@ -125,7 +125,7 @@ export default function SongRequestScreen() {
         title="Top requested tonight"
         className="mb-4 max-h-90 overflow-scroll no-scrollbar"
       />
-      <div className="flex flex-row">
+      <div className="flex flex-row gap-6">
         <Link
           href={`/event/${eventCode}`}
           className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"

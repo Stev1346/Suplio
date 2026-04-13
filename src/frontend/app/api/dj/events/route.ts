@@ -58,3 +58,44 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ error: "Could not generate unique code. Try again." }, { status: 500 });
 }
+
+export async function GET(req: Request) {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+        error: authError
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const url = new URL(req.url);
+    const pageSize = Math.min(50, Math.max(1, Number(url.searchParams.get("pageSize") ?? "10")));
+    const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error, count } = await supabase
+        .from("events")
+        .select("id, name, event_code, allow_requests, created_at", { count: "exact" })
+        .eq("dj_id", user.id)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    const total = count ?? 0;
+
+    return NextResponse.json({
+        data: {
+            page,
+            pageSize, 
+            total, 
+            hasNextPage: total > page * pageSize,
+            items: data ?? []
+        }
+    });
+}

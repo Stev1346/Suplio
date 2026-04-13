@@ -1,12 +1,13 @@
+import { requestStatus } from "@/lib/shared/constants/routes";
 import { Database, EventStatus } from "@/types/database";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 const STATUS_LABELS: Record<EventStatus, string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  rejected: "Rejected",
-  played: "Played",
+  pending: requestStatus.cased.pending,
+  accepted: requestStatus.cased.accepted,
+  rejected: requestStatus.cased.rejected,
+  played: requestStatus.cased.played,
 };
 const STATUS_BADGE_CLASS: Record<EventStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -67,7 +68,7 @@ export function FullRequestList({
               </span>
               {onSetStatus && (
                 <div className="flex gap-1 flex-wrap">
-                  {(["accepted", "rejected", "played"] as const).map(
+                  {([requestStatus.lower.accepted, requestStatus.lower.rejected, requestStatus.lower.played] as const).map(
                     (status) => {
                       const isCurrent = r.status === status;
                       const isUpdating = updatingId === r.id;
@@ -81,9 +82,9 @@ export function FullRequestList({
                                 ${
                                   isCurrent
                                     ? "bg-muted-20 text-muted-40 cursor-default"
-                                    : status === "accepted"
+                                    : status === requestStatus.lower.accepted
                                       ? "bg-green-600 text-white hover:bg-green-700"
-                                      : status === "rejected"
+                                      : status === requestStatus.lower.rejected
                                         ? "bg-red-600 text-white hover:bg-red-700"
                                         : "bg-secondary-60 text-white hover:bg-secondary-80"
                                 }
