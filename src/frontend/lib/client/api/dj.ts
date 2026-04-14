@@ -39,3 +39,64 @@ export async function patchRequestStatus(
   }
   return { error: null };
 }
+
+export type DjEventListItem = {
+  id: string;
+  name: string;
+  event_code: string;
+  allow_requests: boolean;
+  created_at: string;
+}
+
+export type DjEventsPageResponse = {
+  page: number;
+  pageSize: number;
+  total: number;
+  hasNextPage: boolean;
+  items: DjEventListItem[];
+}
+
+export type DjDashboardResponse = {
+  djId: string;
+  metrics: {
+    totalEvents: number;
+    openEvents: number;
+    totalRequests: number;
+    pendingRequests: number;
+    acceptedRequests: number;
+    playedRequests: number;
+    rejectedRequests: number;
+  };
+  recentEvents: DjEventListItem[];
+  eventIds: string[];
+}
+
+export async function getDjDashboard(): Promise<{ data: DjDashboardResponse | null; error: string | null }> {
+  const response = await fetch("/api/dj/dashboard", { credentials: "include" });
+
+  const body = (await response.json().catch(() => ({}))) as {
+    data?: DjDashboardResponse; error?: string
+  };
+  if (!response.ok || !body.data) {
+    return { data: null, error: body.error ?? "Request failed" };
+  }
+
+  return { data: body.data, error: null };
+}
+
+export async function getDjEventsPage(
+  page = 1,
+  pageSize = 10
+): Promise<{ data: DjEventsPageResponse | null; error: string | null }> {
+  const response = await fetch(`/api/dj/events?page=${page}&pageSize=${pageSize}`, {
+    credentials: "include"
+  });
+
+  const body = (await response.json().catch(() => ({}))) as {
+    data?: DjEventsPageResponse; error?: string
+  };
+  if (!response.ok || !body.data) {
+    return { data: null, error: body.error ?? "Request failed" };
+  }
+  return { data: body.data, error: null };
+}

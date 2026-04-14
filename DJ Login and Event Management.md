@@ -234,22 +234,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
-**Sprint status:** Phase 4 (Role-Aware Global Navbar) is **complete**. **In progress:** Phase 5 — DJ Dashboard Home.
+**Sprint status:** Phase 5 (DJ Dashboard Home) is **complete**. **In progress:** Phase 6 — Event Management.
 
 ### In Progress
-
-#### Phase 5 - DJ Dashboard Home
-**Target duration:** 1.5-2.0 days  
-**Definition of Done**
-- [ ] DJ can create an event from dashboard.
-- [ ] Past/recent event list is visible with pagination strategy implemented.
-- [ ] Core metrics cards are implemented and populated.
-- [ ] API/use-cases for dashboard aggregates are implemented cleanly.
-- [ ] Metrics source-of-truth approach (live query vs cached/materialized view) is finalized.
-
----
-
-### Backlog
 
 #### Phase 6 - Event Management
 **Target duration:** 1.0-1.5 days  
@@ -260,6 +247,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] DJ can manage request statuses and event operations.
 - [ ] Event lifecycle statuses are supported (`draft/live/ended/archived`).
 - [ ] Sensitive DJ actions are audit-loggable (or logged) per agreed approach.
+
+---
+
+### Backlog
 
 #### Phase 7 - DJ Profile Management
 **Target duration:** 0.75-1.0 day  
@@ -377,3 +368,12 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] Guest `/event/[eventCode]` routes show Scan, Request, Vote; DJ private routes hide guest shell.
 - [x] Unauthenticated `/dj/*` private routes redirect to `/dj/login`; `routeGroups` + `proxy` stay aligned.
 - [x] Optional: `npm run test:e2e` in `src/frontend` with `E2E_DJ_EMAIL` / `E2E_DJ_PASSWORD` for authenticated nav coverage.
+
+#### Phase 5 - DJ Dashboard Home
+**Target duration:** 1.5-2.0 days  
+**Definition of Done**
+- [x] DJ can create an event from dashboard.
+- [x] Past/recent event list is visible with pagination strategy implemented.
+- [x] Core metrics cards are implemented and populated.
+- [x] API/use-cases for dashboard aggregates are implemented cleanly.
+- [x] Decision: live-query with realtime invalidation; reevaluate materialized/cached aggregates if dashboard latency exceeds target or request volume grows significantly.

@@ -1,3 +1,4 @@
+import { sanitizeInternalNextPath } from "@/lib/shared/utils/sanitize-internal-next-path";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -10,17 +11,9 @@ const OTP_TYPES = new Set([
     "magiclink",
 ]);
 
-function sanitizeNextPath(raw: string | null): string {
-    const fallback = "/dj/dashboard";
-    if (!raw) return fallback;
-    if (!raw.startsWith("/")) return fallback;
-    if (raw.startsWith("//")) return fallback;
-    return raw;
-  }
-
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
-    const nextPath = sanitizeNextPath(searchParams.get("next") );
+    const nextPath = sanitizeInternalNextPath(searchParams.get("next") );
     const token_hash = searchParams.get("token_hash");
     const type = searchParams.get("type");
     const code = searchParams.get("code");

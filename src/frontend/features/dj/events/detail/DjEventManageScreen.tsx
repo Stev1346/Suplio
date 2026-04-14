@@ -4,7 +4,6 @@ import { FullRequestList } from "@/components/FullRequestList";
 import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
-import { AppHeader } from "@/components/ui/AppHeader";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEvent } from "@/hooks/guest/useEventByCode";
@@ -18,9 +17,12 @@ import { EventStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "next/navigation";
+import { requestStatus, routes } from "@/lib/shared/constants/routes";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Link from "next/link";
 
 function eventSlugFromParams(
-  raw: string | string[] | undefined
+  raw: string | string[] | undefined,
 ): string | undefined {
   if (typeof raw === "string") return raw;
   if (Array.isArray(raw) && raw[0]) return raw[0];
@@ -37,10 +39,10 @@ export default function DjEventManageScreen() {
     error: eventError,
   } = useEvent(eventCode, { realtime: true });
   const STATUS_OPTIONS: EventStatus[] = [
-    "pending",
-    "accepted",
-    "rejected",
-    "played",
+    requestStatus.lower.pending,
+    requestStatus.lower.accepted,
+    requestStatus.lower.rejected,
+    requestStatus.lower.played,
   ];
   const [selectedStatuses, setSelectedStatuses] = useState<Set<EventStatus>>(
     new Set(),
@@ -58,7 +60,11 @@ export default function DjEventManageScreen() {
   const [togglingAllow, setTogglingAllow] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const topRequested = requests
-    .filter((r) => r.status === "pending" || r.status === "accepted")
+    .filter(
+      (r) =>
+        r.status === requestStatus.lower.played ||
+        r.status === requestStatus.lower.accepted,
+    )
     .sort(compareRankedRequests)
     .slice(0, 10);
   const filteredRequests = useMemo(() => {
@@ -110,7 +116,7 @@ export default function DjEventManageScreen() {
           : prev,
       );
     } else {
-      toast.error("Could not update request status. Try again.");
+      toast.error(error ?? "Could not update request status. Try again.");
     }
   }
 
@@ -141,10 +147,9 @@ export default function DjEventManageScreen() {
 
   return (
     <PageShell className="flex flex-col">
-      <AppHeader title="GotATune Dashboard" />
       <header className="mb-8 flex flex-col justify-center items-center">
         <h1 className="text-muted-60 text-3xl">{event.name}</h1>
-        <p className="text-muted-40">Event code: {eventCode}</p>
+        <Link  href={routes.guest.eventLanding(eventCode)} target="_blank" className="text-accent-80 text-lg hover:underline">Event code: {eventCode}</Link>
         <p className="text-muted-80 text-sm mt-1">
           Total requests: {requests.length}
         </p>
@@ -161,51 +166,58 @@ export default function DjEventManageScreen() {
           {requestError ?? eventError}
         </p>
       )}
-      <div className="flex gap-4 justify-center flex-1">
-        <section className="mb-8 w-2xl max-h-150 overflow-scroll no-scrollbar">
+      <div className="grid grid-cols-1 gap-8 justify-between md:grid-cols-2">
+        <section className="mb-8 xl:w-2xl">
           <TopRequestList title="Top Requested Songs" requests={topRequested} />
         </section>
-        <section className="mb-8 w-2xl">
-          <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-60">
-            Request List ({filteredRequests.length}/{totalCount})
-          </h2>
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            {STATUS_OPTIONS.map((status) => {
-              const active = selectedStatuses.has(status);
-              return (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => toggleStatus(status)}
-                  className={`px-3 py-1 rounded text-sm font-medium transition 
-                    ${active ? "bg-white text-primary-90" : "bg-primary-60 text-white hover:bg-primary-60"}`}
-                >
-                  <span className="inline-flex items-center gap-1">
-                    <span className="capitalize">{status}</span>
-                    <span className="text-xs opacity-80">
-                      ({statusCounts[status]})
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
 
-            <button
-              type="button"
-              onClick={clearFilters}
-              disabled={selectedStatuses.size === 0}
-              className="px-3 py-1 rounded text-sm font-medium bg-secondary-60 text-white disabled:opacity-50"
-            >
-              Clear
-            </button>
-          </div>
-          <FullRequestList
-            requests={filteredRequests}
-            hiddenTitle={true}
-            onSetStatus={setRequestStatus}
-            updatingId={updatingId}
-            className="max-h-121 overflow-scroll no-scrollbar"
-          />
+        <section className="mb-8 xl:w-2xl">
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-60">
+                Request List ({filteredRequests.length}/{totalCount})
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                {STATUS_OPTIONS.map((status) => {
+                  const active = selectedStatuses.has(status);
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => toggleStatus(status)}
+                      className={`px-3 py-1 rounded text-sm font-medium transition 
+                    ${active ? "bg-muted-10 text-white border border-muted-10" : "border bg-transparent border-muted-20 text-muted-20 hover:bg-muted-20 hover:text-white hover:cursor-pointer"}`}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <span className="capitalize">{status}</span>
+                        <span className="text-xs opacity-80">
+                          ({statusCounts[status]})
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  disabled={selectedStatuses.size === 0}
+                  className="px-3 py-1 rounded text-sm font-medium bg-secondary-20 text-white disabled:opacity-50"
+                >
+                  Clear
+                </button>
+              </div>
+              <FullRequestList
+                requests={filteredRequests}
+                hiddenTitle={true}
+                onSetStatus={setRequestStatus}
+                updatingId={updatingId}
+                className="max-h-121 overflow-scroll no-scrollbar"
+              />
+            </CardContent>
+          </Card>
         </section>
       </div>
     </PageShell>

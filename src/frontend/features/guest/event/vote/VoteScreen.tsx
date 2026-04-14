@@ -10,6 +10,7 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useVoting } from "@/hooks/guest/useVoting";
 import { compareRankedRequests } from "@/lib/request-ranking";
+import { requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 
 export default function VoteScreen() {
@@ -26,7 +27,11 @@ export default function VoteScreen() {
     error: requestError,
   } = useEventRequests(
     event?.id,
-    { statuses: ["accepted", "pending"], orderBy: "votes", ascending: false },
+    {
+      statuses: [requestStatus.lower.accepted],
+      orderBy: "votes",
+      ascending: false,
+    },
     { realtime: true },
   );
   const { handleVote, votedRequestIds, votingRequestId } = useVoting(
@@ -45,13 +50,25 @@ export default function VoteScreen() {
     );
   }
 
-  if (!eventCode || !event) {
+  if (!eventCode) {
+    return <NotFound variant="event" />;
+  }
+
+  if (!event && eventError) {
+    return (
+      <PageShell centralize>
+        <p className="text-red-400 text-sm">{eventError}</p>
+      </PageShell>
+    );
+  }
+
+  if (!event) {
     return <NotFound variant="event" />;
   }
 
   return (
     <PageShell centralize className="flex-col items-center">
-      <AppHeader tagLine="Vote for the next song" />
+      <AppHeader tagLine="Vote for your favourite songs" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
@@ -59,7 +76,7 @@ export default function VoteScreen() {
       )}
       <section className="flex-1 flex-col items-center justify-center">
         <h2 className="text-lg font-semibold mb-3 text-muted-60">
-          Songs Requested Tonight
+          Song Request Queue
         </h2>
         <ul className="space-y-1 max-h-177 mb-2 overflow-scroll no-scrollbar">
           {requests.length === 0 ? (
@@ -80,7 +97,7 @@ export default function VoteScreen() {
             ))
           )}
         </ul>
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-6">
           <Link
             href={`/event/${eventCode}`}
             className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
@@ -89,7 +106,7 @@ export default function VoteScreen() {
           </Link>
           <Link
             href={`/event/${eventCode}/request`}
-            className="text-lg text-accent-60 hover:text-accent-40 ml-auto"
+            className="text-lg text-accent-80 hover:text-accent-60 ml-auto"
           >
             <h2>Submit another request</h2>
           </Link>

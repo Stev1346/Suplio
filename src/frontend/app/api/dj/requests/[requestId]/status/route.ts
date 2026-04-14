@@ -1,12 +1,13 @@
+import { requestStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import type { EventStatus } from "@/types/database";
 import { NextResponse } from "next/server";
 
 const STATUSES: EventStatus[] = [
-  "pending",
-  "accepted",
-  "rejected",
-  "played",
+  requestStatus.lower.pending,
+  requestStatus.lower.accepted,
+  requestStatus.lower.rejected,
+  requestStatus.lower.played,
 ];
 
 type RouteContext = { params: Promise<{ requestId: string }> };

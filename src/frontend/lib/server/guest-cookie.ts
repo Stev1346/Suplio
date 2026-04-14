@@ -1,5 +1,5 @@
 import { createHmac, createHash, randomUUID, timingSafeEqual } from "crypto";
-import type { NextRequest } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 
 export const GUEST_COOKIE_NAME = "gt_guest";
 
@@ -85,4 +85,18 @@ export function guestCookieOptions(): {
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   };
+}
+
+export function attachGuestCookie(
+  res: NextResponse,
+  guestSession: { cookieToSet?: string }
+): NextResponse {
+  if (guestSession.cookieToSet) {
+    res.cookies.set(
+      GUEST_COOKIE_NAME,
+      guestSession.cookieToSet,
+      guestCookieOptions()
+    );
+  }
+  return res;
 }

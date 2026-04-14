@@ -6,15 +6,11 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { PasswordFormField } from "@/components/ui/PasswordFormField";
+import { sanitizeInternalNextPath } from "@/lib/shared/utils/sanitize-internal-next-path";
 import { routes } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  startTransition,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -26,7 +22,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 export default function DjLoginScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dj/dashboard";
+  const next = sanitizeInternalNextPath(searchParams.get("next"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,12 +54,12 @@ export default function DjLoginScreen() {
     toast.error(msg);
 
     const q = new URLSearchParams();
-    if (searchParams.get("next")) {
-      q.set("next", searchParams.get("next")!);
+    if (next) {
+      q.set("next", next!);
     }
     const qs = q.toString();
     router.replace(qs ? `/dj/login?${qs}` : "/dj/login");
-  }, [code, router, searchParams]);
+  }, [code, router,next]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,18 +127,18 @@ export default function DjLoginScreen() {
           </Button>
         </form>
         <div className="flex-1 flex flex-col items-center">
-        <Link
-          href={routes.dj.forgotPassword}
-          className="text-accent-60 mb-1.5 hover:cursor-pointer hover:underline"
-        >
-          Forgot Password?
-        </Link>
-        <Link
-          href={routes.dj.signup}
-          className="text-accent-80 hover:cursor-pointer hover:underline"
-        >
-          No account? Sign Up Here
-        </Link>
+          <Link
+            href={routes.dj.forgotPassword}
+            className="text-accent-60 mb-1.5 hover:cursor-pointer hover:underline"
+          >
+            Forgot Password?
+          </Link>
+          <Link
+            href={routes.dj.signup}
+            className="text-accent-80 hover:cursor-pointer hover:underline"
+          >
+            No account? Sign Up Here
+          </Link>
         </div>
       </div>
     </PageShell>

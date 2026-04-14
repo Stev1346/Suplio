@@ -14,12 +14,18 @@ export function useEvent(
 ) {
   const supabase = useSupabaseBrowser();
   const [event, setEvent] = useState<EventState>(null);
+  const [loading, setLoading] = useState<boolean>(Boolean(eventCode));
   const enableRealtime = opts?.realtime ?? false;
   const [error, setError] = useState<string | null>(null);
   const fetchSeq = useRef(0);
 
   const refetch = useCallback(async () => {
-    if (!eventCode) return;
+    if (!eventCode) {
+      setEvent(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     const seq = ++fetchSeq.current;
 
     try {
@@ -30,17 +36,26 @@ export function useEvent(
       setError(error ? error.message : null);
     } catch (e) {
       if (seq !== fetchSeq.current) return;
+      setEvent(null);
       setError(e instanceof Error ? e.message : "Failed to load event");
+    } finally {
+      if (seq === fetchSeq.current) {
+        setLoading(false);
+      }
     }
   }, [eventCode, supabase]);
 
   useEffect(() => {
     if (!eventCode) {
+      setEvent(null);
+      setError(null);
+      setLoading(false);
       return;
     }
 
     let cancelled = false;
     const seq = ++fetchSeq.current;
+    setLoading(true);
 
     fetchEventByCode(supabase, eventCode)
       .then(({ data, error }) => {
@@ -48,10 +63,13 @@ export function useEvent(
 
         setEvent(error || !data ? null : (data as EventState));
         setError(error ? error.message : null);
+        setLoading(false);
       })
       .catch((e) => {
         if (cancelled || seq !== fetchSeq.current) return;
+        setEvent(null);
         setError(e instanceof Error ? e.message : "Failed to load event");
+        setLoading(false);
       });
     return () => {
       cancelled = true;
@@ -98,8 +116,6 @@ export function useEvent(
       supabase.removeChannel(channel);
     };
   }, [event?.id, enableRealtime, refetch, supabase]);
-
-  const loading = !!eventCode && event === null;
 
   return { event, setEvent, loading, error, refetch };
 }
