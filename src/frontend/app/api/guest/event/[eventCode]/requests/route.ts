@@ -1,9 +1,8 @@
 import { getClientIp } from "@/lib/server/client-ip";
-import { attachGuestCookie, getOrMintGuestSession } from "@/lib/server/guest-cookie";
 import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { submitGuestRequest } from "@/lib/server/guest/submit-request";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
 

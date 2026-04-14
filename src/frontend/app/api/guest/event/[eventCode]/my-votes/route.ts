@@ -1,6 +1,6 @@
 import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
 
