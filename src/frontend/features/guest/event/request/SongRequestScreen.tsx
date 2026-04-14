@@ -10,6 +10,7 @@ import { PageShell } from "@/components/ui/PageShell";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
+import { useCooldownTimer } from "@/hooks/useCooldownTimer";
 import { insertRequest } from "@/lib/client/api/requests";
 import { compareRankedRequests } from "@/lib/request-ranking";
 import { requestStatus } from "@/lib/shared/constants/routes";
@@ -36,7 +37,11 @@ export default function SongRequestScreen() {
     { realtime: true },
   );
   const topRequests = requests
-    .filter((r) => r.status === requestStatus.lower.played || r.status === requestStatus.lower.accepted)
+    .filter(
+      (r) =>
+        r.status === requestStatus.lower.played ||
+        r.status === requestStatus.lower.accepted,
+    )
     .sort(compareRankedRequests)
     .slice(0, 10);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -44,102 +49,141 @@ export default function SongRequestScreen() {
   const [artist, setArtist] = useState("");
   const [message, setMessage] = useState("");
   const isLoading = !!eventCode && (requestLoading || eventLoading);
+  const cooldownKey = eventCode
+  ? `gotatune:request-cooldown:${eventCode}`
+  : "gotatune:request-cooldown:pending";
+  const {isCoolingDown, secondsLeft, startCooldown} = useCooldownTimer(cooldownKey)
+  const CLIENT_REQUEST_COOLDOWN_SEC = 60;
 
   async function handleSubmit(e: { preventDefault(): void }) {
-    e.preventDefault();
-    if (!event?.allow_requests || !event.id) return;
-
-    setSubmitLoading(true);
-
-    if(!eventCode || !event?.allow_requests) return;
-    
-    const { error } = await insertRequest(eventCode, {
-      song_name: songName.trim(),
-      artist: artist.trim() || null,
-      message: message.trim() || null
-    });
-
-    setSubmitLoading(false);
-    if (error) {
-      toast.error("Could not submit request. Try again");
-      return;
-    }
-
-    if (!error && eventCode) {
-      router.push(`/event/${eventCode}/vote`);
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <PageShell centralize>
-        <LoadingSpinner />
-      </PageShell>
-    );
-  }
-
-  if (!eventCode || !event) {
-    return <NotFound variant="event" />;
-  }
-
-  return (
-    <PageShell centralize className="flex-col">
-      <AppHeader tagLine="Request a song" />
-      {(eventError || requestError) && (
-        <p className="text-red-400 text-sm mb-2">
-          {requestError ?? eventError}
-        </p>
-      )}
-      <div className="flex-1 flex-col items-center">
-      {!event.allow_requests ? (
-        <h1 className="text-accent-60 text-3xl text-center mb-4">
-          Requests are paused for {event.name}.
-        </h1>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 mb-10">
-          <FormField
-            label="Song name"
-            required
-            value={songName}
-            onChange={(e) => setSongName(e.target.value)}
-          />
-          <FormField
-            label="Artist"
-            optional
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-          />
-          <FormField
-            label="Message for DJ"
-            optional
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <Button type="submit" disabled={submitLoading} className="w-full">
-            {submitLoading ? "Submitting..." : "Request song"}
-          </Button>
-        </form>
-      )}
-      <TopRequestList
-        requests={topRequests}
-        title="Top requested tonight"
-        className="mb-4 max-h-90 overflow-scroll no-scrollbar"
-      />
-      <div className="flex flex-row gap-6">
-        <Link
-          href={`/event/${eventCode}`}
-          className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
-        >
-          Share Event URL
-        </Link>
-        <Link
-          href={`/event/${eventCode}/vote`}
-          className="text-secondary-60 text-lg hover:text-secondary-40 ml-auto"
-        >
-          View Request List
-        </Link>
-      </div>
-      </div>
-    </PageShell>
-  );
+          e.preventDefault();
+          if (!event?.allow_requests || !event.id) return;
+          if(!eventCode) return;
+          if (isCoolingDown) return;
+  
+          setSubmitLoading(true);
+  
+          const { error, retryAfterSec } = await insertRequest(eventCode, {
+            song_name: songName.trim(),
+            artist: artist.trim() || null,
+            message: message.trim() || null,
+          });
+  
+          setSubmitLoading(false);
+  
+          if (retryAfterSec) {
+            startCooldown(retryAfterSec);
+            toast.error("Please wait before submitting another request.");
+            return;
+          }
+  
+          if (error) {
+            toast.error("Could not submit request. Try again");
+            return;
+          }
+  
+          startCooldown(CLIENT_REQUEST_COOLDOWN_SEC);
+          router.push(`/event/${eventCode}/vote`);
+        }
+  
+        if (isLoading) {
+          return (
+            <PageShell centralize>
+              <LoadingSpinner />
+            </PageShell>
+          );
+        }
+  
+        if (!eventCode) {
+          return <NotFound variant="event" />;
+        }
+  
+        if (!event && eventError) {
+          return (
+            <PageShell centralize>
+              <p className="text-red-400">{eventError}</p>
+            </PageShell>
+          );
+        }
+  
+        if (!event) {
+          return <NotFound variant="event" />;
+        }
+  
+        return (
+          <PageShell centralize className="flex-col">
+            <AppHeader tagLine="Request a song" />
+            {(eventError || requestError) && (
+              <p className="text-red-400 text-sm mb-2">{requestError ?? eventError}</p>
+            )}
+            <div className="flex-1 flex-col items-center">
+              {!event.allow_requests ? (
+                <h1 className="text-accent-60 text-3xl text-center mb-4">
+                  Requests are paused for {event.name}.
+                </h1>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4 mb-10">
+                  {isCoolingDown && (
+                    <p
+                      role="status"
+                      aria-live="polite"
+                      className="flex flex-row justify-center gap-2 rounded-md border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100"
+                    >
+                      The DJ is cooking. Your next request will be available in{" "}
+                      <span className="font-semibold tabular-nums">{secondsLeft}s</span>
+                    </p>
+                  )}
+                  <FormField
+                    label="Song name"
+                    required
+                    value={songName}
+                    onChange={(e) => setSongName(e.target.value)}
+                  />
+                  <FormField
+                    label="Artist"
+                    optional
+                    value={artist}
+                    onChange={(e) => setArtist(e.target.value)}
+                  />
+                  <FormField
+                    label="Message for DJ"
+                    optional
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={submitLoading || isCoolingDown}
+                    className="w-full"
+                  >
+                    {submitLoading
+                      ? "Submitting..."
+                      : isCoolingDown
+                      ? `Wait ${secondsLeft}s`
+                      : "Request song"}
+                  </Button>
+                </form>
+              )}
+              <TopRequestList
+                requests={topRequests}
+                title="Top requested tonight"
+                className="mb-4 max-h-90 overflow-scroll no-scrollbar"
+              />
+              <div className="flex flex-row gap-6">
+                <Link
+                  href={`/event/${eventCode}`}
+                  className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
+                >
+                  Share Event URL
+                </Link>
+                <Link
+                  href={`/event/${eventCode}/vote`}
+                  className="text-secondary-60 text-lg hover:text-secondary-40 ml-auto"
+                >
+                  View Request List
+                </Link>
+              </div>
+            </div>
+          </PageShell>
+        );
 }

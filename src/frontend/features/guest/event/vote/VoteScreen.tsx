@@ -27,7 +27,11 @@ export default function VoteScreen() {
     error: requestError,
   } = useEventRequests(
     event?.id,
-    { statuses: [requestStatus.lower.accepted], orderBy: "votes", ascending: false },
+    {
+      statuses: [requestStatus.lower.accepted],
+      orderBy: "votes",
+      ascending: false,
+    },
     { realtime: true },
   );
   const { handleVote, votedRequestIds, votingRequestId } = useVoting(
@@ -46,7 +50,19 @@ export default function VoteScreen() {
     );
   }
 
-  if (!eventCode || !event) {
+  if (!eventCode) {
+    return <NotFound variant="event" />;
+  }
+
+  if (!event && eventError) {
+    return (
+      <PageShell centralize>
+        <p className="text-red-400 text-sm">{eventError}</p>
+      </PageShell>
+    );
+  }
+
+  if (!event) {
     return <NotFound variant="event" />;
   }
 

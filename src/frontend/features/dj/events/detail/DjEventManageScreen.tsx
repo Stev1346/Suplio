@@ -166,12 +166,12 @@ export default function DjEventManageScreen() {
           {requestError ?? eventError}
         </p>
       )}
-      <div className="flex gap-6 justify-center flex-1 sm:flex-col">
-        <section className="mb-8 w-2xl max-h-150 overflow-scroll no-scrollbar">
+      <div className="grid grid-cols-1 gap-8 justify-between md:grid-cols-2">
+        <section className="mb-8 xl:w-2xl">
           <TopRequestList title="Top Requested Songs" requests={topRequested} />
         </section>
 
-        <section className="mb-8 w-2xl">
+        <section className="mb-8 xl:w-2xl">
           <Card>
             <CardHeader>
               <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-60">
@@ -188,7 +188,7 @@ export default function DjEventManageScreen() {
                       type="button"
                       onClick={() => toggleStatus(status)}
                       className={`px-3 py-1 rounded text-sm font-medium transition 
-                    ${active ? "bg-muted-60 text-primary-90" : "bg-primary-40 text-white hover:bg-primary-60"}`}
+                    ${active ? "bg-muted-10 text-white border border-muted-10" : "border bg-transparent border-muted-20 text-muted-20 hover:bg-muted-20 hover:text-white hover:cursor-pointer"}`}
                     >
                       <span className="inline-flex items-center gap-1">
                         <span className="capitalize">{status}</span>

@@ -13,7 +13,7 @@ const STATUS_BADGE_CLASS: Record<EventStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
   accepted: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
-  played: "bg-accent-80 text-muted-40",
+  played: "bg-primary-80 text-secondary-10",
 };
 
 type FullRequestListProps = {
@@ -81,12 +81,12 @@ export function FullRequestList({
                           className={`py-1 px-2 rounded text-sm font-medium disabled:opacity-50
                                 ${
                                   isCurrent
-                                    ? "bg-muted-20 text-muted-40 cursor-default"
+                                    ? "bg-muted-80 text-muted-40 cursor-default"
                                     : status === requestStatus.lower.accepted
                                       ? "bg-green-600 text-white hover:bg-green-700"
                                       : status === requestStatus.lower.rejected
                                         ? "bg-red-600 text-white hover:bg-red-700"
-                                        : "bg-secondary-60 text-white hover:bg-secondary-80"
+                                        : "bg-secondary-40 text-white hover:bg-secondary-20"
                                 }
                                 `}
                         >

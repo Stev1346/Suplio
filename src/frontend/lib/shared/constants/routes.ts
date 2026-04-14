@@ -5,7 +5,7 @@ export const routes = {
         signup: "/dj/signup",
         dashboard: "/dj/dashboard",
         events: "/dj/events",
-        eventDetail: (eventId: string) => `/dj/events/${eventId}`,
+        eventDetailByCode: (eventCode: string) => `/dj/events/${eventCode}`,
         profile: "/dj/profile",
         forgotPassword: "/dj/forgot-password",
         updatePassword: "/dj/update-password"

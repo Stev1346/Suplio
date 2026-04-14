@@ -31,7 +31,7 @@ export default function DjDashboardScreen() {
 
   return (
     <PageShell className="flex flex-col gap-6" centralize={false}>
-      <section className="grid grid-cols-2 gap-6">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="flex flex-col gap-4">
           <CreateEventCard
             loading={createEvent.loading}

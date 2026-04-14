@@ -16,6 +16,7 @@ export function useEventRequests(
 ) {
   const supabase = useSupabaseBrowser();
   const [requests, setRequests] = useState<RequestRow[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(Boolean(eventId));
   const enableRealtime = opts?.realtime ?? false;
   const [error, setError] = useState<string | null>(null);
   const statuses = options.statuses ?? undefined;
@@ -36,6 +37,7 @@ export function useEventRequests(
     if (!eventId) {
       setRequests(null);
       setError(null);
+      setLoading(false);
       return;
     }
 
@@ -57,16 +59,24 @@ export function useEventRequests(
     } catch (e) {
       if (seq !== fetchSeq.current) return;
       setError(e instanceof Error ? e.message : "Failed to load requests");
+    } finally {
+      if (seq === fetchSeq.current) {
+        setLoading(false);
+      }
     }
   }, [eventId, statusesKey, orderBy, ascending, limit, supabase]);
 
   useEffect(() => {
     if (!eventId) {
+      setRequests(null);
+      setError(null);
+      setLoading(false);
       return;
     }
 
     let cancelled = false;
     const seq = ++fetchSeq.current;
+    setLoading(true);
 
     const optsFetch: FetchRequestsOptions = {
       statuses: statusesKey ? (statusesKey.split(",") as EventStatus[]) : undefined,
@@ -81,10 +91,13 @@ export function useEventRequests(
 
         setRequests(data);
         setError(null);
+        setLoading(false);
       })
       .catch((e) => {
         if (cancelled || seq !== fetchSeq.current) return;
+        setRequests([]);
         setError(e instanceof Error ? e.message : "Failed to load requests");
+        setLoading(false);
       });
 
     return () => {
@@ -92,7 +105,6 @@ export function useEventRequests(
     };
   }, [eventId, statusesKey, orderBy, ascending, limit, supabase]);
 
-  const loading = !!eventId && requests === null;
   const effectiveRequests = !eventId || requests === null ? [] : requests;
 
   useEffect(() => {

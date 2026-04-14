@@ -1,15 +1,9 @@
 
 import { checkLoginAllowed, recordLoginFailure, resetLoginAttempts } from "@/lib/server/auth/login-rate-limit";
+import { getClientIp } from "@/lib/server/client-ip";
+import { consumeRateLimit } from "@/lib/server/consume-rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-
-function clientIp(req: Request): string{
-    const xff = req.headers.get("x-forwarded-for");
-
-    if(xff) return xff.split(",")[0].trim();
-
-    return req.headers.get("x-real-ip") ?? "unknown";
-}
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
@@ -20,26 +14,47 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Missing email or password" }, { status: 400 })
     }
 
-    const key = `${email}:${clientIp(req)}`;
-    const throttle = checkLoginAllowed(key);
-    if(!throttle.ok){
+    const key = `auth:login:${email}:${getClientIp(req)}`;
+    const shortWindow = await consumeRateLimit(`${key}:15m`, 15 * 60, 5);
+    if (shortWindow.rpcError) {
         return NextResponse.json(
-            {error: throttle.message},
+            { error: "Rate-limit service unavailable. Please try again." },
+            { status: 500 }
+        );
+    }
+    if (!shortWindow.ok) {
+        return NextResponse.json(
+            { error: "Too many attempts. Please wait before trying again." },
             {
-                status: throttle.status,
-                headers: {"Retry-After": String(throttle.retryAfterSec)}
+                status: 429,
+                headers: { "Retry-After": String(shortWindow.retryAfterSec ?? 60) },
             }
-        )
+        );
+    }
+
+    const longWindow = await consumeRateLimit(`${key}:60m`, 60 * 60, 10);
+    if (longWindow.rpcError) {
+        return NextResponse.json(
+            { error: "Rate-limit service unavailable. Please try again." },
+            { status: 500 }
+        );
+    }
+    if (!longWindow.ok) {
+        return NextResponse.json(
+            { error: "Too many attempts. Try again in 30 minutes." },
+            {
+                status: 429,
+                headers: { "Retry-After": String(longWindow.retryAfterSec ?? 1800) },
+            }
+        );
     }
 
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    
+
     if (error) {
-        recordLoginFailure(key);
         return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
-    resetLoginAttempts(key);
     return NextResponse.json({ ok: true })
 }

@@ -28,6 +28,11 @@ export async function fetchRequestsForEvent(
   return data ?? [];
 }
 
+export type InsertRequestResult = {
+  error: string | null;
+  retryAfterSec?: number;
+}
+
 export async function insertRequest(
   eventCode: string,
   params: {
@@ -35,7 +40,7 @@ export async function insertRequest(
     artist?: string | null;
     message?: string | null;
   },
-): Promise<{ error: string | null }> {
+): Promise<InsertRequestResult> {
   const res = await fetch(
     `/api/guest/event/${encodeURIComponent(eventCode)}/requests`,
     {
@@ -46,10 +51,26 @@ export async function insertRequest(
     },
   );
 
-  const data = (await res.json().catch(() => ({}))) as { error?: string };
+  const data = (await res.json().catch(() => ({}))) as {
+    error?: string;
+    retry_after_sec?: unknown;
+  };
 
   if (!res.ok) {
-    return { error: data.error ?? "Could not submit request" };
+    const fromBody =
+      typeof data.retry_after_sec === "number" && Number.isFinite(data.retry_after_sec)
+        ? Math.max(0, Math.ceil(data.retry_after_sec))
+        : undefined;
+    const fromHeader =
+      res.status === 429
+        ? Math.max(0, Math.ceil(Number(res.headers.get("Retry-After")) || 0))
+        : undefined;
+    const retryAfterSec =
+      fromBody ?? (fromHeader && fromHeader > 0 ? fromHeader : undefined);
+    return {
+      error: data.error ?? "Could not submit request",
+      ...(retryAfterSec != null && retryAfterSec > 0 ? { retryAfterSec } : {}),
+    };
   }
 
   return { error: null };

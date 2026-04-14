@@ -41,7 +41,7 @@ export function RecentEventsList({
               <Button variant={"primary"}>Guest Page</Button>
               </Link>
 
-            <Link href={routes.dj.eventDetail(event.event_code)}>
+            <Link href={routes.dj.eventDetailByCode(event.event_code)}>
               <Button variant={"outline"} className="">Manage</Button>
             </Link>
             </div>

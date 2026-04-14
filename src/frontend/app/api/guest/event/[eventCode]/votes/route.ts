@@ -2,26 +2,13 @@ import {
   attachGuestCookie,
   getOrMintGuestSession,
 } from "@/lib/server/guest-cookie";
-import { consumeVoteRateLimit } from "@/lib/server/vote-rate-limit";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminSupabase } from "@/lib/server/supabase-admin";
 import { NextRequest, NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
 
 export async function POST(req: NextRequest, context: RouteContext) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 }
-    );
-  }
-
-  const { eventCode } = await context.params;
-  if (!eventCode) {
-    return NextResponse.json({ error: "Missing event" }, { status: 400 });
-  }
+  const supabase = createAdminSupabase();
 
   let guestSession: { voterId: string; cookieToSet?: string };
   try {
@@ -33,19 +20,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
     );
   }
 
-  const rateKey = `${guestSession.voterId}:${eventCode}`;
-  const burst = consumeVoteRateLimit(rateKey);
-  if (!burst.ok) {
-    return attachGuestCookie(
-      NextResponse.json(
-        { error: burst.message },
-        {
-          status: 429,
-          headers: { "Retry-After": String(burst.retryAfterSec) },
-        }
-      ),
-      guestSession
-    );
+  const { eventCode } = await context.params;
+  if (!eventCode) {
+    return attachGuestCookie(NextResponse.json({ error: "Missing event" }, { status: 400 }), guestSession);
   }
 
   const body = await req.json().catch(() => null);
@@ -62,7 +39,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
   }
 
   const voterId = guestSession.voterId;
-  const supabase = createClient(url, serviceRoleKey);
 
   const { data: event, error: eventError } = await supabase
     .from("events")
@@ -96,20 +72,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
   };
 
   if (action === "add") {
-    const { data: existing } = await supabase
-      .from("votes")
-      .select("id")
-      .eq("request_id", requestId)
-      .eq("voter_id", voterId)
-      .maybeSingle();
-
-    if (existing) {
-      return jsonResponse({
-        status: 409,
-        body: { error: "Already voted", data: { id: existing.id } },
-      });
-    }
-
     const { data, error } = await supabase
       .from("votes")
       .insert({ request_id: requestId, voter_id: voterId })

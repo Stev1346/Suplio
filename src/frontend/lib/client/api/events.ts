@@ -14,6 +14,6 @@ export async function fetchEventByCode(
     .from("events")
     .select("id, name, allow_requests")
     .eq("event_code", eventCode)
-    .single();
+    .maybeSingle();
   return { data: data as EventBasic | null, error };
 }
