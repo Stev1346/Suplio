@@ -1,40 +1,34 @@
-import {
-  attachGuestCookie,
-  getOrMintGuestSession,
-} from "@/lib/server/guest-cookie";
+import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
+type VoteAction = "add" | "remove";
+
+function isVoteAction(value: unknown): value is VoteAction {
+  return value === "add" || value === "remove";
+}
 
 export async function POST(req: NextRequest, context: RouteContext) {
-  const supabase = createAdminSupabase();
+  const guest = createGuestRouteContext(req);
+  if (!guest.ok) return guest.response;
 
-  let guestSession: { voterId: string; cookieToSet?: string };
-  try {
-    guestSession = getOrMintGuestSession(req);
-  } catch {
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 }
-    );
-  }
+  const { guestSession, json } = guest;
+  const supabase = createAdminSupabase();
 
   const { eventCode } = await context.params;
   if (!eventCode) {
-    return attachGuestCookie(NextResponse.json({ error: "Missing event" }, { status: 400 }), guestSession);
+    return json({ error: "Missing event" }, { status: 400 });
   }
 
   const body = await req.json().catch(() => null);
   const requestId = body?.request_id;
   const action = body?.action;
 
-  if (!requestId || !action || !["add", "remove"].includes(action)) {
-    return attachGuestCookie(NextResponse.json(
+  if (typeof requestId !== "string" || !isVoteAction(action)) {
+    return json(
       { error: "Missing request_id or action" },
       { status: 400 }
-    ),
-      guestSession
     );
   }
 
@@ -47,10 +41,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .single();
 
   if (eventError || !event) {
-    return attachGuestCookie(
-      NextResponse.json(
-        { error: "Event not found" }, { status: 404 }),
-      guestSession);
+    return json(
+      { error: "Event not found" }, { status: 404 });
   }
 
   const { data: reqRow, error: reqError } = await supabase
@@ -60,16 +52,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
     .single();
 
   if (reqError || !reqRow || reqRow.event_id !== event.id) {
-    return attachGuestCookie(
-      NextResponse.json(
-        { error: "Invalid request" }, { status: 400 }),
-      guestSession);
+    return json(
+      { error: "Invalid request" }, { status: 400 });
   }
-
-  const jsonResponse = (init: { status?: number; body: object }) => {
-    const res = NextResponse.json(init.body, { status: init.status ?? 200 });
-    return attachGuestCookie(res, guestSession);
-  };
 
   if (action === "add") {
     const { data, error } = await supabase
@@ -86,17 +71,18 @@ export async function POST(req: NextRequest, context: RouteContext) {
           .eq("request_id", requestId)
           .eq("voter_id", voterId)
           .maybeSingle();
-        return jsonResponse({
-          status: 409,
-          body: {
+
+        return json(
+          {
             error: "Already voted",
             ...(row ? { data: { id: row.id } } : {}),
           },
-        });
+          { status: 409 }
+        );
       }
-      return jsonResponse({ status: 400, body: { error: error.message } });
+      return json({ error: error.message }, { status: 400 });
     }
-    return jsonResponse({ body: { data: { id: data.id } } });
+    return json({ data: { id: data.id } }, { status: 200 });
   }
 
   if (action === "remove") {
@@ -107,10 +93,10 @@ export async function POST(req: NextRequest, context: RouteContext) {
       .eq("voter_id", voterId);
 
     if (error) {
-      return jsonResponse({ status: 400, body: { error: error.message } });
+      return json({ error: error.message }, { status: 400 });
     }
-    return jsonResponse({ body: { ok: true } });
+    return json({ ok: true }, { status: 200 });
   }
 
-  return jsonResponse({ status: 400, body: { error: "Invalid action" } });
+  return json({ error: "Invalid action" }, { status: 400 });
 }

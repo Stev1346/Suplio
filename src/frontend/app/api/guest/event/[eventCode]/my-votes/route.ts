@@ -1,38 +1,20 @@
-import {
-  attachGuestCookie,
-  getOrMintGuestSession,
-} from "@/lib/server/guest-cookie";
-import { createClient } from "@supabase/supabase-js";
+import { createGuestRouteContext } from "@/lib/server/guest-route-response";
+import { createAdminSupabase } from "@/lib/server/supabase-admin";
 import { NextRequest, NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
 
 export async function GET(req: NextRequest, context: RouteContext) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceRoleKey) {
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 }
-    );
-  }
+  const guest = createGuestRouteContext(req);
+  if (!guest.ok) return guest.response;
+  const { guestSession, json } = guest;
 
-  let guestSession: { voterId: string; cookieToSet?: string };
-  try {
-    guestSession = getOrMintGuestSession(req);
-  } catch {
-    return NextResponse.json(
-      { error: "Server configuration error" },
-      { status: 500 }
-    );
-  }
+  const supabase = createAdminSupabase();
 
   const { eventCode } = await context.params;
   if (!eventCode) {
-    return attachGuestCookie(NextResponse.json({ error: "Missing event" }, { status: 400 }), guestSession);
+    return json({ error: "Missing event" }, { status: 400 });
   }
-
-  const supabase = createClient(url, serviceRoleKey);
 
   const { data: event, error: eventError } = await supabase
     .from("events")
@@ -41,7 +23,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
     .single();
 
   if (eventError || !event) {
-    return attachGuestCookie(NextResponse.json({ error: "Event not found" }, { status: 404 }), guestSession);
+    return json({ error: "Event not found" }, { status: 404 });
   }
 
   const { data: requests } = await supabase
@@ -51,8 +33,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   const requestIds = (requests ?? []).map((r) => r.id);
   if (requestIds.length === 0) {
-    const res = NextResponse.json({ votes: [] }, { status: 200 });
-    return attachGuestCookie(res, guestSession);
+    const res = json({ votes: [] }, { status: 200 });
+    return res;
   }
 
   const { data: votes, error } = await supabase
@@ -62,9 +44,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
     .in("request_id", requestIds);
 
   if (error) {
-    return attachGuestCookie(NextResponse.json({ error: error.message }, { status: 400 }), guestSession);
+    return json({ error: error.message }, { status: 400 });
   }
 
-  const res = NextResponse.json({ votes: votes ?? [] }, { status: 200 });
-  return attachGuestCookie(res, guestSession);
+  return json({ votes: votes ?? [] }, { status: 200 });
 }
