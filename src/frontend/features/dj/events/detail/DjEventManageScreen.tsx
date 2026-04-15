@@ -10,18 +10,25 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import {
   patchEventAllowRequests,
+  patchEventDetails,
   patchRequestStatus,
 } from "@/lib/client/api/dj";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { EventStatus } from "@/types/database";
+import { EventLifecycleStatus, EventStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "next/navigation";
-import { requestStatus, routes } from "@/lib/shared/constants/routes";
+import {
+  lifecycleStatus,
+  requestStatus,
+  routes,
+} from "@/lib/shared/constants/routes";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
 
-function eventSlugFromParams(
+function eventCodeFromParams(
   raw: string | string[] | undefined,
 ): string | undefined {
   if (typeof raw === "string") return raw;
@@ -31,12 +38,15 @@ function eventSlugFromParams(
 
 export default function DjEventManageScreen() {
   const params = useParams();
-  const eventCode = eventSlugFromParams(params.eventId);
+  // Route param is eventCode for DJ page URL.
+  // UUID event.id is resolved after fetch and then used for API PATCH calls.
+  const eventCode = eventCodeFromParams(params.eventCode);
   const {
     event,
     setEvent,
     loading: eventLoading,
     error: eventError,
+    refetch: refetchEvent,
   } = useEvent(eventCode, { realtime: true });
   const STATUS_OPTIONS: EventStatus[] = [
     requestStatus.lower.pending,
@@ -85,8 +95,27 @@ export default function DjEventManageScreen() {
   );
   const totalCount = requests.length;
 
+  const [nameDraftByEventId, setNameDraftByEventId] = useState<
+    Record<string, string>
+  >({});
+  const [savingName, setSavingName] = useState(false);
+  const [updatingLifecycle, setUpdatingLifecycle] = useState(false);
+  const draftName = event ? (nameDraftByEventId[event.id] ?? event.name) : "";
+  const setDraftName = (next: string) => {
+    if (!event) return;
+    setNameDraftByEventId((prev) => ({ ...prev, [event.id]: next }));
+  };
+
+  const isEventLive = event?.lifecycle_status === lifecycleStatus.lower.live;
+  const disableAllowRequestsToggle = togglingAllow || !isEventLive;
+
   async function handleToggleAllowRequests() {
-    if (!event || togglingAllow) return;
+    if (
+      !event ||
+      togglingAllow ||
+      event.lifecycle_status !== lifecycleStatus.lower.live
+    )
+      return;
 
     setTogglingAllow(true);
     const allowRequests = !event.allow_requests;
@@ -100,6 +129,41 @@ export default function DjEventManageScreen() {
     } else {
       toast.error("Could not update setting. Try again");
     }
+  }
+
+  async function handleSaveName() {
+    if (!event || savingName) return;
+    const nextName = draftName.trim();
+    if (!nextName || nextName === event.name) return;
+
+    setSavingName(true);
+    const { error } = await patchEventDetails(event.id, { name: nextName });
+    setSavingName(false);
+
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    setEvent((prev) => (prev ? { ...prev, name: nextName } : prev));
+    toast.success("Event name updated");
+  }
+
+  async function handleLifecycleChange(next: EventLifecycleStatus) {
+    if (!event || updatingLifecycle || next === event.lifecycle_status) return;
+
+    setUpdatingLifecycle(true);
+    const { error } = await patchEventDetails(event.id, {
+      lifecycle_status: next,
+    });
+    setUpdatingLifecycle(false);
+
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
+    await refetchEvent();
+    toast.success("Lifecycle updated");
   }
 
   async function setRequestStatus(requestId: string, status: EventStatus) {
@@ -147,20 +211,71 @@ export default function DjEventManageScreen() {
 
   return (
     <PageShell className="flex flex-col">
-      <header className="mb-8 flex flex-col justify-center items-center">
+      <header className="mb-3 flex flex-col justify-center items-center">
         <h1 className="text-muted-60 text-3xl">{event.name}</h1>
-        <Link  href={routes.guest.eventLanding(eventCode)} target="_blank" className="text-accent-80 text-lg hover:underline">Event code: {eventCode}</Link>
-        <p className="text-muted-80 text-sm mt-1">
-          Total requests: {requests.length}
-        </p>
-        <div className="mt-4">
-          <AllowRequestsSwitch
-            checked={event.allow_requests}
-            onToggle={handleToggleAllowRequests}
-            disabled={togglingAllow}
-          />
-        </div>
+        <Link
+          href={routes.guest.eventLanding(eventCode)}
+          target="_blank"
+          className="text-accent-80 text-lg hover:underline"
+        >
+          Event code: {eventCode}
+        </Link>
+        <section className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-80">Event Status:</span>
+            <select
+              className="rounded border bg-transparent px-2 py-1 text-sm"
+              value={event.lifecycle_status}
+              onChange={(e) =>
+                handleLifecycleChange(e.target.value as EventLifecycleStatus)
+              }
+              disabled={updatingLifecycle}
+            >
+              <option value={lifecycleStatus.lower.draft}>
+                {lifecycleStatus.cased.draft}
+              </option>
+              <option value={lifecycleStatus.lower.live}>
+                {lifecycleStatus.cased.live}
+              </option>
+              <option value={lifecycleStatus.lower.ended}>
+                {lifecycleStatus.cased.ended}
+              </option>
+              <option value={lifecycleStatus.lower.archived}>
+                {lifecycleStatus.cased.archived}
+              </option>
+            </select>
+          </div>
+
+          <div className="flex flex-col justify-center">
+            <AllowRequestsSwitch
+              checked={isEventLive ? event.allow_requests : false}
+              onToggle={handleToggleAllowRequests}
+              disabled={disableAllowRequestsToggle}
+            />
+            {!isEventLive && (
+              <p className="text-xs text-accent-80">
+                Requests can only be enabled when the event is Live.
+              </p>
+            )}
+          </div>
+        </section>
       </header>
+      <section className="w-full max-w-xl space-y-3 mb-3">
+        <div className="flex gap-2">
+          <Input
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            placeholder="Event name"
+            disabled={savingName}
+          />
+          <Button
+            onClick={handleSaveName}
+            disabled={savingName || !draftName.trim()}
+          >
+            {savingName ? "Saving..." : "Save"}
+          </Button>
+        </div>
+      </section>
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}

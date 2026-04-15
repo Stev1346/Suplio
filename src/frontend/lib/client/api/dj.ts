@@ -1,4 +1,4 @@
-import type { EventStatus } from "@/types/database";
+import type { EventLifecycleStatus, EventStatus } from "@/types/database";
 
 export async function patchEventAllowRequests(
   eventId: string,
@@ -33,6 +33,23 @@ export async function patchRequestStatus(
       body: JSON.stringify({ status }),
     }
   );
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    return { error: data.error ?? "Request failed" };
+  }
+  return { error: null };
+}
+
+export async function patchEventDetails(
+  eventId: string, input: { name?: string; lifecycle_status?: EventLifecycleStatus }):
+  Promise<{ error: string | null }> {
+  const res = await fetch(`/api/dj/events/${encodeURIComponent(eventId)}`, {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
   if (!res.ok) {
     const data = (await res.json().catch(() => ({}))) as { error?: string };
     return { error: data.error ?? "Request failed" };
