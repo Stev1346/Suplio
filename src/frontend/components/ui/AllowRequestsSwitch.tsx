@@ -9,7 +9,7 @@ type AllowRequestsSwitchProps = {
 export function AllowRequestsSwitch({
   checked,
   onToggle,
-  disabled = false,
+  disabled = false
 }: AllowRequestsSwitchProps) {
   return (
     <div className="flex items-center gap-3">

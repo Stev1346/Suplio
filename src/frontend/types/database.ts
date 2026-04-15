@@ -1,4 +1,5 @@
 export type EventStatus = 'pending' | 'accepted' | 'rejected' | 'played';
+export type EventLifecycleStatus = "draft" | "live" | "ended" | "archived";
 type Json =
   | string
   | number
@@ -18,6 +19,7 @@ export interface Database {
           dj_id: string;
           created_at: string;
           allow_requests: boolean;
+          lifecycle_status: EventLifecycleStatus;
         };
         Insert: {
           id?: string;
@@ -26,6 +28,7 @@ export interface Database {
           dj_id: string;
           created_at?: string;
           allow_requests?: boolean;
+          lifecycle_status: EventLifecycleStatus;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
       };

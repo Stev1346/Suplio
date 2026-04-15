@@ -1,3 +1,4 @@
+import { logDjAction } from "@/lib/server/dj-audit";
 import { requestStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import type { EventStatus } from "@/types/database";
@@ -36,7 +37,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const { data: row, error: rowError } = await supabase
     .from("requests")
-    .select("id, events!inner(dj_id)")
+    .select("id, event_id, events!inner(dj_id)")
     .eq("id", requestId)
     .single();
 
@@ -57,5 +58,15 @@ export async function PATCH(req: Request, context: RouteContext) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  const requestRow = row as unknown as { event_id: string; events: { dj_id: string } };
+  await logDjAction({
+    djId: user.id,
+    action: "request.status.updated",
+    eventId: requestRow.event_id,
+    requestId,
+    metadata: { status }
+  });
+
   return NextResponse.json({ ok: true });
 }

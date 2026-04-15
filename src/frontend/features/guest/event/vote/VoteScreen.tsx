@@ -1,7 +1,9 @@
 "use client";
 
+import { EventOver } from "@/components/EventOver";
 import { NotFound } from "@/components/NotFound";
 import { RequestCard } from "@/components/RequestCard";
+import { StartingSoon } from "@/components/StartingSoon";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
@@ -10,7 +12,7 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useVoting } from "@/hooks/guest/useVoting";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { requestStatus } from "@/lib/shared/constants/routes";
+import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 
 export default function VoteScreen() {
@@ -28,7 +30,7 @@ export default function VoteScreen() {
   } = useEventRequests(
     event?.id,
     {
-      statuses: [requestStatus.lower.accepted],
+      statuses: [requestStatus.lower.accepted, requestStatus.lower.played],
       orderBy: "votes",
       ascending: false,
     },
@@ -41,6 +43,14 @@ export default function VoteScreen() {
   );
   const isLoading = !!eventCode && (eventLoading || requestLoading);
   const rankedRequests = [...requests].sort(compareRankedRequests);
+  const topRequests = requests
+    .filter(
+      (r) =>
+        r.status === requestStatus.lower.played ||
+        r.status === requestStatus.lower.accepted,
+    )
+    .sort(compareRankedRequests)
+    .slice(0, 10);
 
   if (isLoading) {
     return (
@@ -64,6 +74,17 @@ export default function VoteScreen() {
 
   if (!event) {
     return <NotFound variant="event" />;
+  }
+
+  if (event.lifecycle_status === lifecycleStatus.lower.draft) {
+    return <StartingSoon eventName={event.name} />;
+  }
+
+  if (
+    event.lifecycle_status === lifecycleStatus.lower.ended ||
+    event.lifecycle_status === lifecycleStatus.lower.archived
+  ) {
+    return <EventOver eventName={event.name} topRequests={topRequests} />;
   }
 
   return (

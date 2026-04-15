@@ -12,7 +12,7 @@ export async function submitGuestRequest(input: SubmitGuestRequestInput) {
 
     const { data: event, error: eventError } = await supabase
         .from("events")
-        .select("id, allow_requests")
+        .select("id, allow_requests, lifecycle_status")
         .eq("event_code", input.eventCode)
         .single();
 
@@ -22,6 +22,10 @@ export async function submitGuestRequest(input: SubmitGuestRequestInput) {
 
     if (!event.allow_requests) {
         return { ok: false as const, status: 403, error: "Requests are currently paused" };
+    }
+
+    if(event.lifecycle_status !== "live"){
+        return {ok: false as const, status: 403, error: "This event is not accepting requests right now"}
     }
 
     const { error: insertError } = await supabase.from("requests").insert({

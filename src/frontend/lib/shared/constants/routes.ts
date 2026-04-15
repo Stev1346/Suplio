@@ -31,10 +31,31 @@ export const requestStatus = {
         pending: "PENDING",
         rejected: "REJECTED"
     },
-    cased:{
-    accepted: "Accepted",
-    played: "Played",
-    pending: "Pending",
-    rejected: "Rejected"
+    cased: {
+        accepted: "Accepted",
+        played: "Played",
+        pending: "Pending",
+        rejected: "Rejected"
+    }
+} as const;
+
+export const lifecycleStatus = {
+    lower: {
+        draft: "draft",
+        live: "live",
+        ended: "ended",
+        archived: "archived"
+    },
+    upper: {
+        draft: "DRAFT",
+        live: "LIVE",
+        ended: "ENDED",
+        archived: "ARCHIVED"
+    },
+    cased: {
+        draft: "Draft",
+        live: "Live",
+        ended: "Ended",
+        archived: "Archived"
     }
 } as const;

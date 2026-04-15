@@ -36,13 +36,17 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id")
+    .select("id, lifecycle_status")
     .eq("event_code", eventCode)
     .single();
 
   if (eventError || !event) {
     return json(
       { error: "Event not found" }, { status: 404 });
+  }
+
+  if (event.lifecycle_status !== "live") {
+    return json({ error: "Voting is not available for this event right now" }, { status: 403 })
   }
 
   const { data: reqRow, error: reqError } = await supabase

@@ -1,6 +1,8 @@
 "use client";
 
+import { EventOver } from "@/components/EventOver";
 import { NotFound } from "@/components/NotFound";
+import { StartingSoon } from "@/components/StartingSoon";
 import { TopRequestList } from "@/components/TopRequestList";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +15,7 @@ import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useCooldownTimer } from "@/hooks/useCooldownTimer";
 import { insertRequest } from "@/lib/client/api/requests";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { requestStatus } from "@/lib/shared/constants/routes";
+import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -54,6 +56,8 @@ export default function SongRequestScreen() {
   : "gotatune:request-cooldown:pending";
   const {isCoolingDown, secondsLeft, startCooldown} = useCooldownTimer(cooldownKey)
   const CLIENT_REQUEST_COOLDOWN_SEC = 60;
+  const isEventLive = event?.lifecycle_status === lifecycleStatus.lower.live;
+  const isRequestEnabled = isEventLive ? event?.allow_requests : false;
 
   async function handleSubmit(e: { preventDefault(): void }) {
           e.preventDefault();
@@ -109,6 +113,17 @@ export default function SongRequestScreen() {
         if (!event) {
           return <NotFound variant="event" />;
         }
+
+        if (event.lifecycle_status === lifecycleStatus.lower.draft) {
+          return <StartingSoon eventName={event.name} />;
+        }
+        
+        if (
+          event.lifecycle_status === lifecycleStatus.lower.ended ||
+          event.lifecycle_status === lifecycleStatus.lower.archived
+        ) {
+          return <EventOver eventName={event.name} topRequests={topRequests} />;
+        }
   
         return (
           <PageShell centralize className="flex-col">
@@ -117,7 +132,7 @@ export default function SongRequestScreen() {
               <p className="text-red-400 text-sm mb-2">{requestError ?? eventError}</p>
             )}
             <div className="flex-1 flex-col items-center">
-              {!event.allow_requests ? (
+              {!isRequestEnabled ? (
                 <h1 className="text-accent-60 text-3xl text-center mb-4">
                   Requests are paused for {event.name}.
                 </h1>

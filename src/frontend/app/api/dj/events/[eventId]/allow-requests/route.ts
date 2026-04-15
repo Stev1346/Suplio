@@ -1,3 +1,5 @@
+import { logDjAction } from "@/lib/server/dj-audit";
+import { lifecycleStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -21,7 +23,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id, dj_id")
+    .select("id, dj_id, lifecycle_status")
     .eq("id", eventId)
     .single();
 
@@ -39,6 +41,13 @@ export async function PATCH(req: Request, context: RouteContext) {
     );
   }
 
+  if(allow === true && event.lifecycle_status !== lifecycleStatus.lower.live){
+    return NextResponse.json(
+      {error: "Requests can only be enabled when event is live"},
+      {status: 400}
+    )
+  }
+
   const { error } = await supabase
     .from("events")
     .update({ allow_requests: allow })
@@ -47,5 +56,12 @@ export async function PATCH(req: Request, context: RouteContext) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+  
+  await logDjAction({
+    djId: user.id,
+    action: "event.allow_requests.updated",
+    eventId: event.id,
+    metadata: { allow_requests: allow }
+  });
   return NextResponse.json({ ok: true });
 }

@@ -14,7 +14,7 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 - Lock auth choice options to evaluate in next phase.
 
 ### Tasks
-- Define route map (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventId]`, `/dj/profile`).
+- Define route map (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventCode]`, `/dj/profile`).
 - Define profile fields (required vs optional): `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
 - Confirm event ownership model (`events.dj_id` target state).
 
@@ -159,7 +159,7 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 - DJs can manage a single event safely.
 
 ### Tasks
-- `/dj/events/[eventId]` management page.
+- `/dj/events/[eventCode]` management page.
 - Rename event.
 - Toggle request availability.
 - See/manage request statuses and operations.
@@ -234,23 +234,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
-**Sprint status:** Phase 5 (DJ Dashboard Home) is **complete**. **In progress:** Phase 6 — Event Management.
+**Sprint status:** Phase 6 (Event Management) is **complete**. **In progress:** Phase 7 — DJ Profile Management.
 
 ### In Progress
-
-#### Phase 6 - Event Management
-**Target duration:** 1.0-1.5 days  
-**Definition of Done**
-- [ ] `/dj/events/[eventId]` page is implemented.
-- [ ] DJ can edit event name.
-- [ ] DJ can toggle request availability.
-- [ ] DJ can manage request statuses and event operations.
-- [ ] Event lifecycle statuses are supported (`draft/live/ended/archived`).
-- [ ] Sensitive DJ actions are audit-loggable (or logged) per agreed approach.
-
----
-
-### Backlog
 
 #### Phase 7 - DJ Profile Management
 **Target duration:** 0.75-1.0 day  
@@ -260,6 +246,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] Avatar strategy is implemented (URL or upload) and documented.
 - [ ] Input validation/sanitization is in place for profile data.
 - [ ] Invalid/missing social URLs are handled gracefully.
+
+---
+
+### Backlog
 
 #### Phase 8 - Event Search (DJ-only) + UX Polish
 **Target duration:** 0.75-1.25 days  
@@ -317,7 +307,7 @@ Use this board as the execution tracker. Move each phase between sections as wor
 #### Phase 0 - Foundation and Product Decisions
 **Target duration:** 0.5 day  
 **Definition of Done**
-- [x] Route map is finalized and documented (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventId]`, `/dj/profile`).
+- [x] Route map is finalized and documented (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventCode]`, `/dj/profile`).
 - [x] Guest navbar rule is finalized (`Are you a DJ?` CTA only).
 - [x] Profile field scope is frozen: `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
 - [x] Event ownership target model (`events.dj_id`) is approved.
@@ -377,3 +367,20 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [x] Core metrics cards are implemented and populated.
 - [x] API/use-cases for dashboard aggregates are implemented cleanly.
 - [x] Decision: live-query with realtime invalidation; reevaluate materialized/cached aggregates if dashboard latency exceeds target or request volume grows significantly.
+
+#### Phase 6 - Event Management
+**Target duration:** 1.0-1.5 days  
+**Definition of Done**
+- [x] `/dj/events/[eventCode]` page is implemented (public event code in the URL; DJ mutation APIs use UUID `eventId` under `/api/dj/events/[eventId]`).
+- [x] DJ can edit event name.
+- [x] DJ can toggle request availability.
+- [x] DJ can manage request statuses and event operations.
+- [x] Event lifecycle statuses are supported (`draft` / `live` / `ended` / `archived`).
+- [x] Sensitive DJ actions are audit-loggable (or logged) per agreed approach (`dj_audit_log` + server helper).
+
+**Phase 6 completion notes (delivered beyond the checklist bullets above)**
+- **Lifecycle and requests:** Server rules tie `allow_requests` to lifecycle: transitioning to `live` turns requests on; leaving `live` turns them off. Enabling requests via API is only allowed while the event is `live`. UI refetches event data after lifecycle changes so `allow_requests` stays aligned with the server (avoids optimistic drift).
+- **Schema:** Migration adds `events.lifecycle_status` (with check constraint and index) and `public.dj_audit_log` (indexed by DJ and time).
+- **DJ APIs:** `PATCH /api/dj/events/[eventId]` updates name and/or lifecycle; existing allow-requests and request-status routes emit audit entries where applicable.
+- **Guest UX and enforcement:** Guest request/vote flows (and server paths) respect non-`live` lifecycles; `StartingSoon` / `EventOver` components gate request and vote screens; scan shows `EventOver` for `ended` / `archived` (draft still uses the normal scan UI).
+- **Shared types and data loading:** `lifecycle_status` is included in guest event fetch types (`EventBasic`, `useEventByCode` / `EventState`) so screens and APIs stay consistent.
