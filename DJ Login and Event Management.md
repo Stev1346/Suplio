@@ -234,22 +234,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
-**Sprint status:** Phase 6 (Event Management) is **complete**. **In progress:** Phase 7 — DJ Profile Management.
+**Sprint status:** Phase 7 (DJ Profile Management) is **complete**. **In progress:** Phase 8 — Event Search (DJ-only) + UX Polish.
 
 ### In Progress
-
-#### Phase 7 - DJ Profile Management
-**Target duration:** 0.75-1.0 day  
-**Definition of Done**
-- [ ] Profile page is implemented and accessible from DJ nav.
-- [ ] DJ can update core identity fields and social links.
-- [ ] Avatar strategy is implemented (URL or upload) and documented.
-- [ ] Input validation/sanitization is in place for profile data.
-- [ ] Invalid/missing social URLs are handled gracefully.
-
----
-
-### Backlog
 
 #### Phase 8 - Event Search (DJ-only) + UX Polish
 **Target duration:** 0.75-1.25 days  
@@ -261,6 +248,10 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] Search endpoint enforces ownership (`dj_id = auth.uid()`).
 - [ ] Search behavior is documented (limit, ranking, pagination/fallback).
 - [ ] Required indexes for search performance are in place.
+
+---
+
+### Backlog
 
 #### Phase 9 - QA, Hardening, Deploy Readiness
 **Target duration:** 1.0-1.5 days  
@@ -384,3 +375,18 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - **DJ APIs:** `PATCH /api/dj/events/[eventId]` updates name and/or lifecycle; existing allow-requests and request-status routes emit audit entries where applicable.
 - **Guest UX and enforcement:** Guest request/vote flows (and server paths) respect non-`live` lifecycles; `StartingSoon` / `EventOver` components gate request and vote screens; scan shows `EventOver` for `ended` / `archived` (draft still uses the normal scan UI).
 - **Shared types and data loading:** `lifecycle_status` is included in guest event fetch types (`EventBasic`, `useEventByCode` / `EventState`) so screens and APIs stay consistent.
+
+#### Phase 7 - DJ Profile Management
+**Target duration:** 0.75-1.0 day  
+**Definition of Done**
+- [x] Profile page is implemented and accessible from DJ nav.
+- [x] DJ can update core identity fields and social links.
+- [x] Avatar strategy is implemented (URL or upload) and documented.
+- [x] Input validation/sanitization is in place for profile data.
+- [x] Invalid/missing social URLs are handled gracefully.
+
+**Phase 7 completion notes (delivered beyond the checklist bullets above)**
+- **API consistency:** `GET /api/dj/profile` now uses `.single()` and returns `404` (`Profile not found`) when the DJ profile row is missing, matching PATCH semantics.
+- **Validation/sanitization:** Profile patch validation enforces stage name length/presence, trims and normalizes URL fields, validates social links/contact info shape, and rejects invalid payloads server-side.
+- **Avatar flow:** Profile UI supports upload + crop preview + remove avatar, with save/cancel behavior and post-save refresh to keep client state aligned with server data.
+- **Lifecycle default on create:** Event creation now explicitly sets `lifecycle_status: "draft"` for predictable initial event state.
