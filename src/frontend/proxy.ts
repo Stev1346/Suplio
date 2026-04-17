@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/proxy";
 import { isDjLandingPath, isDjPrivatePath, isDjPublicPath } from "./lib/shared/routing/routeGroups";
+import { isDjSessionBeyondMax } from "./lib/shared/utils/dj-session-bound";
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -14,6 +15,8 @@ export async function proxy(request: NextRequest) {
     const needsVerify = user && user.email && !user.email_confirmed_at;
     const canAccessDjApp = Boolean(user && !needsVerify);
     const verifySafe = isDjPublicPath(pathname) || isDjLandingPath(pathname) || pathname.startsWith("/auth/");
+    const isDjapi = pathname.startsWith("/api/dj");
+    const needsDjSessionBound = canAccessDjApp && (isDjPrivatePath(pathname) || isDjapi);
 
     if(needsVerify && !verifySafe){
         const url = request.nextUrl.clone();
@@ -52,6 +55,13 @@ export async function proxy(request: NextRequest) {
         url.pathname = "/dj/dashboard";
         return NextResponse.redirect(url);
     }
+
+    if (needsDjSessionBound && isDjSessionBeyondMax(request)) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/dj-session-ended";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
 
     return supabaseResponse;
 }

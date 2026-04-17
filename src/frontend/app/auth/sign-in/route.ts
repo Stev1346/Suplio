@@ -2,6 +2,7 @@
 import { checkLoginAllowed, recordLoginFailure, resetLoginAttempts } from "@/lib/server/auth/login-rate-limit";
 import { getClientIp } from "@/lib/server/client-ip";
 import { consumeRateLimit } from "@/lib/server/consume-rate-limit";
+import { stampDjSessionBound } from "@/lib/shared/utils/dj-session-bound";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -56,5 +57,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: error.message }, { status: 401 })
     }
 
-    return NextResponse.json({ ok: true })
+    const res = NextResponse.json({ok:true});
+    stampDjSessionBound(res);
+    return res;
 }

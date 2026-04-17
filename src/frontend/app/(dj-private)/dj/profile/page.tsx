@@ -1,3 +1,5 @@
+import DjProfileScreen from "@/features/dj/profile/DjProfileScreen";
+
 export default function DjProfilePage() {
-    return <main className="p-6">DJ profile page coming next phase.</main>;
+    return <DjProfileScreen />;
   }
