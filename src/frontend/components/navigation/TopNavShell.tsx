@@ -1,5 +1,6 @@
 "use client";
 
+import { GuestDjProfileModalTrigger } from "@/contexts/GuestDjProfileModalContext";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { routes } from "@/lib/shared/constants/routes";
 import { isActivePath } from "@/lib/shared/routing/isActivePath";
@@ -21,6 +22,7 @@ export function TopNavShell() {
   const pathname = usePathname();
   const eventCode = useEventCode();
   const [openPath, setOpenPath] = useState<string | null>(null);
+
   const isOpen = openPath === pathname;
 
   if (isDjPrivatePath(pathname)) {
@@ -72,6 +74,14 @@ export function TopNavShell() {
               {link.label}
             </Link>
           ))}
+          {guestLinks.length > 0 && (
+            <GuestDjProfileModalTrigger
+              className="rounded-md px-2 py-1 text-sm hover:bg-muted-20"
+              onClick={() => setOpenPath(null)}
+            >
+              Check out your DJ
+            </GuestDjProfileModalTrigger>
+          )}
           <Link
             href={routes.dj.entry}
             className={desktopLinkClass(routes.dj.entry)}
@@ -95,6 +105,11 @@ export function TopNavShell() {
               {link.label}
             </Link>
           ))}
+          {guestLinks.length > 0 && (
+            <GuestDjProfileModalTrigger className={desktopLinkClass("#")}>
+              Check out your DJ
+            </GuestDjProfileModalTrigger>
+          )}
           <Link
             href={routes.dj.entry}
             className="rounded-md px-2 py-1 text-sm font-medium hover:bg-muted-20"

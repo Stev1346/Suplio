@@ -1,5 +1,48 @@
 import type { EventLifecycleStatus, EventStatus } from "@/types/database";
 
+export type DjEventListItem = {
+  id: string;
+  name: string;
+  event_code: string;
+  allow_requests: boolean;
+  created_at: string;
+}
+
+export type DjEventsPageResponse = {
+  page: number;
+  pageSize: number;
+  total: number;
+  hasNextPage: boolean;
+  items: DjEventListItem[];
+}
+
+export type DjDashboardResponse = {
+  djId: string;
+  metrics: {
+    totalEvents: number;
+    openEvents: number;
+    totalRequests: number;
+    pendingRequests: number;
+    acceptedRequests: number;
+    playedRequests: number;
+    rejectedRequests: number;
+  };
+  recentEvents: DjEventListItem[];
+  eventIds: string[];
+}
+
+export type DjProfileResponse = {
+  user_id: string;
+  stage_name: string;
+  bio: string | null;
+  avatar_url: string | null;
+  website: string | null;
+  social_links: Record<string, string> | null;
+  contact_info: Record<string, string> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export async function patchEventAllowRequests(
   eventId: string,
   allow: boolean
@@ -57,37 +100,6 @@ export async function patchEventDetails(
   return { error: null };
 }
 
-export type DjEventListItem = {
-  id: string;
-  name: string;
-  event_code: string;
-  allow_requests: boolean;
-  created_at: string;
-}
-
-export type DjEventsPageResponse = {
-  page: number;
-  pageSize: number;
-  total: number;
-  hasNextPage: boolean;
-  items: DjEventListItem[];
-}
-
-export type DjDashboardResponse = {
-  djId: string;
-  metrics: {
-    totalEvents: number;
-    openEvents: number;
-    totalRequests: number;
-    pendingRequests: number;
-    acceptedRequests: number;
-    playedRequests: number;
-    rejectedRequests: number;
-  };
-  recentEvents: DjEventListItem[];
-  eventIds: string[];
-}
-
 export async function getDjDashboard(): Promise<{ data: DjDashboardResponse | null; error: string | null }> {
   const response = await fetch("/api/dj/dashboard", { credentials: "include" });
 
@@ -116,4 +128,72 @@ export async function getDjEventsPage(
     return { data: null, error: body.error ?? "Request failed" };
   }
   return { data: body.data, error: null };
+}
+
+export async function getDjProfile(): Promise<{
+  data: DjProfileResponse | null;
+  error: string | null;
+}> {
+  const response = await fetch("/api/dj/profile", { credentials: "include" });
+  const body = (await response.json().catch(() => ({}))) as {
+    data?: DjProfileResponse | null;
+    error?: string;
+  };
+  if (!response.ok) {
+    return { data: null, error: body.error ?? "Request failed" };
+  }
+  return { data: body.data ?? null, error: null };
+}
+
+export async function patchDjProfile(input: {
+  stage_name?: string;
+  bio?: string | null;
+  website?: string | null;
+  social_links?: Record<string, string> | null;
+  contact_info?: Record<string, string> | null;
+}): Promise<{ error: string | null }> {
+  const res = await fetch("/api/dj/profile", {
+    method: "PATCH",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    return { error: data.error ?? "Request failed" };
+  }
+  return { error: null };
+}
+
+export async function uploadDjAvatar(file: File)
+  : Promise<{ data: { avatar_url: string } | null; error: string | null }> {
+  const fd = new FormData();
+  fd.set("file", file);
+  const res = await fetch("/api/dj/profile/avatar", {
+    method: "POST",
+    credentials: "include",
+    body: fd
+  });
+  const body = (await res.json().catch(() => ({}))) as {
+    data?: { avatar_url: string };
+    error?: string;
+  };
+  if (!res.ok) {
+    return { data: null, error: body.error ?? "Request failed" };
+  }
+  return { data: body.data ?? null, error: null };
+}
+
+export async function removeDjAvatar(): Promise<{ error: string | null }> {
+  const res = await fetch("/api/dj/profile/avatar", {
+    method: "DELETE",
+    credentials: "include"
+  });
+
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    return { error: data.error ?? "Request failed" };
+  }
+
+  return { error: null };
 }

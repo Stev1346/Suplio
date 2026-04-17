@@ -1,3 +1,4 @@
+import { stampDjSessionBound } from "@/lib/shared/utils/dj-session-bound";
 import { sanitizeInternalNextPath } from "@/lib/shared/utils/sanitize-internal-next-path";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
@@ -13,7 +14,7 @@ const OTP_TYPES = new Set([
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
-    const nextPath = sanitizeInternalNextPath(searchParams.get("next") );
+    const nextPath = sanitizeInternalNextPath(searchParams.get("next"));
     const token_hash = searchParams.get("token_hash");
     const type = searchParams.get("type");
     const code = searchParams.get("code");
@@ -35,7 +36,9 @@ export async function GET(request: Request) {
             return NextResponse.redirect(`${origin}/dj/login?error=auth`);
         }
 
-        return NextResponse.redirect(new URL(nextPath, origin));
+        const res = NextResponse.redirect(new URL(nextPath, origin));
+        stampDjSessionBound(res);
+        return res;
     }
 
     if (!code) {
@@ -47,6 +50,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/dj/login?error=auth`);
     }
 
-    return NextResponse.redirect(new URL(nextPath, origin));
-
+    const res = NextResponse.redirect(new URL(nextPath, origin));
+    stampDjSessionBound(res);
+    return res;
 }

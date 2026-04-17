@@ -5,6 +5,7 @@ import "./globals.css";
 import { EventCodeProvider } from "@/contexts/GuestEventContext";
 import { cn } from "@/lib/utils";
 import { TopNavShell } from "@/components/navigation/TopNavShell";
+import { GuestDjProfileModalProvider } from "@/contexts/GuestDjProfileModalContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -34,9 +35,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <EventCodeProvider>
-          <TopNavShell />
-          {children}
+          <GuestDjProfileModalProvider>
+            <TopNavShell />
+            {children}
+          </GuestDjProfileModalProvider>
         </EventCodeProvider>
+
         <Toaster position="top-center" />
       </body>
     </html>

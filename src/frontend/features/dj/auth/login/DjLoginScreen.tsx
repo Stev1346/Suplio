@@ -17,6 +17,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   verify_email:
     "Confirm your email before using the DJ dashboard. Check your inbox.",
   auth: "That sign-in link expired or is invalid. Sign in with email and password.",
+  session_expired: "Your session reached its time limit. Sign in again."
 };
 
 export default function DjLoginScreen() {

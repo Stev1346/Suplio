@@ -1,5 +1,6 @@
 import { getClientIp } from "@/lib/server/client-ip";
 import { consumeRateLimit } from "@/lib/server/consume-rate-limit";
+import { stampDjSessionBound } from "@/lib/shared/utils/dj-session-bound";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseAdmin } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -78,9 +79,11 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: profileError.message }, { status: 400 });
     }
 
-    return NextResponse.json({
+    const res = NextResponse.json({
         ok: true,
         needsEmailConfirmation: !session,
-    })
+      });
+      if (session) stampDjSessionBound(res);
+      return res;
 }
 

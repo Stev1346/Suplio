@@ -6,7 +6,7 @@ import { useDjEventsPage } from "@/hooks/dj/useDjEventsPage";
 import { RecentEventsList } from "./components/RecentEventsList";
 
 export default function DjEventsListScreen() {
-  const events = useDjEventsPage(1, 10, {realtime: true});
+  const events = useDjEventsPage(1, 10, { realtime: true });
 
   return (
     <PageShell className="flex flex-col gap-6" centralize={false}>
@@ -15,7 +15,9 @@ export default function DjEventsListScreen() {
       ) : null}
 
       {events.loading && !events.data ? (
+        <PageShell>
           <LoadingSpinner />
+        </PageShell>
       ) : (
         <RecentEventsList
           items={events.data?.items ?? []}

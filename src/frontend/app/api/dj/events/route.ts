@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     for (let i = 0; i < 10; i++) {
         const { data, error } = await supabase
             .from("events")
-            .insert({ name, event_code: eventCode, dj_id: user.id })
+            .insert({ name, event_code: eventCode, dj_id: user.id, lifecycle_status: "draft" })
             .select("event_code")
             .single();
 
@@ -92,8 +92,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
         data: {
             page,
-            pageSize, 
-            total, 
+            pageSize,
+            total,
             hasNextPage: total > page * pageSize,
             items: data ?? []
         }

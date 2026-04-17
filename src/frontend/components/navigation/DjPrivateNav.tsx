@@ -83,8 +83,8 @@ export function DjPrivateNav() {
               >
                 {link.label === "Create Event" ? (
                   <p className="flex flex-row items-center">
-                    Create Event{" "}
-                    <Plus className="border border-secondary-40 ml-1.5 rounded-sm" />
+                    <Plus />
+                    Create Event
                   </p>
                 ) : (
                   link.label
