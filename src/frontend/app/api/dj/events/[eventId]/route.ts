@@ -32,13 +32,23 @@ export async function PATCH(req: Request, context: RouteContext) {
 
     const body = await req.json().catch(() => null);
     const name = typeof body?.name === "string" ? body.name.trim() : undefined;
-    const lifecycle = body?.lifecycle_status as EventLifecycleStatus | undefined;
+
+    const rawLifecycle = body?.lifecycle_status;
+    let lifecycle: EventLifecycleStatus | undefined;
+    if(rawLifecycle === undefined){
+        lifecycle = undefined;
+    } else if(typeof rawLifecycle !== "string"){
+        return NextResponse.json({ error: "Invalid lifecycle status" }, { status: 400 });
+    } else {
+        const trimmed = rawLifecycle.trim();
+        if(!LIFECYCLE.includes(trimmed as EventLifecycleStatus)){
+            return NextResponse.json({ error: "Invalid lifecycle status" }, { status: 400 });
+        }
+        lifecycle = trimmed as EventLifecycleStatus;
+    }
 
     if (name !== undefined && !name) {
         return NextResponse.json({ error: "Event name is required" }, { status: 400 })
-    }
-    if (lifecycle !== undefined && !LIFECYCLE.includes(lifecycle)) {
-        return NextResponse.json({ error: "Invalid lifecycle status" }, { status: 400 });
     }
     if (name === undefined && lifecycle === undefined) {
         return NextResponse.json({ error: "No changes provided" }, { status: 400 });
@@ -46,8 +56,10 @@ export async function PATCH(req: Request, context: RouteContext) {
 
     const patch: Record<string, unknown> = {};
     if (name !== undefined) patch.name = name;
+
     if (lifecycle !== undefined) {
         patch.lifecycle_status = lifecycle;
+
         if (lifecycle !== lifecycleStatus.lower.live) {
             patch.allow_requests = false;
         }
@@ -55,6 +67,18 @@ export async function PATCH(req: Request, context: RouteContext) {
         if (lifecycle === lifecycleStatus.lower.live &&
             event.lifecycle_status !== lifecycleStatus.lower.live) {
             patch.allow_requests = true;
+            patch.live_entered_at = new Date().toISOString();
+            patch.ended_entered_at = null;
+        }
+        if (
+            lifecycle === lifecycleStatus.lower.ended &&
+            event.lifecycle_status !== lifecycleStatus.lower.ended
+        ) {
+            patch.ended_entered_at = new Date().toISOString();
+        }
+        if (lifecycle === lifecycleStatus.lower.draft) {
+            patch.live_entered_at = null;
+            patch.ended_entered_at = null;
         }
     }
 

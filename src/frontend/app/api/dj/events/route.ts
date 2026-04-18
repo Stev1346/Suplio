@@ -1,3 +1,4 @@
+import { EVENT_LIFECYCLE_STATUS, lifecycleStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -76,10 +77,23 @@ export async function GET(req: Request) {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    const { data, error, count } = await supabase
-        .from("events")
-        .select("id, name, event_code, allow_requests, created_at", { count: "exact" })
-        .eq("dj_id", user.id)
+    const LIFECYCLES = EVENT_LIFECYCLE_STATUS;
+    const lifecycleParam = url.searchParams.get("lifecycle");
+    const lifecycle = lifecycleParam && (LIFECYCLES as readonly string[]).includes(lifecycleParam)
+        ? (lifecycleParam as typeof LIFECYCLES[number])
+        : null;
+
+    let query = supabase.from("events")
+        .select("id, name, event_code, allow_requests, created_at, lifecycle_status", { count: "exact" })
+        .eq("dj_id", user.id);
+
+    if (lifecycle) {
+        query = query.eq("lifecycle_status", lifecycle);
+    } else if (lifecycleParam !== "all") {
+        query = query.neq("lifecycle_status", "archived");
+    }
+
+    const { data, error, count } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 

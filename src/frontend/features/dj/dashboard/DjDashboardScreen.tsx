@@ -20,13 +20,17 @@ export default function DjDashboardScreen() {
   }
 
   const metrics = dashboard.data?.metrics ?? {
-    totalEvents: 0,
-    openEvents: 0,
+    activeEvents: 0,
+    requestsOpen: 0,
     totalRequests: 0,
     pendingRequests: 0,
     acceptedRequests: 0,
     playedRequests: 0,
-    rejectedRequests: 0
+    rejectedRequests: 0,
+    draftEvents: 0,
+    liveEvents: 0,
+    endedEvents: 0,
+    archivedEvents: 0
   };
 
   return (
@@ -39,8 +43,12 @@ export default function DjDashboardScreen() {
             onCreate={handleCreate}
           />
           <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <MetricCard title="Total Events" value={metrics.totalEvents} />
-            <MetricCard title="Open Events" value={metrics.openEvents} />
+            <MetricCard title="Active Events" value={metrics.activeEvents} />
+            <MetricCard title="Draft Events" value={metrics.draftEvents} />
+            <MetricCard title="Live Events" value={metrics.liveEvents} />
+            <MetricCard title="Ended Events" value={metrics.endedEvents} />
+            <MetricCard title="Archived Events" value={metrics.archivedEvents} />
+            <MetricCard title="Requests Open" value={metrics.requestsOpen} />
             <MetricCard title="Total Requests" value={metrics.totalRequests} />
             <MetricCard
               title="Pending Requests"
@@ -67,6 +75,12 @@ export default function DjDashboardScreen() {
           hasNextPage={events.data?.hasNextPage ?? false}
           onPrev={() => events.setPage((p) => Math.max(1, p - 1))}
           onNext={() => events.setPage((p) => p + 1)}
+          lifecycle={events.lifecycle}
+          onLifecycleChange={events.setLifecyle}
+          onChanged={async () => {
+            await Promise.all([events.refetch(), dashboard.refetch()]);
+          }}
+          className=""
         />
       </section>
     </PageShell>

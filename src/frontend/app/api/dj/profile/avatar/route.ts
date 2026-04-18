@@ -161,6 +161,9 @@ export async function DELETE() {
     if (prevError) {
         return NextResponse.json({ error: prevError.message }, { status: 400 });
     }
+    if (prev === null) {
+        return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
 
     const oldPath = pathFromPublicDjAvatarUrl(prev?.avatar_url ?? null);
     if (oldPath) {

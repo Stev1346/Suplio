@@ -109,7 +109,7 @@ export function GuestDjProfileModalProvider({
     <GuestDjProfileModalContext.Provider value={value}>
       {children}
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg backdrop-blur supports-backdrop-filter:bg-muted-20/50">
           <DialogHeader className="text-3xl text-center">
             <DialogTitle>Your DJ</DialogTitle>
             <DialogDescription className="sr-only">

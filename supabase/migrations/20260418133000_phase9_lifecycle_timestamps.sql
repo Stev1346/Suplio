@@ -1,0 +1,2 @@
+update public.events set live_entered_at = now() where lifecycle_status = 'live' and live_entered_at is null;
+update public.events set ended_entered_at = now() where lifecycle_status = 'ended' and ended_entered_at is null;

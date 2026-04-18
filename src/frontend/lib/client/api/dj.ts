@@ -6,6 +6,7 @@ export type DjEventListItem = {
   event_code: string;
   allow_requests: boolean;
   created_at: string;
+  lifecycle_status: EventLifecycleStatus;
 }
 
 export type DjEventsPageResponse = {
@@ -19,13 +20,17 @@ export type DjEventsPageResponse = {
 export type DjDashboardResponse = {
   djId: string;
   metrics: {
-    totalEvents: number;
-    openEvents: number;
+    activeEvents: number;
+    requestsOpen: number;
     totalRequests: number;
     pendingRequests: number;
     acceptedRequests: number;
     playedRequests: number;
     rejectedRequests: number;
+    draftEvents: number;
+    liveEvents: number;
+    endedEvents: number;
+    archivedEvents: number;
   };
   recentEvents: DjEventListItem[];
   eventIds: string[];
@@ -42,6 +47,22 @@ export type DjProfileResponse = {
   created_at: string;
   updated_at: string;
 }
+
+export type DjEventSearchItem = {
+  id: string;
+  name:string;
+  event_code: string;
+  created_at: string;
+  lifecycle_status: EventLifecycleStatus;
+}
+
+export type DjEventsLifecycleFilter = 
+  | "all"
+  | "active"
+  | "draft"
+  | "live"
+  | "ended"
+  | "archived";
 
 export async function patchEventAllowRequests(
   eventId: string,
@@ -115,9 +136,18 @@ export async function getDjDashboard(): Promise<{ data: DjDashboardResponse | nu
 
 export async function getDjEventsPage(
   page = 1,
-  pageSize = 10
+  pageSize = 10,
+  lifecycle: DjEventsLifecycleFilter = "active"
 ): Promise<{ data: DjEventsPageResponse | null; error: string | null }> {
-  const response = await fetch(`/api/dj/events?page=${page}&pageSize=${pageSize}`, {
+  const params = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize)
+  });
+  if(lifecycle !== "active"){
+    params.set("lifecycle", lifecycle);
+  }
+
+  const response = await fetch(`/api/dj/events?${params.toString()}`, {
     credentials: "include"
   });
 
@@ -196,4 +226,29 @@ export async function removeDjAvatar(): Promise<{ error: string | null }> {
   }
 
   return { error: null };
+}
+
+export async function searchDjEvents(
+  query: string,
+  limit: 8,
+  signal?: AbortSignal
+): Promise<{data: DjEventSearchItem[]; error: string | null}>{
+  const q = query.trim();
+  if(q.length < 2) return {data: [], error: null};
+
+  const res = await fetch(
+    `/api/dj/events/search?q=${encodeURIComponent(q)}&limit=${limit}`,
+    {credentials: "include", signal}
+  );
+
+  const body = (await res.json().catch(() => ({}))) as {
+    data?: DjEventSearchItem[];
+    error?: string;
+  }
+
+  if(!res.ok){
+    return {data: [], error: body.error ?? "Request failed"};
+  }
+
+  return{data: body.data ?? [], error: null};
 }

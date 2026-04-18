@@ -20,6 +20,8 @@ export interface Database {
           created_at: string;
           allow_requests: boolean;
           lifecycle_status: EventLifecycleStatus;
+          live_entered_at: string | null;
+          ended_entered_at: string | null;
         };
         Insert: {
           id?: string;
@@ -29,6 +31,8 @@ export interface Database {
           created_at?: string;
           allow_requests?: boolean;
           lifecycle_status: EventLifecycleStatus;
+          live_entered_at?: string | null;
+          ended_entered_at?: string | null;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
       };

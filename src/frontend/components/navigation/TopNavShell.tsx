@@ -11,7 +11,15 @@ import {
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import {  useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "../ui/sheet";
+import { cn } from "@/lib/utils";
 
 type NavLink = {
   label: string;
@@ -21,9 +29,7 @@ type NavLink = {
 export function TopNavShell() {
   const pathname = usePathname();
   const eventCode = useEventCode();
-  const [openPath, setOpenPath] = useState<string | null>(null);
-
-  const isOpen = openPath === pathname;
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   if (isDjPrivatePath(pathname)) {
     return null;
@@ -46,79 +52,96 @@ export function TopNavShell() {
     }`;
 
   return (
-    <nav className="border-b text-secondary-80 border-muted-10 bg-muted-10 px-4 py-3">
-      <div className="mx-auto flex items-center">
-        <Link href={"/"} className="font-semibold tracking-tight">
-          GotATune
-        </Link>
+    <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+      <nav
+        className={cn("fixed inset-x-0 top-0 z-50 border-b border-muted-20 bg-muted-20", 
+      "px-4 py-3 text-secondary-80 backdrop-blur supports-backdrop-filter:bg-muted-20/50")}
+      >
+        <div className="mx-auto flex items-center">
+          <Link href={"/"} className="font-semibold tracking-tight">
+            GotATune
+          </Link>
 
-        <button
-          type="button"
-          className="sm:hidden ml-auto rounded-md p-2 hover:bg-muted-20"
-          onClick={() =>
-            setOpenPath((prev) => (prev === pathname ? null : pathname))
-          }
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isOpen}
-          aria-controls="mobile-nav-links"
+          <button
+            type="button"
+            className="sm:hidden ml-auto rounded-md p-2 hover:bg-muted-20"
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open menu"
+            aria-expanded={mobileNavOpen}
+            aria-controls="mobile-nav-sheet"
+          >
+            <Menu />
+          </button>
+          <div className="hidden ml-auto items-center gap-4 sm:flex ">
+            {guestLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={desktopLinkClass(link.href)}
+              >
+                {link.label}
+              </Link>
+            ))}
+            {guestLinks.length > 0 && (
+              <GuestDjProfileModalTrigger
+                className="rounded-md px-2 py-1 text-sm hover:bg-muted-20"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Check out your DJ
+              </GuestDjProfileModalTrigger>
+            )}
+            <Link
+              href={routes.dj.entry}
+              className={desktopLinkClass(routes.dj.entry)}
+            >
+              Are you a DJ?
+            </Link>
+          </div>
+        </div>
+      </nav>
+      <SheetContent
+        id="mobile-nav-sheet"
+        side="right"
+        className="w-full border-muted-10 bg-background text-secondary-80 sm:max-w-sm backdrop-blur supports-backdrop-filter:bg-muted-10/70"
+      >
+        <SheetHeader>
+          <SheetTitle className="text-left text-secondary-80">Menu</SheetTitle>
+          <SheetDescription className="sr-only">
+            Navigation for this event: scan, request, vote, view your DJs info
+            or go to the DJ access portal
+          </SheetDescription>
+        </SheetHeader>
+        <nav
+          aria-label="Mobile navigation"
+          className="flex flex-col gap-2 items-stretch px-4 pb-6"
         >
-          <Menu />
-        </button>
-        <div className="hidden ml-auto items-center gap-4 sm:flex ">
           {guestLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={desktopLinkClass(link.href)}
+              className="rounded-md px-2 py-2 text-sm hover:bg-muted-20"
+              onClick={() => setMobileNavOpen(false)}
             >
               {link.label}
             </Link>
           ))}
           {guestLinks.length > 0 && (
             <GuestDjProfileModalTrigger
-              className="rounded-md px-2 py-1 text-sm hover:bg-muted-20"
-              onClick={() => setOpenPath(null)}
+              className="rounded-md px-2 py-2 text-left text-sm hover:bg-muted-20"
+              onClick={() => setMobileNavOpen(false)}
             >
               Check out your DJ
             </GuestDjProfileModalTrigger>
           )}
           <Link
             href={routes.dj.entry}
-            className={desktopLinkClass(routes.dj.entry)}
+            className="rounded-md px-2 py-2 text-sm font-medium hover:bg-muted-20"
+            onClick={() => setMobileNavOpen(false)}
           >
             Are you a DJ?
           </Link>
-        </div>
-      </div>
-      {isOpen && (
-        <div
-          id="mobile-nav-links"
-          className="mt-3 flex flex-col gap-2 items-center border-t border-muted-10 pt-3 sm:hidden"
-        >
-          {guestLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-md px-2 py-1 text-sm hover:bg-muted-20"
-              onClick={() => setOpenPath(null)}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {guestLinks.length > 0 && (
-            <GuestDjProfileModalTrigger className={desktopLinkClass("#")}>
-              Check out your DJ
-            </GuestDjProfileModalTrigger>
-          )}
-          <Link
-            href={routes.dj.entry}
-            className="rounded-md px-2 py-1 text-sm font-medium hover:bg-muted-20"
-            onClick={() => setOpenPath(null)}
-          >
-            Are you a DJ?
-          </Link>
-        </div>
-      )}
-    </nav>
+        </nav>
+      </SheetContent>
+    </Sheet>
   );
 }

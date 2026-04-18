@@ -1,28 +1,34 @@
-import { DjEventsPageResponse, getDjEventsPage } from "@/lib/client/api/dj";
+import { DjEventsLifecycleFilter, DjEventsPageResponse, getDjEventsPage } from "@/lib/client/api/dj";
 import { useCallback, useEffect, useState } from "react";
 import { useSupabaseBrowser } from "../useSupabaseBrowser";
 
-export function useDjEventsPage(initialPage = 1, pageSize = 10, opts?: { realtime?: boolean }) {
+export function useDjEventsPage(initialPage = 1, pageSize = 10, opts?: { realtime?: boolean; initialLifecycle?: DjEventsLifecycleFilter }) {
     const supabase = useSupabaseBrowser();
     const enableRealtime = opts?.realtime ?? false;
 
     const [page, setPage] = useState(initialPage);
+    const [lifecycle, setLifecyleState] = useState<DjEventsLifecycleFilter>(opts?.initialLifecycle ?? "active");
     const [data, setData] = useState<DjEventsPageResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const setLifecyle= useCallback((next: DjEventsLifecycleFilter) => {
+        setLifecyleState(next);
+        setPage(1);
+    }, [])
+
     const refetch = useCallback(async () => {
-        const result = await getDjEventsPage(page, pageSize);
+        const result = await getDjEventsPage(page, pageSize, lifecycle);
         setData(result.data);
         setError(result.error);
         setLoading(false);
-    }, [page, pageSize]);
+    }, [page, pageSize, lifecycle]);
 
     useEffect(() => {
         let cancelled = false;
 
         async function loadPage() {
-            const result = await getDjEventsPage(page, pageSize);
+            const result = await getDjEventsPage(page, pageSize, lifecycle);
             if (cancelled) return;
 
             setData(result.data);
@@ -35,7 +41,7 @@ export function useDjEventsPage(initialPage = 1, pageSize = 10, opts?: { realtim
         return () => {
             cancelled = true;
         };
-    }, [page, pageSize]);
+    }, [page, pageSize,lifecycle]);
 
     useEffect(() => {
         if (!enableRealtime) return;
@@ -55,7 +61,6 @@ export function useDjEventsPage(initialPage = 1, pageSize = 10, opts?: { realtim
 
         async function setupRealtime() {
             const { data: { user } } = await supabase.auth.getUser();
-
             if (!isMounted || !user) return;
 
             eventsChannel = supabase
@@ -106,5 +111,5 @@ export function useDjEventsPage(initialPage = 1, pageSize = 10, opts?: { realtim
 
     }, [enableRealtime, refetch, supabase]);
 
-    return { page, setPage, data, loading, error, refetch };
+    return { page, setPage,lifecycle, setLifecyle, data, loading, error, refetch };
 }

@@ -99,7 +99,7 @@ export default function VoteScreen() {
         <h2 className="text-lg font-semibold mb-3 text-muted-60">
           Song Request Queue
         </h2>
-        <ul className="space-y-1 max-h-177 mb-2 overflow-scroll no-scrollbar">
+        <ul className="space-y-1 lg:max-h-178 max-h-167 mb-2 overflow-scroll no-scrollbar">
           {requests.length === 0 ? (
             <li className="text-muted-40 py-4">
               No requests yet. Be the first!

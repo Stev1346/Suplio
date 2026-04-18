@@ -44,18 +44,30 @@ export const lifecycleStatus = {
         draft: "draft",
         live: "live",
         ended: "ended",
-        archived: "archived"
+        archived: "archived",
+        all: "all",
+        active: "active"
     },
     upper: {
         draft: "DRAFT",
         live: "LIVE",
         ended: "ENDED",
-        archived: "ARCHIVED"
+        archived: "ARCHIVED",
+        all: "ALL",
+        active: "ACTIVE"
     },
     cased: {
         draft: "Draft",
         live: "Live",
         ended: "Ended",
-        archived: "Archived"
+        archived: "Archived",
+        all: "All",
+        active: "Active"
     }
 } as const;
+
+export const EVENT_LIFECYCLE_STATUS = [
+    lifecycleStatus.lower.draft,
+    lifecycleStatus.lower.live,
+    lifecycleStatus.lower.ended,
+    lifecycleStatus.lower.archived] as const;

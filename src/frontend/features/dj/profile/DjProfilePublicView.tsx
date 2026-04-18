@@ -21,10 +21,10 @@ type Props = {
 
 export function DjProfilePublicView({ profile }: Props) {
   return (
-    <Card className="grid gap-6 bg-muted-20 w-full max-w-xl">
+    <Card className="grid gap-6 bg-muted-20 w-full max-w-xl ">
       <CardHeader className="flex items-center gap-4">
         {profile.avatar_url ? (
-          <Avatar className="h-40 w-40 rounded-full object-fill">
+          <Avatar className="lg:h-40 lg:w-40 h-25 w-25 rounded-full object-fill">
             <AvatarImage
               src={profile.avatar_url}
               alt={`${profile.stage_name} avatar`}
@@ -34,9 +34,9 @@ export function DjProfilePublicView({ profile }: Props) {
             />
           </Avatar>
         ) : (
-          <Avatar className="h-40 w-40 rounded-full object-fill">
+          <Avatar className="lg:h-40 lg:w-40 h-25 w-25 rounded-full object-fill">
             <AvatarFallback className="bg-muted-40">
-              <User className="text-muted-95" width={100} height={100}/>
+              <User className="text-muted-95"  width={90} height={90}/>
             </AvatarFallback>
           </Avatar>
         )}

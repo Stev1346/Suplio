@@ -32,12 +32,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", inter.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
       >
         <EventCodeProvider>
           <GuestDjProfileModalProvider>
             <TopNavShell />
-            {children}
+            <main className="min-h-dvh bg-background pt-15">{children}</main>
           </GuestDjProfileModalProvider>
         </EventCodeProvider>
 

@@ -10,6 +10,7 @@ export default function DjEventsListScreen() {
 
   return (
     <PageShell className="flex flex-col gap-6" centralize={false}>
+      
       {events.error ? (
         <p className="text-sm text-red-500">{events.error}</p>
       ) : null}
@@ -25,6 +26,8 @@ export default function DjEventsListScreen() {
           hasNextPage={events.data?.hasNextPage ?? false}
           onPrev={() => events.setPage((p) => Math.max(1, p - 1))}
           onNext={() => events.setPage((p) => p + 1)}
+          lifecycle={events.lifecycle}
+          onLifecycleChange={events.setLifecyle}
         />
       )}
     </PageShell>

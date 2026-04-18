@@ -234,24 +234,9 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
-**Sprint status:** Phase 7 (DJ Profile Management) is **complete**. **In progress:** Phase 8 — Event Search (DJ-only) + UX Polish.
+**Sprint status:** Phase 8 (Event Search + DJ UX polish) is **complete**. **In progress:** Phase 9 — QA, Hardening, Deploy Readiness.
 
 ### In Progress
-
-#### Phase 8 - Event Search (DJ-only) + UX Polish
-**Target duration:** 0.75-1.25 days  
-**Definition of Done**
-- [ ] Debounced event search is implemented in DJ nav.
-- [ ] Search supports event name and event code.
-- [ ] Result dropdown supports quick-open navigation.
-- [ ] Empty/loading/error states are polished and consistent.
-- [ ] Search endpoint enforces ownership (`dj_id = auth.uid()`).
-- [ ] Search behavior is documented (limit, ranking, pagination/fallback).
-- [ ] Required indexes for search performance are in place.
-
----
-
-### Backlog
 
 #### Phase 9 - QA, Hardening, Deploy Readiness
 **Target duration:** 1.0-1.5 days  
@@ -264,6 +249,12 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - [ ] Observability is configured (error tracking/logging).
 - [ ] Feature flags/staged rollout strategy is in place (or explicitly waived).
 - [ ] Final security review against Phase 0.5 contract is completed.
+
+---
+
+### Backlog
+
+- _No backlog phases after Phase 9 in this tracker._
 
 ---
 
@@ -390,3 +381,24 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - **Validation/sanitization:** Profile patch validation enforces stage name length/presence, trims and normalizes URL fields, validates social links/contact info shape, and rejects invalid payloads server-side.
 - **Avatar flow:** Profile UI supports upload + crop preview + remove avatar, with save/cancel behavior and post-save refresh to keep client state aligned with server data.
 - **Lifecycle default on create:** Event creation now explicitly sets `lifecycle_status: "draft"` for predictable initial event state.
+
+#### Phase 8 - Event Search (DJ-only) + UX Polish
+**Target duration:** 0.75-1.25 days  
+**Definition of Done**
+- [x] Debounced event search is implemented in DJ nav.
+- [x] Search supports event name and event code.
+- [x] Result dropdown supports quick-open navigation.
+- [x] Empty/loading/error states are polished and consistent.
+- [x] Search endpoint enforces ownership (`dj_id = auth.uid()`).
+- [x] Search behavior is documented (limit, ranking, pagination/fallback).
+- [x] Required indexes for search performance are in place.
+
+**Phase 8 completion notes**
+- **Search:** `DjEventSearch` + `useDjEventSearch` (debounced fetch, `AbortError` handling); `GET /api/dj/events/search` filters by `dj_id`, excludes `archived` events, supports `q` + `limit`; client helper `searchDjEvents` in `lib/client/api/dj.ts`.
+- **Indexes:** Migration `20260417142500_phase8_event_search_indexes.sql` supports name/code lookup for DJ-owned rows.
+- **Search contract (for operators):** default limit capped (e.g. 8–20); results ordered by `created_at` descending; name match uses `ilike` substring; event code match uses uppercase-normalized `ilike`; no server-side pagination on search (limit-only).
+- **Events list UX:** `GET /api/dj/events` supports `lifecycle` query (`active` default hides archived; `draft` / `live` / `ended` / `archived` / `all`); `getDjEventsPage` sends full query string (`URLSearchParams`); `useDjEventsPage` + `RecentEventsList` lifecycle filter (shadcn-style select where applicable); rows show lifecycle badge; **Archive** calls `PATCH /api/dj/events/[eventId]` with `lifecycle_status: archived` and refetches.
+- **Dashboard:** Metrics extended with per-lifecycle event counts (`GET /api/dj/dashboard`); dashboard event list stays in sync with filters/refetch after create or archive.
+- **DJ shell / nav:** Private DJ layout uses fixed header + padded `main` so scroll does not expose background gaps; guest `TopNavShell` aligned with same sticky/fixed pattern as implemented.
+- **Lifecycle timestamps (feeds Phase 9 automation):** Migrations add `events.live_entered_at` / `ended_entered_at`; `PATCH` updates them on transitions to `live` / `ended` and clears on `draft`; values stored as ISO timestamps for `timestamptz`. Backfill migration seeds existing `live` / `ended` rows. `pg_cron` migration defines `sweep_events_live_to_ended` and `sweep_events_ended_to_archived` plus `cron.schedule` entries—verify jobs in hosted Supabase after `db push`.
+- **Hardening done during Phase 8:** `PATCH` body parses `lifecycle_status` with runtime string validation before use; `database.ts` `events` types include timestamp columns when present in schema.

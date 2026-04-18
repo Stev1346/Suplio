@@ -1,15 +1,19 @@
-import { requestStatus } from "@/lib/shared/constants/routes";
+import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 type DashboardMetrics = {
-    totalEvents: number;
-    openEvents: number;
+    activeEvents: number;
+    requestsOpen: number;
     totalRequests: number;
     pendingRequests: number;
     acceptedRequests: number;
     playedRequests: number;
     rejectedRequests:number;
+    draftEvents: number;
+    liveEvents: number;
+    endedEvents: number;
+    archivedEvents: number;
 }
 
 export async function GET(){
@@ -26,7 +30,7 @@ export async function GET(){
 
     const {data: events, error: eventsError} = await supabase
         .from("events")
-        .select("id, allow_requests, created_at, name, event_code")
+        .select("id, allow_requests, created_at, name, event_code, lifecycle_status")
         .eq("dj_id", user.id)
         .order("created_at", {ascending: false});
 
@@ -60,14 +64,31 @@ export async function GET(){
         }
     }
 
+    let draftEvents = 0;
+    let liveEvents = 0;
+    let endedEvents = 0;
+    let archivedEvents = 0;
+    let requestsOpen = 0;
+    for(const e of events ?? []){
+        if(e.lifecycle_status === lifecycleStatus.lower.draft) draftEvents += 1;
+        if(e.lifecycle_status === lifecycleStatus.lower.live) liveEvents += 1;
+        if(e.lifecycle_status === lifecycleStatus.lower.ended) endedEvents += 1;
+        if(e.lifecycle_status === lifecycleStatus.lower.archived) archivedEvents += 1;
+        if(e.allow_requests) requestsOpen += 1;
+    }
+
     const metrics: DashboardMetrics = {
-        totalEvents: events?.length ?? 0,
-        openEvents: (events ?? []).filter((e) => e.allow_requests).length,
+        activeEvents: (events ?? []).length - archivedEvents,
+        requestsOpen,
         totalRequests,
         pendingRequests,
         acceptedRequests,
         playedRequests,
-        rejectedRequests
+        rejectedRequests,
+        draftEvents,
+        liveEvents,
+        endedEvents,
+        archivedEvents
     };
 
     return NextResponse.json({
