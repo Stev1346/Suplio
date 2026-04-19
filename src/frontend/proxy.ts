@@ -1,29 +1,73 @@
-// src/frontend/proxy.ts
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionEdge } from "@/lib/edge/dashboard-session";
+import { updateSession } from "./lib/supabase/proxy";
+import { isDjLandingPath, isDjPrivatePath, isDjPublicPath } from "./lib/shared/routing/routeGroups";
+import { isDjSessionBeyondMax } from "./lib/shared/utils/dj-session-bound";
 
-const COOKIE_NAME = "dj_session";
+export async function proxy(request: NextRequest) {
+    const { pathname } = request.nextUrl;
 
-export async function proxy(req: NextRequest) {
-  const parts = req.nextUrl.pathname.split("/").filter(Boolean);
-  const isDashboard = parts[0] === "dashboard" && parts[1];
-  const isLogin = isDashboard && parts[2] === "login";
+    if (pathname === "/auth/callback" || pathname === "/auth/callback/" ) {
+        return NextResponse.next({ request });
+      }
 
-  if (!isDashboard || isLogin) return NextResponse.next();
+    const { supabaseResponse, user } = await updateSession(request);
 
-  const eventCode = parts[1];
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  const session = await verifySessionEdge(token);
+    const needsVerify = user && user.email && !user.email_confirmed_at;
+    const canAccessDjApp = Boolean(user && !needsVerify);
+    const verifySafe = isDjPublicPath(pathname) || isDjLandingPath(pathname) || pathname.startsWith("/auth/");
+    const isDjapi = pathname.startsWith("/api/dj");
+    const needsDjSessionBound = canAccessDjApp && (isDjPrivatePath(pathname) || isDjapi);
 
-  if (!session || session.eventCode !== eventCode) {
-    const url = req.nextUrl.clone();
-    url.pathname = `/dashboard/${eventCode}/login`;
-    return NextResponse.redirect(url);
-  }
+    if(needsVerify && !verifySafe){
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/login";
+        url.searchParams.set("error", "verify_email");
+        return NextResponse.redirect(url);
+    }
 
-  return NextResponse.next();
+    if (pathname.startsWith("/auth/")) {
+        return supabaseResponse;
+    }
+
+    const isDjPrivate = isDjPrivatePath(pathname);
+
+    if (isDjPrivate && !user) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/login";
+        url.searchParams.set("next", pathname);
+        return NextResponse.redirect(url);
+    }
+
+    if ((pathname === "/dj/signup") && canAccessDjApp) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    if ((pathname === "/dj/login") && canAccessDjApp) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    if (isDjLandingPath(pathname) && canAccessDjApp) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/dj/dashboard";
+        return NextResponse.redirect(url);
+    }
+
+    if (needsDjSessionBound && isDjSessionBeyondMax(request)) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/auth/dj-session-ended";
+        url.search = "";
+        return NextResponse.redirect(url);
+      }
+
+    return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
-};
+    matcher: [
+        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    ]
+}

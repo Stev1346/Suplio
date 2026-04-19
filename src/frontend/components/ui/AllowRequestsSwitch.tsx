@@ -9,11 +9,11 @@ type AllowRequestsSwitchProps = {
 export function AllowRequestsSwitch({
   checked,
   onToggle,
-  disabled = false,
+  disabled = false
 }: AllowRequestsSwitchProps) {
   return (
     <div className="flex items-center gap-3">
-      <span className="text-muted-500 text-sm font-medium">Requests Allowed</span>
+      <span className="text-muted-60 text-sm font-medium">Requests Allowed</span>
       <button
         type="button"
         role="switch"

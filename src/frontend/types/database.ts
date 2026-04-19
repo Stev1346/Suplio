@@ -1,4 +1,12 @@
 export type EventStatus = 'pending' | 'accepted' | 'rejected' | 'played';
+export type EventLifecycleStatus = "draft" | "live" | "ended" | "archived";
+type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
 export interface Database {
   public: {
@@ -8,17 +16,50 @@ export interface Database {
           id: string;
           name: string;
           event_code: string;
+          dj_id: string;
           created_at: string;
           allow_requests: boolean;
+          lifecycle_status: EventLifecycleStatus;
+          live_entered_at: string | null;
+          ended_entered_at: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           event_code: string;
+          dj_id: string;
           created_at?: string;
           allow_requests?: boolean;
+          lifecycle_status: EventLifecycleStatus;
+          live_entered_at?: string | null;
+          ended_entered_at?: string | null;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
+      };
+      dj_profiles: {
+        Row: {
+          user_id: string;
+          stage_name: string;
+          bio: string | null;
+          avatar_url: string | null;
+          website: string | null;
+          social_links: Json | null;
+          contact_info: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          stage_name: string;
+          bio?: string | null;
+          avatar_url?: string | null;
+          website?: string | null;
+          social_links?: Json | null;
+          contact_info?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["dj_profiles"]["Insert"]>;
       };
       requests: {
         Row: {

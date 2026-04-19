@@ -1,4 +1,4 @@
-import {RequestRow} from "@/lib/requests";
+import {RequestRow} from "@/lib/client/api/requests";
 
 export function compareRankedRequests(a:RequestRow, b:RequestRow){
     return (
