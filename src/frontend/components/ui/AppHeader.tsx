@@ -4,11 +4,13 @@ import Link from "next/link";
 type AppHeaderProps = {
   title?: string;
   tagLine?: string;
+  hideDjLink?: boolean;
 };
 
 export function AppHeader({
   title = "GotATune",
   tagLine = "Scan. Request. Vote.",
+  hideDjLink = false
 }: AppHeaderProps) {
   const {open} = useGuestDjProfileModal();
 
@@ -26,6 +28,7 @@ export function AppHeader({
           e.preventDefault();
           open();
         }}
+        hidden={hideDjLink}
       >
         Meet your DJ
       </Link>

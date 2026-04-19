@@ -1,5 +1,6 @@
 import { consumeRateLimit } from "@/lib/server/consume-rate-limit";
 import { logDjAction } from "@/lib/server/dj-audit";
+import { captureServerError } from "@/lib/server/observability";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
 import { createClient } from "@/lib/supabase/server";
 import { randomUUID } from "crypto";
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
             }
         });
     } catch (e) {
-        console.error("profile.avatar.updated audit failed", e);
+        captureServerError(e, { message: "profile.avatar.updated audit failed", userId: user.id });
     }
 
     return NextResponse.json({ data: { avatar_url: publicUrl } }, { status: 200 })
@@ -172,10 +173,10 @@ export async function DELETE() {
             .remove([oldPath]);
             
         if (storageError) {
-            console.error("avatar storage remove failed", {
+            captureServerError(storageError, {
+                message: "avatar storage remove failed",
                 userId: user.id,
                 oldPath,
-                message: storageError.message,
             });
             return NextResponse.json(
                 { error: "Could not remove avatar file; profile unchanged." },
@@ -202,7 +203,7 @@ export async function DELETE() {
         });
     }
     catch (e) {
-        console.error("profile.avatar.removed audit failed", e)
+        captureServerError(e, { message: "profile.avatar.removed audit failed", userId: user.id });
     }
 
     return NextResponse.json({ ok: true }, { status: 200 });

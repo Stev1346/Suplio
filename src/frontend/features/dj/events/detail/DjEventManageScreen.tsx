@@ -4,7 +4,6 @@ import { FullRequestList } from "@/components/FullRequestList";
 import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
@@ -27,6 +26,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 function eventCodeFromParams(
   raw: string | string[] | undefined,
@@ -200,7 +200,7 @@ export default function DjEventManageScreen() {
   if (isLoading) {
     return (
       <PageShell centralize>
-        <LoadingSpinner />
+        <LoadingState />
       </PageShell>
     );
   }

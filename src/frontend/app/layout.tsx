@@ -37,7 +37,7 @@ export default function RootLayout({
         <EventCodeProvider>
           <GuestDjProfileModalProvider>
             <TopNavShell />
-            <main className="min-h-dvh bg-background pt-15">{children}</main>
+            {children}
           </GuestDjProfileModalProvider>
         </EventCodeProvider>
 

@@ -11,7 +11,7 @@ export default function DjPrivateLayout({
     <>
       <DjLastTabSignOut />
       <DjPrivateNav />
-      <main className="min-h-dvh bg-background pt-10">{children}</main>
+      <main className="min-h-dvh bg-background pt-15">{children}</main>
     </>
   );
 }

@@ -1,15 +1,16 @@
 import { defineConfig } from "@playwright/test";
 
-export default defineConfig({
-  testDir: "./tests/e2e",
+export default defineConfig({ 
+  testDir: "./tests",
+  testMatch: ["e2e/**/*.spec.ts", "rls/**/*.spec.ts"],
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://127.0.0.1:3000",
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: "npx next dev --hostname 127.0.0.1 --port 3000",
+    url: "http://127.0.0.1:3000/dj/login",
     reuseExistingServer: true,
-    timeout: 120_000,
+    timeout: 240_000,
   },
 });

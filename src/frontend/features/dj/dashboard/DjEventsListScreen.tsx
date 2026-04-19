@@ -1,24 +1,27 @@
 "use client";
 
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { useDjEventsPage } from "@/hooks/dj/useDjEventsPage";
 import { RecentEventsList } from "./components/RecentEventsList";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 export default function DjEventsListScreen() {
   const events = useDjEventsPage(1, 10, { realtime: true });
 
   return (
     <PageShell className="flex flex-col gap-6" centralize={false}>
-      
       {events.error ? (
         <p className="text-sm text-red-500">{events.error}</p>
       ) : null}
 
       {events.loading && !events.data ? (
-        <PageShell>
-          <LoadingSpinner />
-        </PageShell>
+        <div
+          className="flex items-center justify-center flex-1 py-12"
+          role="status"
+          aria-live="polite"
+        >
+          <LoadingState />
+        </div>
       ) : (
         <RecentEventsList
           items={events.data?.items ?? []}

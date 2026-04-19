@@ -1,4 +1,5 @@
 import { createAdminSupabase } from "./supabase-admin";
+import { captureServerError } from "./observability";
 
 type  LogDjActionInput = {
     djId: string;
@@ -20,6 +21,6 @@ export async function logDjAction(input: LogDjActionInput): Promise<void> {
     });
 
     if(error){
-        console.error("Failed to write dj audit log:", error.message);
+        captureServerError(error, { message: "Failed to write dj audit log" });
     }
 }

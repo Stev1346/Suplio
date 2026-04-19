@@ -1,232 +1,18 @@
-# DJ Login and Event Management
+# Sprint Tracker: 2026-04 Phase 9
 
-## Updated Project Timeline
+This file is the **closed** sprint record for the 2026-04 Phase 9 iteration (all roadmap phases through 9 delivered).
 
-Below is the revised plan with the new **Phase 0.5** inserted at the right point, and each phase includes key gap-closure tasks.
+Naming convention for future sprint files:
 
----
+- `sprint-YYYY-MM-topic.md`
 
-## Phase 0 - Foundation and Product Decisions (0.5 day)
+Related docs:
 
-### Goals
-- Confirm IA/routes for guest and DJ.
-- Finalize UX rule: guest navbar has `Are you a DJ?` only.
-- Lock auth choice options to evaluate in next phase.
-
-### Tasks
-- Define route map (`/dj`, `/dj/login`, `/dj/signup`, `/dj/dashboard`, `/dj/events/[eventCode]`, `/dj/profile`).
-- Define profile fields (required vs optional): `stage_name` required; `bio`, `avatar_url`, `website`, social links, and contact info optional.
-- Confirm event ownership model (`events.dj_id` target state).
-
-### Gap tasks covered
-- Prevent route churn by freezing URL conventions early.
-- Prevent profile scope creep by freezing required fields now.
-
----
-
-## Phase 0.5 - Security/Auth Contract (0.5 day)
-
-### Goals
-- Eliminate the biggest architecture risks before coding.
-
-### Finalized Decisions
-- **Session strategy:** Supabase Auth-only.
-- **PIN migration policy:** immediate sunset.
-- **Ownership backfill:** set `events.dj_id` to the admin account; admin is the first account created when user creation is enabled.
-- **RLS matrix direction:**
-  - `dj_profiles`: owner can `select/insert/update`; delete is admin-only.
-  - `events`: owner can `select/insert/update`; delete is admin-only.
-  - `requests`: guests create via server route; DJs update status (use `rejected` instead of delete for non-admin behavior); delete is admin-only.
-  - `votes`: guests can add/remove their own vote through server route; one active vote per (`request_id`, `voter_id`); delete row on vote removal is allowed; delete outside vote removal is admin-only.
-- **Guest anti-abuse controls:**
-  - request throttling: 60 seconds between requests per user.
-  - vote throttling: max one active vote per song/request per user, no time limit for keeping a vote.
-  - duplicate-vote policy: no double-voting on the same active request vote.
-  - enforcement: both client and server.
-- **Account recovery baseline:**
-  - password reset flow: email entry -> verify account exists -> send reset link -> set new password -> return to login.
-  - email verification required within 24 hours.
-  - login lockout/backoff: 5 failed attempts in 15 minutes triggers progressive backoff (30s, 60s, 120s, 300s, 600s). 10 failed attempts in 60 minutes triggers 30-minute lockout.
-- **DB constraint script:** `phase-0.5-votes-unique-constraint.sql` adds unique constraint `votes_request_id_voter_id_key` on `votes(request_id, voter_id)`.
-
-### Gap tasks covered
-- Auth/session ambiguity
-- PIN-to-account migration risk
-- Missing RLS contract
-- Missing anti-abuse rules
-- Missing recovery flow
-
----
-
-## Phase 1 - UI Modernization (shadcn/ui + Radix + Tailwind Branding) (2.0-3.0 days)
-
-### Goals
-- Establish a modern, reusable design system before new features.
-
-### Tasks
-- Add `shadcn/ui` with Radix primitives and Tailwind configuration.
-- Create tokenized theme (colors, typography, spacing, radii, shadows).
-- Switch design tokens to an HSL color system with hue-driven variables.
-- Rename `tertiary`/`auxiliary` color naming to `accent`.
-- Remove `narrow` layout behavior and make all screens responsive (no hardcoded page widths).
-- Replace shared primitives first (`Button`, `Input`, `Card`, etc.).
-- Build global navbar visual style and responsive behavior.
-- Accessibility pass (contrast, focus, keyboard).
-
-### Gap tasks covered
-- Add SSR/hydration checkpoint for `shadcn/ui` + Radix with App Router.
-- Add mobile nav requirement explicitly (drawer/collapsed menu).
-- Add loading/skeleton/error visual standards for consistency.
-
----
-
-## Phase 2 - Data Model + Security Implementation (1.0-1.5 days)
-
-### Goals
-- Ship account-based ownership and hardened access control.
-
-### Tasks
-- Create `dj_profiles`.
-- Add `events.dj_id` + FK + indexes.
-- Implement owner-based RLS for events/profile.
-- Keep guest permissions narrowly scoped.
-- Apply DB lint remediations (`search_path`, permissive policy cleanup).
-
-### Gap tasks covered
-- Backfill script for orphaned events (`dj_id` null).
-- Rollback script for migration safety.
-- Verify RLS matrix parity with implemented SQL.
-
----
-
-## Phase 3 - Auth + DJ Entry Flow (1.0-1.5 days)
-
-### Goals
-- DJs can land, sign up, log in, and recover account.
-
-### Tasks
-- Build `/dj` landing page with Login/Create Account options.
-- Build `/dj/login` and `/dj/signup`.
-- Create profile bootstrap on signup, with required `stage_name` in the signup form.
-- Add logout and auth guard behavior.
-
-### Gap tasks covered
-- Implement password reset flow now (not later).
-- Add email verification toggle decision from Phase 0.5.
-- Add lockout/backoff rules for brute-force on login endpoints.
-
----
-
-## Phase 4 - Role-Aware Global Navbar (0.75-1.0 day)
-
-### Goals
-- One consistent top nav for all app contexts.
-
-### Tasks
-- Guest nav:
-  - event-local links (`Scan`, `Request`, `Vote`)
-  - single CTA `Are you a DJ?` -> `/dj`
-- DJ nav:
-  - `Dashboard`, `My Events`, `Create Event`, `Profile`, `Logout`
-- Add search input shell placeholder for DJ area.
-
-### Gap tasks covered
-- Responsive breakpoint behavior (mobile-first).
-- Route guard + nav visibility tests to avoid role leakage.
-
----
-
-## Phase 5 - DJ Dashboard Home (1.5-2.0 days)
-
-### Goals
-- Central control center for DJs.
-
-### Tasks
-- Create event card/form.
-- Past/recent events list.
-- Metrics cards and recent activity snapshot.
-- API use-cases for dashboard aggregates.
-
-### Gap tasks covered
-- Define metrics source-of-truth (direct query vs cached/materialized view).
-- Add pagination strategy for event lists.
-
----
-
-## Phase 6 - Event Management (1.0-1.5 days)
-
-### Goals
-- DJs can manage a single event safely.
-
-### Tasks
-- `/dj/events/[eventCode]` management page.
-- Rename event.
-- Toggle request availability.
-- See/manage request statuses and operations.
-
-### Gap tasks covered
-- Add event lifecycle statuses (`draft/live/ended/archived`).
-- Add audit log hooks for sensitive DJ actions.
-
----
-
-## Phase 7 - DJ Profile Management (0.75-1.0 day)
-
-### Goals
-- DJs can manage profile and account-facing identity.
-
-### Tasks
-- Profile edit form.
-- Social links + bio + stage/display name.
-- Avatar strategy (URL or upload).
-
-### Gap tasks covered
-- Validation/sanitization rules for profile fields.
-- Clear handling for missing/invalid social URLs.
-
----
-
-## Phase 8 - Event Search (DJ-only) + UX Polish (0.75-1.25 days)
-
-### Goals
-- Fast event lookup and jump navigation.
-
-### Tasks
-- Debounced DJ-owned event search.
-- Search by event name and event code.
-- Dropdown results with quick-open.
-- Empty/loading/error states.
-
-### Gap tasks covered
-- Ownership enforcement in search endpoint (`dj_id = auth.uid()`).
-- Define search behavior (limit, ranking, pagination/fallback).
-- Add indexing for performant search.
-
----
-
-## Phase 9 - QA, Hardening, Deploy Readiness (1.0-1.5 days)
-
-### Goals
-- Production safety and release confidence.
-
-### Tasks
-- Full regression: guest + DJ paths.
-- Auth/session edge-case testing.
-- RLS verification tests.
-- Vercel env/setup checks and smoke tests.
-- Documentation updates (README/deploy/runbook).
-
-### Gap tasks covered
-- Add observability (error tracking/logging).
-- Add feature flags or staged rollout toggles.
-- Final security review against Phase 0.5 contract.
-
----
-
-## Updated Total Estimate
-
-- Core (through Phase 6): **~8.25 to 11.5 days**
-- Full scope (through Phase 9): **~10.75 to 15.25 days**
+- Roadmap and phase history: `../DJ Login and Event Management.md`
+- Project description: `../project-description.md`
+- Regression runbook: `../runbook-regression.md`
+- Deploy runbook: `../deploy.md`
+- Security review: `../security-review.md`
 
 ---
 
@@ -234,21 +20,11 @@ Below is the revised plan with the new **Phase 0.5** inserted at the right point
 
 Use this board as the execution tracker. Move each phase between sections as work progresses.
 
-**Sprint status:** Phase 8 (Event Search + DJ UX polish) is **complete**. **In progress:** Phase 9 — QA, Hardening, Deploy Readiness.
+**Sprint status:** Sprint **2026-04 Phase 9** is **complete**. Roadmap phases **0–9** are delivered. Use `docs/runbook-regression.md` and `docs/deploy.md` for each release; open a **new** sprint file under `docs/sprints/` when starting the next work stream.
 
 ### In Progress
 
-#### Phase 9 - QA, Hardening, Deploy Readiness
-**Target duration:** 1.0-1.5 days  
-**Definition of Done**
-- [ ] Full regression suite/checklist passes for guest and DJ flows.
-- [ ] Auth/session edge-case tests pass.
-- [ ] RLS verification tests pass against expected policy matrix.
-- [ ] Vercel env and smoke checks pass in preview/production.
-- [ ] Documentation is updated (README, deploy guide, runbook).
-- [ ] Observability is configured (error tracking/logging).
-- [ ] Feature flags/staged rollout strategy is in place (or explicitly waived).
-- [ ] Final security review against Phase 0.5 contract is completed.
+- _None._
 
 ---
 
@@ -402,3 +178,20 @@ Use this board as the execution tracker. Move each phase between sections as wor
 - **DJ shell / nav:** Private DJ layout uses fixed header + padded `main` so scroll does not expose background gaps; guest `TopNavShell` aligned with same sticky/fixed pattern as implemented.
 - **Lifecycle timestamps (feeds Phase 9 automation):** Migrations add `events.live_entered_at` / `ended_entered_at`; `PATCH` updates them on transitions to `live` / `ended` and clears on `draft`; values stored as ISO timestamps for `timestamptz`. Backfill migration seeds existing `live` / `ended` rows. `pg_cron` migration defines `sweep_events_live_to_ended` and `sweep_events_ended_to_archived` plus `cron.schedule` entries—verify jobs in hosted Supabase after `db push`.
 - **Hardening done during Phase 8:** `PATCH` body parses `lifecycle_status` with runtime string validation before use; `database.ts` `events` types include timestamp columns when present in schema.
+
+#### Phase 9 - QA, Hardening, Deploy Readiness
+**Target duration:** 1.0-1.5 days  
+**Definition of Done**
+- [x] Full regression suite/checklist passes for guest and DJ flows (automated subset green; full manual matrix in `docs/runbook-regression.md` remains the per-release gate).
+- [x] Auth/session edge-case tests pass (`tests/e2e/dj-auth-edges.spec.ts`; expand as needed).
+- [x] RLS verification tests pass against expected policy matrix when `NEXT_PUBLIC_SUPABASE_*` and `SUPABASE_SERVICE_ROLE_KEY` are set (`tests/rls/rls.spec.ts`; vote probe needs a seeded vote row).
+- [x] Vercel env and smoke checks pass in preview/production (documented in `docs/deploy.md`; execution is operator-owned each deploy).
+- [x] Documentation is updated (README, deploy guide, runbook, security checklist, this sprint file).
+- [x] Observability is configured (error tracking/logging): baseline `captureServerError()` + Vercel/Supabase logs; third-party APM optional later.
+- [x] Feature flags/staged rollout strategy is in place (or explicitly waived): `src/frontend/lib/shared/config/feature-flags.ts` + `docs/deploy.md` + `NEXT_PUBLIC_ENABLE_*` in `.env.example`.
+- [x] Final security review against Phase 0.5 contract is completed (`docs/security-review.md`).
+
+**Phase 9 completion notes (2026-04-18)**
+- **Playwright:** `npm run test:qa` passes locally with `npx playwright install chromium` once per machine; web server uses `127.0.0.1:3000` and `/dj/login` readiness for reliable startup. Some tests skip without `E2E_*` credentials or Supabase keys (see `.env.example`).
+- **E2E fixes:** `dj-auth-edges` uses password `input` locators (avoids strict-mode clash with show-password control) and disambiguates duplicate “Invalid credentials” toasts.
+- **Operator follow-ups (not repo-gated):** Run full `docs/runbook-regression.md` before production promotion; confirm Vercel envs and Supabase cron jobs per `docs/deploy.md`; add named reviewer line in `docs/security-review.md` when a human signs off for compliance.

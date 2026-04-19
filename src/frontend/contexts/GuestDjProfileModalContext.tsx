@@ -23,7 +23,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 type GuestDjProfileModalContextValue = {
   open: () => void;
@@ -116,7 +116,7 @@ export function GuestDjProfileModalProvider({
               Public profile for the DJ running this event.
             </DialogDescription>
           </DialogHeader>
-          {loading && <LoadingSpinner />}
+          {loading && <LoadingState/>}
           {error && <p className="text-sm text-destructive">{error}</p>}
           {!loading && profile && (
             <div className="flex justify-center">
