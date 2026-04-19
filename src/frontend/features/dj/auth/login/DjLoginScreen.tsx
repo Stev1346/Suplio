@@ -3,7 +3,6 @@
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import { PasswordFormField } from "@/components/ui/PasswordFormField";
 import { sanitizeInternalNextPath } from "@/lib/shared/utils/sanitize-internal-next-path";
@@ -12,6 +11,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const ERROR_MESSAGES: Record<string, string> = {
   verify_email:
@@ -93,7 +93,7 @@ export default function DjLoginScreen() {
   if (loading) {
     return (
       <PageShell centralize>
-        <LoadingSpinner />
+        <LoadingState />
       </PageShell>
     );
   }

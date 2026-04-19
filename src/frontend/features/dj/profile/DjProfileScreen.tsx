@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { PageShell } from "@/components/ui/PageShell";
 import {
   DjProfileResponse,
@@ -22,6 +21,7 @@ import {
 import { Trash2 } from "lucide-react";
 import { AvatarCropModal } from "@/components/ui/AvatarCropModal";
 import Image from "next/image";
+import { LoadingState } from "@/components/ui/LoadingState";
 
 const textareaClassName = cn(
   "min-h-[120px] w-full rounded-md bg-transparent px-2.5 py-2 text-base text-accent-95 shadow-xs transition-[color,box-shadow] outline-none",
@@ -232,7 +232,7 @@ export default function DjProfileScreen() {
   if (loading || !profile || !draft) {
     return (
       <PageShell centralize>
-        <LoadingSpinner />
+        <LoadingState />
       </PageShell>
     );
   }

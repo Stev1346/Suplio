@@ -7,7 +7,7 @@ import { TopRequestList } from "@/components/TopRequestList";
 import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { LoadingState } from "@/components/ui/LoadingState";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
@@ -93,7 +93,7 @@ export default function SongRequestScreen() {
         if (isLoading) {
           return (
             <PageShell centralize>
-              <LoadingSpinner />
+              <LoadingState />
             </PageShell>
           );
         }

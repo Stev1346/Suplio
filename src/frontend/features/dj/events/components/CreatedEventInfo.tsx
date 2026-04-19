@@ -37,10 +37,10 @@ export default function CreatedEventInfo({createdCode}: CreatedEventInfoProps){
           </Button>
           <div className="flex gap-4">
             <Link href={routes.guest.eventLanding(createdCode)}>
-              <Button>Open guest page</Button>
+              <Button asChild>Open guest page</Button>
             </Link>
             <Link href={routes.dj.dashboard}>
-              <Button variant="secondary">DJ Dashboard</Button>
+              <Button asChild variant="secondary">DJ Dashboard</Button>
             </Link>
           </div>
         </div>
