@@ -16,35 +16,24 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** Planned.
+**Sprint status:** In Progress (Phase 2).
 
 ### In Progress
-
-- _None._
-
----
-
-### Backlog
-
-#### Phase 1 - Data Model and Types
-**Target duration:** 0.5-1.0 day  
-**Definition of Done**
-- [ ] `events.event_mode` is added with safe default (`song_request`).
-- [ ] `events.event_date` is added and validated.
-- [ ] `requests.performer_name` is added.
-- [ ] Karaoke request list and regular request list separation is represented in schema/model design.
-- [ ] Karaoke request remove/restore representation is defined in schema/model design.
-- [ ] Type definitions include all new fields.
 
 #### Phase 2 - Event Creation Flow
 **Target duration:** 0.5-1.0 day  
 **Definition of Done**
 - [ ] Create Event form supports mode selection and event date.
 - [ ] Create event API accepts and persists new fields.
+- [ ] Align `Database` `events.Insert` (and create-event `insert` payloads) with real usage: optional `event_mode` / `event_date` where DB defaults apply, or always pass explicit values from the API after the form ships—either way, types and inserts must match with no spurious required fields.
 - [ ] Validation + UI error messaging work for invalid input.
 - [ ] DJ event management page supports editing all creation-time event settings.
 - [ ] DJ event management page supports toggling karaoke mode on/off.
 - [ ] DJ event management page includes a controls card for event info, karaoke toggle, and request toggle.
+
+---
+
+### Backlog
 
 #### Phase 3 - Karaoke Intake Form
 **Target duration:** 0.75-1.0 day  
@@ -92,9 +81,28 @@ Use this board to move phases through execution.
 
 ### Done
 
-- _None._
+#### Phase 1 - Data Model and Types
+**Completed:** 2026-04-20  
+**Notes:** `events.Insert` vs minimal create-event insert (defaults for `event_mode` / `event_date`) is intentionally deferred to **Phase 2**—see Phase 2 DoD for explicit alignment work.
+
+**Definition of Done**
+- [x] `events.event_mode` is added with safe default (`song_request`).
+- [x] `events.event_date` is added and validated.
+- [x] `requests.performer_name` is added.
+- [x] Karaoke request list and regular request list separation is represented in schema/model design.
+- [x] Karaoke request remove/restore representation is defined in schema/model design.
+- [x] Type definitions include all new fields.
 
 ---
+
+## Current Phase Start Checklist (Phase 2)
+
+### Create flow and type alignment
+- [ ] Extend create-event form and API to accept and persist `event_mode` and `event_date`.
+- [ ] Resolve `events.Insert` vs real inserts: optional insert fields matching DB defaults, or explicit fields on every insert—document the chosen approach in PR or feature doc.
+
+### DJ event management (same phase per sprint board)
+- [ ] DJ event management supports editing creation-time settings, karaoke toggle, and controls card layout.
 
 ## Validation Checklist (Sprint Exit)
 

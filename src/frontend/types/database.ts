@@ -1,5 +1,10 @@
-export type EventStatus = 'pending' | 'accepted' | 'rejected' | 'played';
+export type SongRequestStatus = 'pending' | 'accepted' | 'rejected' | 'played';
 export type EventLifecycleStatus = "draft" | "live" | "ended" | "archived";
+export type EventMode ="song_request" | "karaoke";
+export type KaraokeRequestStatus = "queued" | "up_next" | "performing_now";
+export type RequestStatus = SongRequestStatus | KaraokeRequestStatus;
+export type RequestType = "song_request" | "karaoke";
+
 type Json =
   | string
   | number
@@ -22,6 +27,8 @@ export interface Database {
           lifecycle_status: EventLifecycleStatus;
           live_entered_at: string | null;
           ended_entered_at: string | null;
+          event_mode: EventMode;
+          event_date: string | null;
         };
         Insert: {
           id?: string;
@@ -33,6 +40,8 @@ export interface Database {
           lifecycle_status: EventLifecycleStatus;
           live_entered_at?: string | null;
           ended_entered_at?: string | null;
+          event_mode: EventMode;
+          event_date: string | null;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
       };
@@ -69,8 +78,11 @@ export interface Database {
           artist: string | null;
           message: string | null;
           votes: number;
-          status: EventStatus;
+          status: RequestStatus;
           created_at: string;
+          request_type: RequestType;
+          performer_name: string | null;
+          removed_at: string | null;
         };
         Insert: {
           id?: string;
@@ -79,8 +91,11 @@ export interface Database {
           artist?: string | null;
           message?: string | null;
           votes?: number;
-          status?: EventStatus;
+          status?: RequestStatus;
           created_at?: string;
+          request_type: RequestType;
+          performer_name: string | null;
+          removed_at: string | null;
         };
         Update: Partial<Database['public']['Tables']['requests']['Insert']>;
       };

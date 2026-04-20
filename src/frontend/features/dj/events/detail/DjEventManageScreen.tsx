@@ -13,7 +13,7 @@ import {
   patchRequestStatus,
 } from "@/lib/client/api/dj";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { EventLifecycleStatus, EventStatus } from "@/types/database";
+import { EventLifecycleStatus, SongRequestStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "next/navigation";
@@ -48,13 +48,13 @@ export default function DjEventManageScreen() {
     error: eventError,
     refetch: refetchEvent,
   } = useEvent(eventCode, { realtime: true });
-  const STATUS_OPTIONS: EventStatus[] = [
+  const STATUS_OPTIONS: SongRequestStatus[] = [
     requestStatus.lower.pending,
     requestStatus.lower.accepted,
     requestStatus.lower.rejected,
     requestStatus.lower.played,
   ];
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<EventStatus>>(
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<SongRequestStatus>>(
     new Set(),
   );
   const {
@@ -82,7 +82,7 @@ export default function DjEventManageScreen() {
     return requests.filter((r) => selectedStatuses.has(r.status));
   }, [requests, selectedStatuses]);
   const isLoading = !!eventCode && (eventLoading || requestsLoading);
-  const statusCounts = useMemo<Record<EventStatus, number>>(
+  const statusCounts = useMemo<Record<SongRequestStatus, number>>(
     () =>
       requests.reduce(
         (acc, r) => {
@@ -166,7 +166,7 @@ export default function DjEventManageScreen() {
     toast.success("Lifecycle updated");
   }
 
-  async function setRequestStatus(requestId: string, status: EventStatus) {
+  async function setRequestStatus(requestId: string, status: SongRequestStatus) {
     if (!event || updatingId) return;
 
     setUpdatingId(requestId);
@@ -184,7 +184,7 @@ export default function DjEventManageScreen() {
     }
   }
 
-  function toggleStatus(status: EventStatus) {
+  function toggleStatus(status: SongRequestStatus) {
     setSelectedStatuses((prev) => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status);

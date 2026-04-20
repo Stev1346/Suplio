@@ -1,15 +1,15 @@
 import { requestStatus } from "@/lib/shared/constants/routes";
-import { Database, EventStatus } from "@/types/database";
+import { Database, SongRequestStatus } from "@/types/database";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
-const STATUS_LABELS: Record<EventStatus, string> = {
+const STATUS_LABELS: Record<SongRequestStatus, string> = {
   pending: requestStatus.cased.pending,
   accepted: requestStatus.cased.accepted,
   rejected: requestStatus.cased.rejected,
   played: requestStatus.cased.played,
 };
-const STATUS_BADGE_CLASS: Record<EventStatus, string> = {
+const STATUS_BADGE_CLASS: Record<SongRequestStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
   accepted: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
@@ -21,7 +21,7 @@ type FullRequestListProps = {
   title?: string;
   className?: string;
   hiddenTitle?: boolean;
-  onSetStatus?: (requestId: string, status: EventStatus) => void;
+  onSetStatus?: (requestId: string, status: SongRequestStatus) => void;
   updatingId?: string | null;
 };
 

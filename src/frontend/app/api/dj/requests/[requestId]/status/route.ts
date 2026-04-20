@@ -1,10 +1,10 @@
 import { logDjAction } from "@/lib/server/dj-audit";
 import { requestStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
-import type { EventStatus } from "@/types/database";
+import type { SongRequestStatus } from "@/types/database";
 import { NextResponse } from "next/server";
 
-const STATUSES: EventStatus[] = [
+const STATUSES: SongRequestStatus[] = [
   requestStatus.lower.pending,
   requestStatus.lower.accepted,
   requestStatus.lower.rejected,
@@ -31,7 +31,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const body = await req.json().catch(() => null);
   const status = body?.status as string | undefined;
-  if (!status || !STATUSES.includes(status as EventStatus)) {
+  if (!status || !STATUSES.includes(status as SongRequestStatus)) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
