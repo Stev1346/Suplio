@@ -1,4 +1,4 @@
-import { EVENT_LIFECYCLE_STATUS, lifecycleStatus } from "@/lib/shared/constants/routes";
+import { EVENT_LIFECYCLE_STATUS } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 

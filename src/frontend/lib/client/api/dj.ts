@@ -1,4 +1,4 @@
-import type { EventLifecycleStatus, EventStatus } from "@/types/database";
+import type { EventLifecycleStatus, SongRequestStatus } from "@/types/database";
 
 export type DjEventListItem = {
   id: string;
@@ -86,7 +86,7 @@ export async function patchEventAllowRequests(
 
 export async function patchRequestStatus(
   requestId: string,
-  status: EventStatus
+  status: SongRequestStatus
 ): Promise<{ error: string | null }> {
   const res = await fetch(
     `/api/dj/requests/${encodeURIComponent(requestId)}/status`,

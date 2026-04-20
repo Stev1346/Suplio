@@ -1,10 +1,10 @@
 import type { AppSupabaseClient } from "@/lib/supabase/app-client";
-import type { Database, EventStatus } from "@/types/database";
+import type { Database, SongRequestStatus } from "@/types/database";
 
 export type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 export type FetchRequestsOptions = {
-  statuses?: EventStatus[];
+  statuses?: SongRequestStatus[];
   orderBy?: string;
   ascending?: boolean;
   limit?: number;

@@ -1,3 +1,4 @@
+//DJ Routes
 export const routes = {
     dj: {
         entry: "/dj",
@@ -18,6 +19,7 @@ export const routes = {
     }
 }
 
+//Request constants
 export const requestStatus = {
     lower: {
         accepted: "accepted",
@@ -39,6 +41,14 @@ export const requestStatus = {
     }
 } as const;
 
+export const requestType = {
+    lower: {
+        songRequest: "song_request",
+        karaoke: "karaoke",
+    },
+} as const;
+
+//Lifecycle constants
 export const lifecycleStatus = {
     lower: {
         draft: "draft",
@@ -71,3 +81,44 @@ export const EVENT_LIFECYCLE_STATUS = [
     lifecycleStatus.lower.live,
     lifecycleStatus.lower.ended,
     lifecycleStatus.lower.archived] as const;
+
+//Event constants
+export const eventMode = {
+    lower: {
+        songRequest: "song_request",
+        karaoke: "karaoke",
+    },
+    upper: {
+        songRequest: "SONG_REQUEST",
+        karaoke: "KARAOKE",
+    },
+    cased: {
+        songRequest: "Song Request",
+        karaoke: "Karaoke",
+    },
+} as const;
+
+export const EVENT_MODES = [
+    eventMode.lower.songRequest,
+    eventMode.lower.karaoke,
+] as const;
+
+//Karaoke constants
+export const karaokeRequestStatus = {
+    lower: {
+        queued: "queued",
+        upNext: "up_next",
+        performingNow: "performing_now",
+    },
+    cased: {
+        queued: "Queued",
+        upNext: "Up Next",
+        performingNow: "Performing Now",
+    },
+} as const;
+
+export const KARAOKE_REQUEST_STATUSES = [
+    karaokeRequestStatus.lower.queued,
+    karaokeRequestStatus.lower.upNext,
+    karaokeRequestStatus.lower.performingNow,
+] as const;
