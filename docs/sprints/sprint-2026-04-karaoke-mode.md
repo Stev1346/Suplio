@@ -16,24 +16,9 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In Progress (Phase 2).
+**Sprint status:** In Progress (Phase 3).
 
 ### In Progress
-
-#### Phase 2 - Event Creation Flow
-**Target duration:** 0.5-1.0 day  
-**Definition of Done**
-- [ ] Create Event form supports mode selection and event date.
-- [ ] Create event API accepts and persists new fields.
-- [ ] Align `Database` `events.Insert` (and create-event `insert` payloads) with real usage: optional `event_mode` / `event_date` where DB defaults apply, or always pass explicit values from the API after the form ships—either way, types and inserts must match with no spurious required fields.
-- [ ] Validation + UI error messaging work for invalid input.
-- [ ] DJ event management page supports editing all creation-time event settings.
-- [ ] DJ event management page supports toggling karaoke mode on/off.
-- [ ] DJ event management page includes a controls card for event info, karaoke toggle, and request toggle.
-
----
-
-### Backlog
 
 #### Phase 3 - Karaoke Intake Form
 **Target duration:** 0.75-1.0 day  
@@ -42,6 +27,10 @@ Use this board to move phases through execution.
 - [ ] Request submission persists performer name correctly.
 - [ ] Karaoke request form behavior is mode-aware and differs from regular request form behavior.
 - [ ] Song request mode behavior remains unchanged.
+
+---
+
+### Backlog
 
 #### Phase 4 - Karaoke Request List Flow (No Voting)
 **Target duration:** 0.75 day  
@@ -93,16 +82,27 @@ Use this board to move phases through execution.
 - [x] Karaoke request remove/restore representation is defined in schema/model design.
 - [x] Type definitions include all new fields.
 
+#### Phase 2 - Event Creation Flow
+**Completed:** 2026-04-21  
+**Notes:** Create flow, API payload persistence/validation, `events.Insert` alignment, and DJ event controls card updates are complete. UI now surfaces invalid create input errors instead of failing silently.
+
+**Definition of Done**
+- [x] Create Event form supports mode selection and event date.
+- [x] Create event API accepts and persists new fields.
+- [x] Align `Database` `events.Insert` (and create-event `insert` payloads) with real usage: optional `event_mode` / `event_date` where DB defaults apply, or always pass explicit values from the API after the form ships—either way, types and inserts must match with no spurious required fields.
+- [x] Validation + UI error messaging work for invalid input.
+- [x] DJ event management page supports editing all creation-time event settings.
+- [x] DJ event management page supports toggling karaoke mode on/off.
+- [x] DJ event management page includes a controls card for event info, karaoke toggle, and request toggle.
+
 ---
 
-## Current Phase Start Checklist (Phase 2)
+## Current Phase Start Checklist (Phase 3)
 
-### Create flow and type alignment
-- [ ] Extend create-event form and API to accept and persist `event_mode` and `event_date`.
-- [ ] Resolve `events.Insert` vs real inserts: optional insert fields matching DB defaults, or explicit fields on every insert—document the chosen approach in PR or feature doc.
-
-### DJ event management (same phase per sprint board)
-- [ ] DJ event management supports editing creation-time settings, karaoke toggle, and controls card layout.
+### Karaoke intake form behavior
+- [ ] Ensure karaoke request form requires performer name, song name, and artist name.
+- [ ] Confirm request submission persists `performer_name` for karaoke mode.
+- [ ] Keep song request mode behavior unchanged.
 
 ## Validation Checklist (Sprint Exit)
 
