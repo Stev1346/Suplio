@@ -1,4 +1,4 @@
-import type { EventLifecycleStatus, SongRequestStatus } from "@/types/database";
+import type { EventLifecycleStatus, EventMode, SongRequestStatus } from "@/types/database";
 
 export type DjEventListItem = {
   id: string;
@@ -7,6 +7,8 @@ export type DjEventListItem = {
   allow_requests: boolean;
   created_at: string;
   lifecycle_status: EventLifecycleStatus;
+  event_mode: EventMode;
+  event_date: string | null;
 }
 
 export type DjEventsPageResponse = {
@@ -50,13 +52,13 @@ export type DjProfileResponse = {
 
 export type DjEventSearchItem = {
   id: string;
-  name:string;
+  name: string;
   event_code: string;
   created_at: string;
   lifecycle_status: EventLifecycleStatus;
 }
 
-export type DjEventsLifecycleFilter = 
+export type DjEventsLifecycleFilter =
   | "all"
   | "active"
   | "draft"
@@ -105,7 +107,13 @@ export async function patchRequestStatus(
 }
 
 export async function patchEventDetails(
-  eventId: string, input: { name?: string; lifecycle_status?: EventLifecycleStatus }):
+  eventId: string,
+  input: {
+    name?: string; 
+    lifecycle_status?: EventLifecycleStatus; 
+    event_mode?: EventMode; 
+    event_date?: string | null;
+  }):
   Promise<{ error: string | null }> {
   const res = await fetch(`/api/dj/events/${encodeURIComponent(eventId)}`, {
     method: "PATCH",
@@ -143,7 +151,7 @@ export async function getDjEventsPage(
     page: String(page),
     pageSize: String(pageSize)
   });
-  if(lifecycle !== "active"){
+  if (lifecycle !== "active") {
     params.set("lifecycle", lifecycle);
   }
 
@@ -232,13 +240,13 @@ export async function searchDjEvents(
   query: string,
   limit: 8,
   signal?: AbortSignal
-): Promise<{data: DjEventSearchItem[]; error: string | null}>{
+): Promise<{ data: DjEventSearchItem[]; error: string | null }> {
   const q = query.trim();
-  if(q.length < 2) return {data: [], error: null};
+  if (q.length < 2) return { data: [], error: null };
 
   const res = await fetch(
     `/api/dj/events/search?q=${encodeURIComponent(q)}&limit=${limit}`,
-    {credentials: "include", signal}
+    { credentials: "include", signal }
   );
 
   const body = (await res.json().catch(() => ({}))) as {
@@ -246,9 +254,9 @@ export async function searchDjEvents(
     error?: string;
   }
 
-  if(!res.ok){
-    return {data: [], error: body.error ?? "Request failed"};
+  if (!res.ok) {
+    return { data: [], error: body.error ?? "Request failed" };
   }
 
-  return{data: body.data ?? [], error: null};
+  return { data: body.data ?? [], error: null };
 }

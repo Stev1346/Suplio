@@ -1,7 +1,7 @@
 import { logDjAction } from "@/lib/server/dj-audit";
-import { lifecycleStatus } from "@/lib/shared/constants/routes";
+import { EVENT_MODES, lifecycleStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
-import { EventLifecycleStatus } from "@/types/database";
+import { EventLifecycleStatus, EventMode } from "@/types/database";
 import { NextResponse } from "next/server";
 
 type RouteContext = { params: Promise<{ eventId: string }> };
@@ -22,7 +22,7 @@ export async function PATCH(req: Request, context: RouteContext) {
 
     const { data: event, error: eventError } = await supabase
         .from("events")
-        .select("id,dj_id,name,lifecycle_status")
+        .select("id,dj_id,name,lifecycle_status, event_mode, event_date")
         .eq("id", eventId)
         .single();
 
@@ -35,22 +35,51 @@ export async function PATCH(req: Request, context: RouteContext) {
 
     const rawLifecycle = body?.lifecycle_status;
     let lifecycle: EventLifecycleStatus | undefined;
-    if(rawLifecycle === undefined){
+    if (rawLifecycle === undefined) {
         lifecycle = undefined;
-    } else if(typeof rawLifecycle !== "string"){
+    } else if (typeof rawLifecycle !== "string") {
         return NextResponse.json({ error: "Invalid lifecycle status" }, { status: 400 });
     } else {
         const trimmed = rawLifecycle.trim();
-        if(!LIFECYCLE.includes(trimmed as EventLifecycleStatus)){
+        if (!LIFECYCLE.includes(trimmed as EventLifecycleStatus)) {
             return NextResponse.json({ error: "Invalid lifecycle status" }, { status: 400 });
         }
         lifecycle = trimmed as EventLifecycleStatus;
     }
 
+    const rawEventMode = body?.event_mode;
+    let event_mode: EventMode | undefined;
+    if (rawEventMode !== undefined && rawEventMode !== null && rawEventMode !== "") {
+        const m = String(rawEventMode).trim();
+        if (!(EVENT_MODES as readonly string[]).includes(m)) {
+            return NextResponse.json({ error: "Invalid event_mode" }, { status: 400 });
+        }
+        event_mode = m as EventMode;
+    }
+
+    const rawEventDate = body?.event_date;
+    let event_date: string | null | undefined;
+    if (rawEventDate === null) {
+        event_date = null;
+    } else if (rawEventDate !== undefined && String(rawEventDate).trim() !== "") {
+        const d = String(rawEventDate).trim();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+            return NextResponse.json({ error: "Invalid event_date" }, { status: 400 });
+        }
+        event_date = d;
+    } else {
+        event_date = undefined;
+    }
+
     if (name !== undefined && !name) {
         return NextResponse.json({ error: "Event name is required" }, { status: 400 })
     }
-    if (name === undefined && lifecycle === undefined) {
+    if (
+        name === undefined &&
+        lifecycle === undefined &&
+        event_mode === undefined &&
+        event_date === undefined
+    ) {
         return NextResponse.json({ error: "No changes provided" }, { status: 400 });
     }
 
@@ -80,6 +109,13 @@ export async function PATCH(req: Request, context: RouteContext) {
             patch.live_entered_at = null;
             patch.ended_entered_at = null;
         }
+    }
+
+    if (event_mode !== undefined) {
+        patch.event_mode = event_mode;
+    }
+    if (event_date !== undefined) {
+        patch.event_date = event_date;
     }
 
     const { error } = await supabase.from("events").update(patch).eq("id", event.id);

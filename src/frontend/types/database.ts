@@ -40,8 +40,8 @@ export interface Database {
           lifecycle_status: EventLifecycleStatus;
           live_entered_at?: string | null;
           ended_entered_at?: string | null;
-          event_mode: EventMode;
-          event_date: string | null;
+          event_mode?: EventMode;
+          event_date?: string | null;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
       };

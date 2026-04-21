@@ -1,6 +1,6 @@
 import { useSupabaseBrowser } from "@/hooks/useSupabaseBrowser";
 import { fetchEventByCode } from "@/lib/client/api/events";
-import { EventLifecycleStatus } from "@/types/database";
+import { EventLifecycleStatus, EventMode } from "@/types/database";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type EventState = {
@@ -8,6 +8,8 @@ export type EventState = {
   name: string;
   allow_requests: boolean;
   lifecycle_status: EventLifecycleStatus;
+  event_mode: EventMode;
+  event_date: string | null;
 } | null;
 
 export function useEvent(
