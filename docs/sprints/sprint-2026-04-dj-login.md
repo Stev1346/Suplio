@@ -1,6 +1,6 @@
-# Sprint Tracker: 2026-04 Phase 9
+# Sprint Tracker: 2026-04 DJ Login
 
-This file is the **closed** sprint record for the 2026-04 Phase 9 iteration (all roadmap phases through 9 delivered).
+This file is the **closed** sprint record for the 2026-04 DJ Login iteration (all roadmap phases through 9 delivered).
 
 Naming convention for future sprint files:
 

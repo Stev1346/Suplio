@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LabeledSelect } from "@/components/ui/LabeledSelect";
+import {
+  LabeledSelect,
+  LabeledSelectOption,
+} from "@/components/ui/LabeledSelect";
 import { EventState } from "@/hooks/guest/useEventByCode";
 import {
   patchEventAllowRequests,
@@ -14,7 +17,6 @@ import { lifecycleStatus } from "@/lib/shared/constants/routes";
 import { EventLifecycleStatus, EventMode } from "@/types/database";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { EVENT_LIFECYCLE_STATUS_OPTIONS } from "../../dashboard/events-lifecycle-status";
 import { DJ_EVENTS_MODE_OPTIONS } from "../../dashboard/dj-events-mode-options";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
 
@@ -24,6 +26,17 @@ export type DjEventControlsCardProps = {
   refetchEvent?: () => Promise<void>;
   className?: string;
 };
+
+const DJ_EVENT_LIFECYCLE_OPTIONS: LabeledSelectOption<EventLifecycleStatus>[] =
+  [
+    { value: lifecycleStatus.lower.draft, label: lifecycleStatus.cased.draft },
+    { value: lifecycleStatus.lower.live, label: lifecycleStatus.cased.live },
+    { value: lifecycleStatus.lower.ended, label: lifecycleStatus.cased.ended },
+    {
+      value: lifecycleStatus.lower.archived,
+      label: lifecycleStatus.cased.archived,
+    },
+  ];
 
 function serverFormFieldsSnapshot(event: NonNullable<EventState>) {
   return `${event.id}|${event.name}|${event.event_mode}|${event.event_date ?? ""}`;
@@ -176,14 +189,13 @@ function DjEventControlsCardInner({
         </div>
 
         <LabeledSelect
+          id={`dj-event-lifecycle-${event.id}`}
           label="Lifecycle"
           labelClassName="text-md text-muted-80"
           contentClassName="rounded border bg-transparent px-2 py-1 text-sm"
           value={event.lifecycle_status}
-          onValueChange={(next) =>
-            handleLifecycleChange(next as EventLifecycleStatus)
-          }
-          options={EVENT_LIFECYCLE_STATUS_OPTIONS}
+          onValueChange={handleLifecycleChange}
+          options={DJ_EVENT_LIFECYCLE_OPTIONS}
           disabled={updatingLifecycle}
         />
         <LabeledSelect

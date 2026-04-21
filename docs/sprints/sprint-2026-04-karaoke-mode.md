@@ -16,21 +16,9 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In Progress (Phase 3).
+**Sprint status:** In Progress (Phase 4).
 
 ### In Progress
-
-#### Phase 3 - Karaoke Intake Form
-**Target duration:** 0.75-1.0 day  
-**Definition of Done**
-- [ ] Karaoke request form requires performer name, song name, and artist name.
-- [ ] Request submission persists performer name correctly.
-- [ ] Karaoke request form behavior is mode-aware and differs from regular request form behavior.
-- [ ] Song request mode behavior remains unchanged.
-
----
-
-### Backlog
 
 #### Phase 4 - Karaoke Request List Flow (No Voting)
 **Target duration:** 0.75 day  
@@ -41,6 +29,10 @@ Use this board to move phases through execution.
 - [ ] Karaoke UI does not render voting actions or vote CTAs.
 - [ ] Karaoke request flow avoids vote-oriented redirects.
 - [ ] Top Requested list UI is replaced by karaoke Request List UI in karaoke mode contexts.
+
+---
+
+### Backlog
 
 #### Phase 5 - FIFO Sorting Rules
 **Target duration:** 0.5-0.75 day  
@@ -95,14 +87,25 @@ Use this board to move phases through execution.
 - [x] DJ event management page supports toggling karaoke mode on/off.
 - [x] DJ event management page includes a controls card for event info, karaoke toggle, and request toggle.
 
+#### Phase 3 - Karaoke Intake Form
+**Completed:** 2026-04-22  
+**Notes:** Guest request screen is mode-aware (karaoke requires performer, song, artist; optional message hidden in karaoke). `submitGuestRequest` loads `event_mode`, derives `request_type` server-side, validates karaoke fields, and persists `performer_name` for karaoke inserts (client `request_type` is not authoritative).
+
+**Definition of Done**
+- [x] Karaoke request form requires performer name, song name, and artist name.
+- [x] Request submission persists performer name correctly.
+- [x] Karaoke request form behavior is mode-aware and differs from regular request form behavior.
+- [x] Song request mode behavior remains unchanged.
+
 ---
 
-## Current Phase Start Checklist (Phase 3)
+## Current Phase Start Checklist (Phase 4)
 
-### Karaoke intake form behavior
-- [ ] Ensure karaoke request form requires performer name, song name, and artist name.
-- [ ] Confirm request submission persists `performer_name` for karaoke mode.
-- [ ] Keep song request mode behavior unchanged.
+### Karaoke request list and voting guardrails
+- [ ] Reject vote-related API calls when the event is in karaoke mode.
+- [ ] Route guest navigation so karaoke uses Request List (not Vote) as the third flow option.
+- [ ] Ship dedicated karaoke Request List page with Performing Now, Up Next, then remaining queue.
+- [ ] Remove vote CTAs and vote-oriented redirects for karaoke; replace Top Requested with karaoke list where mode is active.
 
 ## Validation Checklist (Sprint Exit)
 
