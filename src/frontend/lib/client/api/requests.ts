@@ -39,6 +39,8 @@ export async function insertRequest(
     song_name: string;
     artist?: string | null;
     message?: string | null;
+    performer_name?: string | null;
+    request_type?: "song_request" | "karaoke";
   },
 ): Promise<InsertRequestResult> {
   const res = await fetch(

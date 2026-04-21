@@ -13,6 +13,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
   const songName = typeof body?.song_name === "string" ? body.song_name.trim() : "";
   const artist = typeof body?.artist === "string" ? body.artist.trim() : null;
   const message = typeof body?.message === "string" ? body.message.trim() : null;
+  const performerName = typeof body?.performer_name === "string" ? body.performer_name.trim() : null;
   const supabase = createAdminSupabase();
 
   const guest = createGuestRouteContext(req);
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest, context: RouteContext) {
     eventCode,
     songName,
     artist,
-    message
+    message,
+    performerName
   });
 
   if(result.ok) return json({ok: true});
