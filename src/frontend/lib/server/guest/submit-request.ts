@@ -1,3 +1,4 @@
+import { eventMode, karaokeRequestStatus, requestStatus } from "@/lib/shared/constants/routes";
 import { createAdminSupabase } from "../supabase-admin";
 
 type SubmitGuestRequestInput = {
@@ -61,8 +62,11 @@ export async function submitGuestRequest(input: SubmitGuestRequestInput) {
         artist,
         message: input.message ?? null,
         request_type: requestType,
-        performer_name: requestType === "karaoke" ? performer : null,
-        removed_at: null
+        performer_name: requestType === eventMode.lower.karaoke
+             ? performer : null,
+        removed_at: null,
+        status: requestType === eventMode.lower.karaoke 
+             ? karaokeRequestStatus.lower.queued : requestStatus.lower.pending
     });
 
     if (insertError) {
