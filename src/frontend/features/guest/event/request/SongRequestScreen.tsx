@@ -15,11 +15,18 @@ import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useCooldownTimer } from "@/hooks/useCooldownTimer";
 import { insertRequest } from "@/lib/client/api/requests";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
+import {
+  eventMode,
+  karaokeRequestStatus,
+  lifecycleStatus,
+  requestStatus,
+  routes,
+} from "@/lib/shared/constants/routes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { KaraokeQueuePreview } from "./KaraokeQueuePreview";
 
 export default function SongRequestScreen() {
   const eventCode = useEventCode();
@@ -113,8 +120,27 @@ export default function SongRequestScreen() {
     }
 
     startCooldown(CLIENT_REQUEST_COOLDOWN_SEC);
-    router.push(`/event/${eventCode}/vote`);
+
+    if (isKaraokeMode) {
+      router.push(routes.guest.karaoke(eventCode));
+      return;
+    }
+
+    router.push(routes.guest.vote(eventCode));
   }
+
+  const karaokeRequests = requests.filter(
+    (r) => r.request_type === eventMode.lower.karaoke,
+  );
+  const performingNow = karaokeRequests.filter(
+    (r) => r.status === karaokeRequestStatus.lower.performingNow,
+  );
+  const upNext = karaokeRequests.filter(
+    (r) => r.status === karaokeRequestStatus.lower.upNext,
+  );
+  const queued = karaokeRequests.filter(
+    (r) => r.status === karaokeRequestStatus.lower.queued,
+  );
 
   if (isLoading) {
     return (
@@ -153,7 +179,7 @@ export default function SongRequestScreen() {
 
   return (
     <PageShell centralize className="flex-col">
-      <AppHeader tagLine="Request a song" />
+      <AppHeader title={event.name} tagLine="Request a song" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
@@ -220,11 +246,19 @@ export default function SongRequestScreen() {
             </Button>
           </form>
         )}
-        <TopRequestList
-          requests={topRequests}
-          title="Top requested tonight"
-          className="mb-4 max-h-90 overflow-scroll no-scrollbar"
-        />
+        {isKaraokeMode ? (
+          <KaraokeQueuePreview
+            performingNow={performingNow}
+            upNext={upNext}
+            queued={queued}
+          />
+        ) : (
+          <TopRequestList
+            requests={topRequests}
+            title="Top requested tonight"
+            className="mb-4 max-h-90 overflow-scroll no-scrollbar"
+          />
+        )}
         <div className="flex flex-row gap-6">
           <Link
             href={`/event/${eventCode}`}
@@ -233,10 +267,14 @@ export default function SongRequestScreen() {
             Share Event URL
           </Link>
           <Link
-            href={`/event/${eventCode}/vote`}
+            href={
+              isKaraokeMode
+                ? routes.guest.karaoke(eventCode)
+                : routes.guest.vote(eventCode)
+            }
             className="text-secondary-60 text-lg hover:text-secondary-40 ml-auto"
           >
-            View Request List
+            {isKaraokeMode ? "Karaoke Queue" : "Vote Here"}
           </Link>
         </div>
       </div>

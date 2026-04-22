@@ -16,23 +16,9 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In Progress (Phase 4).
+**Sprint status:** In Progress (Phase 5).
 
 ### In Progress
-
-#### Phase 4 - Karaoke Request List Flow (No Voting)
-**Target duration:** 0.75 day  
-**Definition of Done**
-- [ ] Vote API rejects karaoke events.
-- [ ] Karaoke UI uses Request List as the third menu/user-flow option instead of Vote.
-- [ ] Karaoke Request List page (dedicated guest page) shows Performing Now, Up Next, then remaining queue.
-- [ ] Karaoke UI does not render voting actions or vote CTAs.
-- [ ] Karaoke request flow avoids vote-oriented redirects.
-- [ ] Top Requested list UI is replaced by karaoke Request List UI in karaoke mode contexts.
-
----
-
-### Backlog
 
 #### Phase 5 - FIFO Sorting Rules
 **Target duration:** 0.5-0.75 day  
@@ -44,6 +30,10 @@ Use this board to move phases through execution.
 - [ ] Karaoke request list and regular request list remain separated during and after mode toggles.
 - [ ] DJ karaoke views do not include a voting-order list.
 - [ ] Non-karaoke sorting behavior is unchanged.
+
+---
+
+### Backlog
 
 #### Phase 6 - QA, Regression, Documentation
 **Target duration:** 0.75-1.0 day  
@@ -97,15 +87,28 @@ Use this board to move phases through execution.
 - [x] Karaoke request form behavior is mode-aware and differs from regular request form behavior.
 - [x] Song request mode behavior remains unchanged.
 
+#### Phase 4 - Karaoke Request List Flow (No Voting)
+**Completed:** 2026-04-23  
+**Notes:** Guest vote APIs guard karaoke (`votes` POST 403, `my-votes` empty for karaoke). Top nav third item routes to karaoke queue when `event_mode` is karaoke. Dedicated `/karaoke-list` page shows Performing now, Up next, and remaining queue; `VoteScreen` redirects karaoke events away from vote UI. Request screen post-submit goes to karaoke queue for karaoke; `KaraokeQueuePreview` replaces top-voted preview on the request page.
+
+**Definition of Done**
+- [x] Vote API rejects karaoke events.
+- [x] Karaoke UI uses Request List as the third menu/user-flow option instead of Vote.
+- [x] Karaoke Request List page (dedicated guest page) shows Performing Now, Up Next, then remaining queue.
+- [x] Karaoke UI does not render voting actions or vote CTAs.
+- [x] Karaoke request flow avoids vote-oriented redirects.
+- [x] Top Requested list UI is replaced by karaoke Request List UI in karaoke mode contexts.
+
 ---
 
-## Current Phase Start Checklist (Phase 4)
+## Current Phase Start Checklist (Phase 5)
 
-### Karaoke request list and voting guardrails
-- [ ] Reject vote-related API calls when the event is in karaoke mode.
-- [ ] Route guest navigation so karaoke uses Request List (not Vote) as the third flow option.
-- [ ] Ship dedicated karaoke Request List page with Performing Now, Up Next, then remaining queue.
-- [ ] Remove vote CTAs and vote-oriented redirects for karaoke; replace Top Requested with karaoke list where mode is active.
+### FIFO queue and DJ performer-flow
+- [ ] Sort karaoke guest request and list views by oldest-first (`created_at` or agreed canonical key).
+- [ ] Sort karaoke DJ request management by oldest-first for the queue slice.
+- [ ] Shift DJ karaoke controls to performer-flow statuses (`performing_now`, `up_next`, `queued`) instead of song-request moderation statuses where karaoke is active.
+- [ ] Implement remove/restore for karaoke requests and keep karaoke vs regular lists isolated across mode toggles.
+- [ ] Confirm non-karaoke ordering and vote-oriented lists are unchanged.
 
 ## Validation Checklist (Sprint Exit)
 

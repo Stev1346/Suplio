@@ -1,5 +1,6 @@
 import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
+import { eventMode } from "@/lib/shared/constants/routes";
 import { NextRequest } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
@@ -18,12 +19,16 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id")
+    .select("id, event_mode")
     .eq("event_code", eventCode)
     .single();
 
   if (eventError || !event) {
     return json({ error: "Event not found" }, { status: 404 });
+  }
+
+  if (event.event_mode === eventMode.lower.karaoke) {
+    return json({ votes: [] }, { status: 200 })
   }
 
   const { data: requests } = await supabase
