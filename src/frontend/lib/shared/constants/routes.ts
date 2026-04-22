@@ -16,6 +16,7 @@ export const routes = {
         scan: (eventCode: string) => `/event/${eventCode}/scan`,
         request: (eventCode: string) => `/event/${eventCode}/request`,
         vote: (eventCode: string) => `/event/${eventCode}/vote`,
+        karaoke: (eventCode: string) => `/event/${eventCode}/karaoke-list`
     }
 }
 

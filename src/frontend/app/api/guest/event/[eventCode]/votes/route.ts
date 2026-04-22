@@ -1,5 +1,6 @@
 import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
+import { eventMode } from "@/lib/shared/constants/routes";
 import { NextRequest } from "next/server";
 
 type RouteContext = { params: Promise<{ eventCode: string }> };
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id, lifecycle_status")
+    .select("id, lifecycle_status, event_mode")
     .eq("event_code", eventCode)
     .single();
 
@@ -47,6 +48,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   if (event.lifecycle_status !== "live") {
     return json({ error: "Voting is not available for this event right now" }, { status: 403 })
+  }
+  if (event.event_mode === eventMode.lower.karaoke) {
+    return json({ error: "Voting is not available for karaoke events" }, { status: 403 });
   }
 
   const { data: reqRow, error: reqError } = await supabase

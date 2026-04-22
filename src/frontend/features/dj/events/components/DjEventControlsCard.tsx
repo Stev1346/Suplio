@@ -205,6 +205,7 @@ function DjEventControlsCardInner({
           value={event.event_mode}
           onValueChange={(next) => handleModeChange(next as EventMode)}
           options={DJ_EVENTS_MODE_OPTIONS}
+          disabled={updatingMode}
         />
 
         <div className="space-y-2">

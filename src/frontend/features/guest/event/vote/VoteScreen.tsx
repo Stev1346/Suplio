@@ -12,11 +12,14 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useVoting } from "@/hooks/guest/useVoting";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
+import { eventMode, lifecycleStatus, requestStatus, routes } from "@/lib/shared/constants/routes";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function VoteScreen() {
   const eventCode = useEventCode();
+  const router = useRouter();
   const {
     event,
     loading: eventLoading,
@@ -51,6 +54,13 @@ export default function VoteScreen() {
     )
     .sort(compareRankedRequests)
     .slice(0, 10);
+
+  useEffect(() => {
+    if(!eventCode || !event) return;
+    if(event.event_mode === eventMode.lower.karaoke){
+      router.replace(routes.guest.karaoke(eventCode));
+    }
+  }, [event,eventCode,router]);
 
   if (isLoading) {
     return (
@@ -89,7 +99,7 @@ export default function VoteScreen() {
 
   return (
     <PageShell centralize className="flex-col items-center">
-      <AppHeader tagLine="Vote for your favourite songs" />
+      <AppHeader title={event.name} tagLine="Vote for your favourite songs" />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
