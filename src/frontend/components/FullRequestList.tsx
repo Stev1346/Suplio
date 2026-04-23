@@ -1,15 +1,25 @@
 import { requestStatus } from "@/lib/shared/constants/routes";
-import { Database, EventStatus } from "@/types/database";
+import { Database, RequestStatus, SongRequestStatus } from "@/types/database";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
+type SongRequestRow = RequestRow & { status: SongRequestStatus };
 
-const STATUS_LABELS: Record<EventStatus, string> = {
+function isSongRequestStatus(status: RequestStatus): status is SongRequestStatus {
+  return (
+    status === requestStatus.lower.pending ||
+    status === requestStatus.lower.accepted ||
+    status === requestStatus.lower.rejected ||
+    status === requestStatus.lower.played
+  );
+}
+
+const STATUS_LABELS: Record<SongRequestStatus, string> = {
   pending: requestStatus.cased.pending,
   accepted: requestStatus.cased.accepted,
   rejected: requestStatus.cased.rejected,
   played: requestStatus.cased.played,
 };
-const STATUS_BADGE_CLASS: Record<EventStatus, string> = {
+const STATUS_BADGE_CLASS: Record<SongRequestStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
   accepted: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
@@ -21,7 +31,7 @@ type FullRequestListProps = {
   title?: string;
   className?: string;
   hiddenTitle?: boolean;
-  onSetStatus?: (requestId: string, status: EventStatus) => void;
+  onSetStatus?: (requestId: string, status: SongRequestStatus) => void;
   updatingId?: string | null;
 };
 
@@ -33,6 +43,10 @@ export function FullRequestList({
   onSetStatus,
   updatingId = null,
 }: FullRequestListProps) {
+  const songRequests: SongRequestRow[] = requests.filter(
+    (r): r is SongRequestRow => isSongRequestStatus(r.status),
+  );
+
   return (
     <section className={className}>
       <h2
@@ -42,10 +56,10 @@ export function FullRequestList({
         {title}
       </h2>
       <ul className="space-y-1">
-        {requests.length === 0 && (
+        {songRequests.length === 0 && (
           <li className="text-muted-40">No requests yet.</li>
         )}
-        {requests.map((r) => (
+        {songRequests.map((r) => (
           <li
             key={r.id}
             className="bg-card rounded-lg shadow border border-muted-10 p-3 flex flex-col gap-2"

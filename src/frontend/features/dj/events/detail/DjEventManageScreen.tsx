@@ -3,30 +3,27 @@
 import { FullRequestList } from "@/components/FullRequestList";
 import { NotFound } from "@/components/NotFound";
 import { TopRequestList } from "@/components/TopRequestList";
-import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
 import { PageShell } from "@/components/ui/PageShell";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
-import {
-  patchEventAllowRequests,
-  patchEventDetails,
-  patchRequestStatus,
-} from "@/lib/client/api/dj";
+import { patchRequestStatus } from "@/lib/client/api/dj";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { EventLifecycleStatus, EventStatus } from "@/types/database";
+import { RequestStatus } from "@/types/database";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useParams } from "next/navigation";
 import {
-  lifecycleStatus,
+  eventMode,
+  karaokeRequestStatus,
   requestStatus,
   routes,
 } from "@/lib/shared/constants/routes";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
+import { DjEventControlsCard } from "../components/DjEventControlsCard";
+import { RequestStatusFilters } from "../components/RequestStatusFilters";
+import { KaraokeDJQueueList } from "../components/KaraokeDJQueueList";
 
 function eventCodeFromParams(
   raw: string | string[] | undefined,
@@ -35,6 +32,14 @@ function eventCodeFromParams(
   if (Array.isArray(raw) && raw[0]) return raw[0];
   return undefined;
 }
+
+const KARAOKE_QUEUE_ORDER: Record<string, number> = {
+  [karaokeRequestStatus.lower.performingNow]: 0,
+  [karaokeRequestStatus.lower.upNext]: 1,
+  [karaokeRequestStatus.lower.queued]: 2,
+  [karaokeRequestStatus.lower.performed]: 3,
+  [karaokeRequestStatus.lower.rejected]: 4,
+};
 
 export default function DjEventManageScreen() {
   const params = useParams();
@@ -48,13 +53,7 @@ export default function DjEventManageScreen() {
     error: eventError,
     refetch: refetchEvent,
   } = useEvent(eventCode, { realtime: true });
-  const STATUS_OPTIONS: EventStatus[] = [
-    requestStatus.lower.pending,
-    requestStatus.lower.accepted,
-    requestStatus.lower.rejected,
-    requestStatus.lower.played,
-  ];
-  const [selectedStatuses, setSelectedStatuses] = useState<Set<EventStatus>>(
+  const [selectedStatuses, setSelectedStatuses] = useState<Set<RequestStatus>>(
     new Set(),
   );
   const {
@@ -64,10 +63,15 @@ export default function DjEventManageScreen() {
     error: requestError,
   } = useEventRequests(
     event?.id,
-    { orderBy: "song_name", ascending: true },
+    {
+      orderBy:
+        event?.event_mode === eventMode.lower.karaoke
+          ? "created_at"
+          : "song_name",
+      ascending: true,
+    },
     { realtime: true },
   );
-  const [togglingAllow, setTogglingAllow] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const topRequested = requests
     .filter(
@@ -81,92 +85,74 @@ export default function DjEventManageScreen() {
     if (selectedStatuses.size === 0) return requests;
     return requests.filter((r) => selectedStatuses.has(r.status));
   }, [requests, selectedStatuses]);
+  const karaokeRows = requests.filter(
+    (r) => r.request_type === eventMode.lower.karaoke,
+  );
+  const karaokeVisibleRows = useMemo(() => {
+    const base =
+      selectedStatuses.size > 0
+        ? karaokeRows.filter((r) => selectedStatuses.has(r.status))
+        : karaokeRows.filter(
+            (r) =>
+              r.status !== karaokeRequestStatus.lower.rejected &&
+              r.status !== karaokeRequestStatus.lower.performed,
+          );
+    return [...base].sort((a, b) => {
+      const orderA = KARAOKE_QUEUE_ORDER[a.status] ?? Number.MAX_SAFE_INTEGER;
+      const orderB = KARAOKE_QUEUE_ORDER[b.status] ?? Number.MAX_SAFE_INTEGER;
+      if (orderA !== orderB) return orderA - orderB;
+      // within same status bucket, oldest first
+      return (
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    });
+  }, [karaokeRows, selectedStatuses]);
+
+  const isKaraokeEvent = event?.event_mode === eventMode.lower.karaoke;
   const isLoading = !!eventCode && (eventLoading || requestsLoading);
-  const statusCounts = useMemo<Record<EventStatus, number>>(
+
+  const visibleCount = isKaraokeEvent
+    ? karaokeVisibleRows.length
+    : filteredRequests.length;
+  const totalCount = isKaraokeEvent ? karaokeRows.length : requests.length;
+
+  const STATUS_OPTIONS: RequestStatus[] = isKaraokeEvent
+    ? [
+        karaokeRequestStatus.lower.performingNow,
+        karaokeRequestStatus.lower.upNext,
+        karaokeRequestStatus.lower.queued,
+        karaokeRequestStatus.lower.performed,
+        karaokeRequestStatus.lower.rejected,
+      ]
+    : [
+        requestStatus.lower.pending,
+        requestStatus.lower.accepted,
+        requestStatus.lower.rejected,
+        requestStatus.lower.played,
+      ];
+
+  const statusCounts = useMemo<Record<RequestStatus, number>>(
     () =>
       requests.reduce(
         (acc, r) => {
           acc[r.status] += 1;
           return acc;
         },
-        { pending: 0, accepted: 0, rejected: 0, played: 0 },
+        {
+          pending: 0,
+          accepted: 0,
+          rejected: 0,
+          played: 0,
+          queued: 0,
+          performing_now: 0,
+          up_next: 0,
+          performed: 0,
+        },
       ),
     [requests],
   );
-  const totalCount = requests.length;
 
-  const [nameDraftByEventId, setNameDraftByEventId] = useState<
-    Record<string, string>
-  >({});
-  const [savingName, setSavingName] = useState(false);
-  const [updatingLifecycle, setUpdatingLifecycle] = useState(false);
-  const draftName = event ? (nameDraftByEventId[event.id] ?? event.name) : "";
-  const setDraftName = (next: string) => {
-    if (!event) return;
-    setNameDraftByEventId((prev) => ({ ...prev, [event.id]: next }));
-  };
-
-  const isEventLive = event?.lifecycle_status === lifecycleStatus.lower.live;
-  const disableAllowRequestsToggle = togglingAllow || !isEventLive;
-
-  async function handleToggleAllowRequests() {
-    if (
-      !event ||
-      togglingAllow ||
-      event.lifecycle_status !== lifecycleStatus.lower.live
-    )
-      return;
-
-    setTogglingAllow(true);
-    const allowRequests = !event.allow_requests;
-    const { error } = await patchEventAllowRequests(event.id, allowRequests);
-    setTogglingAllow(false);
-
-    if (!error) {
-      setEvent((prev) =>
-        prev ? { ...prev, allow_requests: allowRequests } : prev,
-      );
-    } else {
-      toast.error("Could not update setting. Try again");
-    }
-  }
-
-  async function handleSaveName() {
-    if (!event || savingName) return;
-    const nextName = draftName.trim();
-    if (!nextName || nextName === event.name) return;
-
-    setSavingName(true);
-    const { error } = await patchEventDetails(event.id, { name: nextName });
-    setSavingName(false);
-
-    if (error) {
-      toast.error(error);
-      return;
-    }
-    setEvent((prev) => (prev ? { ...prev, name: nextName } : prev));
-    toast.success("Event name updated");
-  }
-
-  async function handleLifecycleChange(next: EventLifecycleStatus) {
-    if (!event || updatingLifecycle || next === event.lifecycle_status) return;
-
-    setUpdatingLifecycle(true);
-    const { error } = await patchEventDetails(event.id, {
-      lifecycle_status: next,
-    });
-    setUpdatingLifecycle(false);
-
-    if (error) {
-      toast.error(error);
-      return;
-    }
-
-    await refetchEvent();
-    toast.success("Lifecycle updated");
-  }
-
-  async function setRequestStatus(requestId: string, status: EventStatus) {
+  async function setRequestStatus(requestId: string, status: RequestStatus) {
     if (!event || updatingId) return;
 
     setUpdatingId(requestId);
@@ -184,7 +170,7 @@ export default function DjEventManageScreen() {
     }
   }
 
-  function toggleStatus(status: EventStatus) {
+  function toggleStatus(status: RequestStatus) {
     setSelectedStatuses((prev) => {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status);
@@ -213,124 +199,78 @@ export default function DjEventManageScreen() {
     <PageShell className="flex flex-col">
       <header className="mb-3 flex flex-col justify-center items-center">
         <h1 className="text-muted-60 text-3xl">{event.name}</h1>
+        {event.event_date && (
+          <p className="text-lg text-secondary-70">
+            Event Date: {event.event_date}
+          </p>
+        )}
         <Link
           href={routes.guest.eventLanding(eventCode)}
           target="_blank"
-          className="text-accent-80 text-lg hover:underline"
+          className="text-accent-80 text-md hover:underline"
         >
           Event code: {eventCode}
         </Link>
-        <section className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-80">Event Status:</span>
-            <select
-              className="rounded border bg-transparent px-2 py-1 text-sm"
-              value={event.lifecycle_status}
-              onChange={(e) =>
-                handleLifecycleChange(e.target.value as EventLifecycleStatus)
-              }
-              disabled={updatingLifecycle}
-            >
-              <option value={lifecycleStatus.lower.draft}>
-                {lifecycleStatus.cased.draft}
-              </option>
-              <option value={lifecycleStatus.lower.live}>
-                {lifecycleStatus.cased.live}
-              </option>
-              <option value={lifecycleStatus.lower.ended}>
-                {lifecycleStatus.cased.ended}
-              </option>
-              <option value={lifecycleStatus.lower.archived}>
-                {lifecycleStatus.cased.archived}
-              </option>
-            </select>
-          </div>
-
-          <div className="flex flex-col justify-center">
-            <AllowRequestsSwitch
-              checked={isEventLive ? event.allow_requests : false}
-              onToggle={handleToggleAllowRequests}
-              disabled={disableAllowRequestsToggle}
-            />
-            {!isEventLive && (
-              <p className="text-xs text-accent-80">
-                Requests can only be enabled when the event is Live.
-              </p>
-            )}
-          </div>
-        </section>
       </header>
-      <section className="w-full max-w-xl space-y-3 mb-3">
-        <div className="flex gap-2">
-          <Input
-            value={draftName}
-            onChange={(e) => setDraftName(e.target.value)}
-            placeholder="Event name"
-            disabled={savingName}
-          />
-          <Button
-            onClick={handleSaveName}
-            disabled={savingName || !draftName.trim()}
-          >
-            {savingName ? "Saving..." : "Save"}
-          </Button>
-        </div>
-      </section>
       {(eventError || requestError) && (
-        <p className="text-red-400 text-sm mb-2">
+        <p className="mb-2 text-sm text-red-400">
           {requestError ?? eventError}
         </p>
       )}
-      <div className="grid grid-cols-1 gap-8 justify-between md:grid-cols-2">
-        <section className="mb-8 xl:w-2xl">
-          <TopRequestList title="Top Requested Songs" requests={topRequested} />
-        </section>
 
-        <section className="mb-8 xl:w-2xl">
-          <Card>
+      <div className="flex flex-col lg:flex-row justify-between gap-6">
+        <DjEventControlsCard
+          className="mx-w-md  lg:w-sm"
+          event={event}
+          setEvent={setEvent}
+          refetchEvent={refetchEvent}
+        />
+
+        {!isKaraokeEvent ? (
+          <section className="max-w-lg w-lg">
+            <TopRequestList
+              title="Top Requested Songs"
+              requests={topRequested}
+            />
+          </section>
+        ) : null}
+
+        <section className="max-w-lg w-lg">
+          <Card className=" backdrop-blur supports-backdrop-filter:bg-muted-90/20">
             <CardHeader>
-              <h2 className="text-lg font-semibold mb-3 mr-auto text-muted-60">
-                Request List ({filteredRequests.length}/{totalCount})
+              <h2 className="text-lg font-semibold mr-auto text-muted-60">
+                Request List ({visibleCount}/{totalCount})
               </h2>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                {STATUS_OPTIONS.map((status) => {
-                  const active = selectedStatuses.has(status);
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => toggleStatus(status)}
-                      className={`px-3 py-1 rounded text-sm font-medium transition 
-                    ${active ? "bg-muted-10 text-white border border-muted-10" : "border bg-transparent border-muted-20 text-muted-20 hover:bg-muted-20 hover:text-white hover:cursor-pointer"}`}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <span className="capitalize">{status}</span>
-                        <span className="text-xs opacity-80">
-                          ({statusCounts[status]})
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
-
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  disabled={selectedStatuses.size === 0}
-                  className="px-3 py-1 rounded text-sm font-medium bg-secondary-20 text-white disabled:opacity-50"
-                >
-                  Clear
-                </button>
-              </div>
-              <FullRequestList
-                requests={filteredRequests}
-                hiddenTitle={true}
-                onSetStatus={setRequestStatus}
-                updatingId={updatingId}
-                className="max-h-121 overflow-scroll no-scrollbar"
+              <RequestStatusFilters
+                statuses={STATUS_OPTIONS}
+                selected={selectedStatuses}
+                counts={statusCounts}
+                onToggle={toggleStatus}
+                onClear={clearFilters}
               />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              {isKaraokeEvent ? (
+                <>
+                  <KaraokeDJQueueList
+                    requests={karaokeVisibleRows}
+                    title="Karaoke Queue"
+                    updatingId={updatingId}
+                    onSetStatus={(id, status) =>
+                      void setRequestStatus(id, status)
+                    }
+                    className="max-h-103 overflow-scroll no-scrollbar"
+                  />
+                </>
+              ) : (
+                <FullRequestList
+                  requests={filteredRequests}
+                  hiddenTitle={true}
+                  onSetStatus={setRequestStatus}
+                  updatingId={updatingId}
+                  className="max-h-103 overflow-scroll no-scrollbar"
+                />
+              )}
             </CardContent>
           </Card>
         </section>

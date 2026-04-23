@@ -15,6 +15,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "../ui/sheet";
+import { useDjCreateEventModal } from "@/contexts/DjCreateEventModalContext";
 
 type DjNavLink = {
   label: string;
@@ -27,6 +28,8 @@ export function DjPrivateNav() {
 
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const { open: openCreateEventModal } = useDjCreateEventModal();
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -52,7 +55,6 @@ export function DjPrivateNav() {
     { label: "Dashboard", href: routes.dj.dashboard },
     { label: "My Events", href: routes.dj.events },
     { label: "Profile", href: routes.dj.profile },
-    { label: "Create Event", href: `${routes.dj.dashboard}#create-event` },
   ];
 
   const linkClass = (href: string) =>
@@ -72,11 +74,11 @@ export function DjPrivateNav() {
             href={routes.dj.dashboard}
             className="font-semibold tracking-tight"
           >
-            GotATune
+            Suplio
           </Link>
           <button
             type="button"
-            className="rounded-md p-2 hover:bg-muted-20 sm:hidden"
+            className="rounded-md p-2 hover:bg-muted-20 md:hidden"
             onClick={() => setMobileNavOpen(true)}
             aria-label="Open DJ menu"
             aria-expanded={mobileNavOpen}
@@ -85,7 +87,7 @@ export function DjPrivateNav() {
             <Menu />
           </button>
 
-          <div className="hidden items-center gap-4 sm:flex">
+          <div className="hidden items-center gap-4 md:flex">
             <nav className="flex items-center gap-4">
               {navLinks.map((link) => (
                 <Link
@@ -93,20 +95,23 @@ export function DjPrivateNav() {
                   href={link.href}
                   className={linkClass(link.href)}
                 >
-                  {link.label === "Create Event" ? (
-                    <p className="flex flex-row items-center">
-                      <Plus />
-                      Create Event
-                    </p>
-                  ) : (
-                    link.label
-                  )}
+                  {link.label}
                 </Link>
               ))}
             </nav>
+            <Button
+              type="button"
+              className={`text-sm transition-colors hover:text-secondary-40 ${linkClass(routes.dj.dashboard)}`}
+              onClick={() => openCreateEventModal()}
+            >
+              <span className="inline-flex flex-row items-center gap-1">
+                <Plus className="size-4" />
+                Create Event
+              </span>
+            </Button>
 
             <DjEventSearch
-            className="w-71"
+              className="w-71"
               inputClassName="w-full border-muted-10 focus:border-muted-90"
             />
 
@@ -150,17 +155,24 @@ export function DjPrivateNav() {
                 className="rounded-md px-2 py-2 text-sm hover:bg-muted-20"
                 onClick={() => setMobileNavOpen(false)}
               >
-                {link.label === "Create Event" ? (
-                  <p className="flex flex-row items-center">
-                    Create Event{" "}
-                    <Plus className="border border-secondary-40 ml-1.5 rounded-sm" />
-                  </p>
-                ) : (
-                  link.label
-                )}
+                {link.label}
               </Link>
             ))}
           </nav>
+
+          <Button
+            type="button"
+            className="rounded-md px-2 py-2 text-left text-sm hover:bg-muted-20"
+            onClick={() => {
+              setMobileNavOpen(false);
+              openCreateEventModal();
+            }}
+          >
+            <span className="inline-flex flex-row items-center gap-2">
+              <Plus className="size-4" />
+              Create Event
+            </span>
+          </Button>
 
           <DjEventSearch
             key="dj-event-search-mobile"

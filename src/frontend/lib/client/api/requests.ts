@@ -1,10 +1,10 @@
 import type { AppSupabaseClient } from "@/lib/supabase/app-client";
-import type { Database, EventStatus } from "@/types/database";
+import type { Database, RequestStatus } from "@/types/database";
 
 export type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 
 export type FetchRequestsOptions = {
-  statuses?: EventStatus[];
+  statuses?: RequestStatus[];
   orderBy?: string;
   ascending?: boolean;
   limit?: number;
@@ -39,6 +39,8 @@ export async function insertRequest(
     song_name: string;
     artist?: string | null;
     message?: string | null;
+    performer_name?: string | null;
+    request_type?: "song_request" | "karaoke";
   },
 ): Promise<InsertRequestResult> {
   const res = await fetch(

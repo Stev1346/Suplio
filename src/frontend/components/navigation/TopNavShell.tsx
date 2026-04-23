@@ -11,7 +11,7 @@ import {
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {  useState } from "react";
+import {  useMemo, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +20,7 @@ import {
   SheetTitle,
 } from "../ui/sheet";
 import { cn } from "@/lib/utils";
+import { useEvent } from "@/hooks/guest/useEventByCode";
 
 type NavLink = {
   label: string;
@@ -30,17 +31,35 @@ export function TopNavShell() {
   const pathname = usePathname();
   const eventCode = useEventCode();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const guestEventCode = eventCode && isGuestEventPath(pathname) ? eventCode : undefined;
+  const {event} = useEvent(guestEventCode, {realtime: true});
+
+  const thirdGuestLink = useMemo<NavLink | null>(() => {
+    if(!guestEventCode) return null;
+
+    if(event?.event_mode === "karaoke"){
+      return{
+        label: "Karaoke Queue",
+        href: routes.guest.karaoke(guestEventCode)
+      };
+    }
+
+    return{
+      label: "Vote",
+      href: routes.guest.vote(guestEventCode)
+    };
+  }, [event?.event_mode, guestEventCode]);
 
   if (isDjPrivatePath(pathname)) {
     return null;
   }
 
   const guestLinks: NavLink[] =
-    eventCode && isGuestEventPath(pathname)
+    eventCode && thirdGuestLink
       ? [
           { label: "Scan", href: routes.guest.scan(eventCode) },
           { label: "Request", href: routes.guest.request(eventCode) },
-          { label: "Vote", href: routes.guest.vote(eventCode) },
+          thirdGuestLink,
         ]
       : [];
 
@@ -59,7 +78,7 @@ export function TopNavShell() {
       >
         <div className="mx-auto flex items-center">
           <Link href={"/"} className="font-semibold tracking-tight">
-            GotATune
+            Suplio
           </Link>
 
           <button
@@ -107,8 +126,8 @@ export function TopNavShell() {
         <SheetHeader>
           <SheetTitle className="text-left text-secondary-80">Menu</SheetTitle>
           <SheetDescription className="sr-only">
-            Navigation for this event: scan, request, vote, view your DJs info
-            or go to the DJ access portal
+          Navigation for this event: scan, request, request list or vote,
+          view your DJ&apos;s info, or go to the DJ access portal
           </SheetDescription>
         </SheetHeader>
         <nav

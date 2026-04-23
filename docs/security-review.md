@@ -6,7 +6,8 @@ Related docs:
 
 - `project-description.md`
 - `DJ Login and Event Management.md`
-- `sprints/sprint-2026-04-phase-9.md`
+- `sprints/sprint-2026-04-phase-9.md` (historical security sign-off)
+- `sprints/sprint-2026-04-karaoke-mode.md` (latest sprint tracker)
 - `runbook-regression.md`
 - `deploy.md`
 
@@ -24,6 +25,10 @@ Related docs:
 | Password reset flow | ✅ | Auth callback/reset routes implemented under `src/frontend/app/auth`. |
 | Email verification required | ✅ | `src/frontend/proxy.ts` redirects unverified users off private DJ routes. |
 | Login lockout/backoff | ✅ | `src/frontend/lib/server/auth/login-rate-limit.ts`. |
+
+## Deferred follow-up
+
+- Option B hardening is deferred to a future phase: integrate `checkLoginAllowed`, `recordLoginFailure`, and `resetLoginAttempts` directly in `src/frontend/app/auth/sign-in/route.ts` to pair helper-backed account lockout tracking with existing request-window rate limiting.
 
 ## Reviewer sign-off
 

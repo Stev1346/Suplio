@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/ui/AppHeader";
 import { Button } from "@/components/ui/Button";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { PageShell } from "@/components/ui/PageShell";
+import { useGuestDjProfileModal } from "@/contexts/GuestDjProfileModalContext";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
@@ -25,20 +26,25 @@ export default function ScanScreen() {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const requestUrl = eventCode ? `${baseUrl}/event/${eventCode}/request` : "";
 
-  const { requests, loading: requestLoading, error: requestError } = useEventRequests(
+  const {open} = useGuestDjProfileModal();
+  const {
+    requests,
+    loading: requestLoading,
+    error: requestError,
+  } = useEventRequests(
     event?.id,
     { orderBy: "votes", ascending: false },
-    { realtime: true }
+    { realtime: true },
   );
   const topRequests = requests
-  .filter(
-    (r) =>
-      r.status === requestStatus.lower.played ||
-      r.status === requestStatus.lower.accepted
-  )
-  .sort(compareRankedRequests)
-  .slice(0, 10);
-  
+    .filter(
+      (r) =>
+        r.status === requestStatus.lower.played ||
+        r.status === requestStatus.lower.accepted,
+    )
+    .sort(compareRankedRequests)
+    .slice(0, 10);
+
   async function handleCopyUrl() {
     if (!requestUrl) return;
 
@@ -71,15 +77,27 @@ export default function ScanScreen() {
 
   return (
     <PageShell className="flex flex-col items-center">
-      <AppHeader tagLine="Scan to request a song" />
+      <AppHeader tagLine="" title="" hideDjLink />
       {eventError && <p className="text-red-400 text-sm mb-3">{eventError}</p>}
-      {requestError && <p className="text-red-400 text-sm mb-3">{requestError}</p>}
-      
+      {requestError && (
+        <p className="text-red-400 text-sm mb-3">{requestError}</p>
+      )}
+
       <div className="flex-1 flex flex-col items-center">
         <h1 className="text-3xl font-bold mb-2 text-center">
           Welcome to <br />
           {event.name}
         </h1>
+        <Link
+          href="#"
+          className="text-lg text-accent-80 hover:underline"
+          onClick={(e) => {
+            e.preventDefault();
+            open();
+          }}
+        >
+          Meet your DJ
+        </Link>
         <p className="text-muted-80 text-lg mb-2">Scan to request a song:</p>
         <div className="bg-white p-4 rounded-xl shadow mb-4">
           <QRCodeSVG value={requestUrl} size={220} level="M" />

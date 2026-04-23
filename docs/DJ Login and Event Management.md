@@ -236,6 +236,6 @@ Sprint boards are tracked under:
 
 - `docs/sprints/`
 
-**Latest closed sprint:** `docs/sprints/sprint-2026-04-phase-9.md` (Phase 9 — QA, Hardening, Deploy Readiness; closed **2026-04-18**).
+**Latest closed sprint:** `docs/sprints/sprint-2026-04-karaoke-mode.md` (Phase 7 — QA, Regression, Documentation; closed **2026-04-23**).
 
 When you start the next iteration, add a new file (for example `docs/sprints/sprint-2026-05-<topic>.md`) and link it here as the active tracker.

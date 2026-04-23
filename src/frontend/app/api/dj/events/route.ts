@@ -1,4 +1,4 @@
-import { EVENT_LIFECYCLE_STATUS, lifecycleStatus } from "@/lib/shared/constants/routes";
+import { EVENT_LIFECYCLE_STATUS, EVENT_MODES } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -39,12 +39,51 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Event name is required" }, { status: 400 })
     }
 
+    const rawMode = body?.event_mode;
+    const rawDate = body?.event_date;
+
+    let event_mode: "song_request" | "karaoke" | undefined;
+    if(rawMode !== undefined && rawMode !== null && rawMode !== ""){
+        const m = String(rawMode).trim();
+        if(!(EVENT_MODES as readonly string[]).includes(m)){
+            return NextResponse.json({error: "Invalid event_mode"}, {status: 400});
+        }
+        event_mode = m as "song_request" | "karaoke";
+    }
+
+    let event_date: string | null | undefined;
+    if(rawDate !== undefined && rawDate !== null && String(rawDate).trim() !== ""){
+        const d = String(rawDate).trim();
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){
+            return NextResponse.json({error: "Invalid event_date"}, {status: 400});
+        }
+        event_date = d;
+    } else {
+        event_date = undefined;
+    }
+
     let eventCode = generateEventCode(8);
 
     for (let i = 0; i < 10; i++) {
+        const insertPayload: {
+        name: string;
+        event_code: string;
+        dj_id: string;
+        lifecycle_status: "draft";
+        event_mode?: "song_request" | "karaoke";
+        event_date?: string;
+    } = {
+            name,
+            event_code: eventCode,
+            dj_id: user.id,
+            lifecycle_status: "draft"
+        };
+        if(event_mode !== undefined) insertPayload.event_mode = event_mode
+        if(event_date !== undefined) insertPayload.event_date = event_date
+
         const { data, error } = await supabase
             .from("events")
-            .insert({ name, event_code: eventCode, dj_id: user.id, lifecycle_status: "draft" })
+            .insert(insertPayload)
             .select("event_code")
             .single();
 
@@ -84,7 +123,7 @@ export async function GET(req: Request) {
         : null;
 
     let query = supabase.from("events")
-        .select("id, name, event_code, allow_requests, created_at, lifecycle_status", { count: "exact" })
+        .select("id, name, event_code, allow_requests, created_at, lifecycle_status, event_mode, event_date",  { count: "exact" })
         .eq("dj_id", user.id);
 
     if (lifecycle) {

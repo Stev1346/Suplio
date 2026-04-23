@@ -1,6 +1,6 @@
-# GotATune
+# Suplio
 
-GotATune is a QR-based song request and voting platform for live DJ events.
+Suplio is a QR-based song request and voting platform for live DJ events.
 Guests scan an event QR code to request songs and vote. DJs manage events from
 a private dashboard with lifecycle controls, request moderation, and profile tools.
 
@@ -9,9 +9,10 @@ backend/data layer used to run the platform.
 
 ## Current Status
 
-- Roadmap phases **0–9** are complete (see `docs/sprints/sprint-2026-04-phase-9.md` and `docs/DJ Login and Event Management.md`)
-- Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented
-- Event search, lifecycle automation, QA runbooks, and deploy smoke guidance are in place; **per-release** manual checks live in `docs/runbook-regression.md`
+- Karaoke Mode sprint (`docs/sprints/sprint-2026-04-karaoke-mode.md`) is complete through **Phase 7 (QA, Regression, Documentation)**.
+- Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented.
+- Karaoke flow is implemented end-to-end (karaoke intake, queue list, performer-flow statuses, no-vote guest path).
+- Event search, lifecycle automation, regression runbooks, and deploy smoke guidance are in place.
 
 ## Tech Stack
 

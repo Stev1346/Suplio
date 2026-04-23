@@ -1,15 +1,8 @@
 import { logDjAction } from "@/lib/server/dj-audit";
-import { requestStatus } from "@/lib/shared/constants/routes";
+import { eventMode, KARAOKE_REQUEST_STATUSES, requestStatus } from "@/lib/shared/constants/routes";
 import { createClient } from "@/lib/supabase/server";
-import type { EventStatus } from "@/types/database";
+import type { RequestType, SongRequestStatus } from "@/types/database";
 import { NextResponse } from "next/server";
-
-const STATUSES: EventStatus[] = [
-  requestStatus.lower.pending,
-  requestStatus.lower.accepted,
-  requestStatus.lower.rejected,
-  requestStatus.lower.played,
-];
 
 type RouteContext = { params: Promise<{ requestId: string }> };
 
@@ -31,13 +24,13 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const body = await req.json().catch(() => null);
   const status = body?.status as string | undefined;
-  if (!status || !STATUSES.includes(status as EventStatus)) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  if (!status) {
+    return NextResponse.json({ error: "Missing status" }, { status: 400 });
   }
 
   const { data: row, error: rowError } = await supabase
     .from("requests")
-    .select("id, event_id, events!inner(dj_id)")
+    .select("id, event_id, request_type, events!inner(dj_id)")
     .eq("id", requestId)
     .single();
 
@@ -45,25 +38,52 @@ export async function PATCH(req: Request, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const nested = row as unknown as { events: { dj_id: string } };
-  if (nested.events.dj_id !== user.id) {
+  const typedRow = row as unknown as {
+    id: string;
+    event_id: string;
+    request_type: RequestType;
+    events: { dj_id: string };
+  }
+  if (typedRow.events.dj_id !== user.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { error } = await supabase
-    .from("requests")
-    .update({ status })
-    .eq("id", requestId);
+  const songAllowed: SongRequestStatus[] = [
+    requestStatus.lower.pending,
+    requestStatus.lower.accepted,
+    requestStatus.lower.rejected,
+    requestStatus.lower.played,
+  ]
+
+  if (typedRow.request_type === eventMode.lower.songRequest) {
+    if (!songAllowed.includes(status as SongRequestStatus)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+  } else if (typedRow.request_type === eventMode.lower.karaoke) {
+    if (!(KARAOKE_REQUEST_STATUSES as readonly string[]).includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+  } else {
+    return NextResponse.json({ error: "Invalid request type" }, { status: 400 });
+  }
+
+
+  const { error } =
+    typedRow.request_type === eventMode.lower.karaoke
+      ? await supabase.rpc("set_karaoke_status_with_queue_rules", {
+        p_request_id: requestId,
+        p_new_status: status,
+      })
+      : await supabase.from("requests").update({ status }).eq("id", requestId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  const requestRow = row as unknown as { event_id: string; events: { dj_id: string } };
   await logDjAction({
     djId: user.id,
     action: "request.status.updated",
-    eventId: requestRow.event_id,
+    eventId: typedRow.event_id,
     requestId,
     metadata: { status }
   });
