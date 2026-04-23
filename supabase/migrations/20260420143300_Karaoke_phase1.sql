@@ -50,7 +50,7 @@ alter table public.requests
   add constraint requests_status_check
   check (status in (
     'pending', 'accepted', 'rejected', 'played',
-    'queued', 'up_next', 'performing_now'
+    'queued', 'up_next', 'performing_now', 'performed'
   ));
 
 -- 4) Indexes for separate-list filtering and FIFO ordering

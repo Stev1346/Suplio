@@ -13,7 +13,6 @@ import {
   eventMode,
   karaokeRequestStatus,
   lifecycleStatus,
-  requestStatus,
   routes,
 } from "@/lib/shared/constants/routes";
 import { Database } from "@/types/database";
@@ -95,12 +94,11 @@ export default function KaraokeRequestListScreen() {
     return <StartingSoon eventName={event.name} />;
   }
 
-  const topRequests = requests
-    .filter(
-      (r) =>
-        r.status === requestStatus.lower.played ||
-        r.status === requestStatus.lower.accepted,
-    )
+  const karaokeRequests = requests.filter(
+    (r) => r.request_type === eventMode.lower.karaoke
+  );
+  const topRequests = karaokeRequests
+    .filter((r) => r.status === karaokeRequestStatus.lower.performed)
     .slice(0, 10);
 
   if (
@@ -110,18 +108,18 @@ export default function KaraokeRequestListScreen() {
     return <EventOver eventName={event.name} topRequests={topRequests} />;
   }
 
-  const karaokeRequests = requests.filter(
+  const activeKaraokeRequests = requests.filter(
     (r) => r.request_type === eventMode.lower.karaoke && r.removed_at == null
   );
   const byCreated = (a: RequestRow, b: RequestRow) =>
     new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  const performingNow = karaokeRequests
+  const performingNow = activeKaraokeRequests
     .filter((r) => r.status === karaokeRequestStatus.lower.performingNow)
     .sort(byCreated);
-  const upNext = karaokeRequests
+  const upNext = activeKaraokeRequests
     .filter((r) => r.status === karaokeRequestStatus.lower.upNext)
     .sort(byCreated);
-  const remainingQueue = karaokeRequests
+  const remainingQueue = activeKaraokeRequests
     .filter((r) => r.status === karaokeRequestStatus.lower.queued)
     .sort(byCreated);
 
