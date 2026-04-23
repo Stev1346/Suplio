@@ -40,7 +40,7 @@ function KaraokeSection({
         <ul className="space-y-2 ">
           {requests.map((r) => (
             <li key={r.id} className="rounded-md  border border-muted-20 p-3">
-              <p className="font-medium text-secondary-80">{r.song_name.toUpperCase()}</p>
+              <p className="text-md text-secondary-60 font-bold">{r.song_name.toUpperCase()}</p>
               <p className="text-sm text-muted-60">
                 {r.artist ? `${r.artist.toUpperCase()}` : "Unknown artist"}
               </p>
