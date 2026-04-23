@@ -44,7 +44,7 @@ function KaraokeSection({
               <p className="text-sm text-muted-60">
                 {r.artist ? `${r.artist.toUpperCase()}` : "Unknown artist"}
               </p>
-              <p className="text-sm text-accent-80">
+              <p className="text-sm text-accent-60/95">
                 Performer: {r.performer_name?.toUpperCase() ?? "Uknown performer"}
               </p>
             </li>
@@ -135,9 +135,9 @@ export default function KaraokeRequestListScreen() {
       )}
 
       <div className="flex w-full flex-1 flex-col items-center gap-4">
-        <KaraokeSection title="Performing now" requests={performingNow} className="bg-accent-95" />
-        <KaraokeSection title="Up Next" requests={upNext} className="bg-muted-90/20" />
-        <KaraokeSection title="Remaining Queue" requests={remainingQueue} className="bg-muted-40/10" />
+        <KaraokeSection title="Performing now" requests={performingNow} className="bg-accent-95 max-w-xl" />
+        <KaraokeSection title="Up Next" requests={upNext} className="bg-muted-60/20 max-w-lg" />
+        <KaraokeSection title="Remaining Queue" requests={remainingQueue} className="bg-muted-20/10 max-w-md" />
 
         <div className="mt-2 flex flex-row gap-6">
           <Link
