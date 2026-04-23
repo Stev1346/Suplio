@@ -1,7 +1,7 @@
 export type SongRequestStatus = 'pending' | 'accepted' | 'rejected' | 'played';
 export type EventLifecycleStatus = "draft" | "live" | "ended" | "archived";
 export type EventMode ="song_request" | "karaoke";
-export type KaraokeRequestStatus = "queued" | "up_next" | "performing_now";
+export type KaraokeRequestStatus = "queued" | "up_next" | "performing_now" | "performed" | "rejected";
 export type RequestStatus = SongRequestStatus | KaraokeRequestStatus;
 export type RequestType = "song_request" | "karaoke";
 

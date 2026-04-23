@@ -5,7 +5,7 @@ import {
   RequestRow,
 } from "@/lib/client/api/requests";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SongRequestStatus } from "@/types/database";
+import { RequestStatus } from "@/types/database";
 import { compareRankedRequests } from "@/lib/request-ranking";
 import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
@@ -45,7 +45,7 @@ export function useEventRequests(
 
     try {
       const optsFetch: FetchRequestsOptions = {
-        statuses: statusesKey ? (statusesKey.split(",") as SongRequestStatus[]) : undefined,
+        statuses: statusesKey ? (statusesKey.split(",") as RequestStatus[]) : undefined,
         orderBy,
         ascending,
         limit,
@@ -79,7 +79,7 @@ export function useEventRequests(
     setLoading(true);
 
     const optsFetch: FetchRequestsOptions = {
-      statuses: statusesKey ? (statusesKey.split(",") as SongRequestStatus[]) : undefined,
+      statuses: statusesKey ? (statusesKey.split(",") as RequestStatus[]) : undefined,
       orderBy,
       ascending,
       limit,
@@ -111,7 +111,7 @@ export function useEventRequests(
     if (!eventId || !enableRealtime) return;
 
     const statusList = statusesKey
-      ? (statusesKey.split(",") as SongRequestStatus[])
+      ? (statusesKey.split(",") as RequestStatus[])
       : undefined;
     const shouldInclude = (row: RequestRow) =>
       row.event_id === eventId &&

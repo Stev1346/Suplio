@@ -1,6 +1,6 @@
-# GotATune
+# Suplio
 
-GotATune is a QR-based song request and voting platform for live DJ events.
+Suplio is a QR-based song request and voting platform for live DJ events.
 Guests scan an event QR code to request songs and vote. DJs manage events from
 a private dashboard with lifecycle controls, request moderation, and profile tools.
 

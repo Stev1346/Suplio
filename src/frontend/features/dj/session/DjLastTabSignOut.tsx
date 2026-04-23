@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-const CHANNEL = "gotatune:dj-private-tabs";
+const CHANNEL = "suplio:dj-private-tabs";
 const PING_MS = 4000;
 const ROLL_CALL_WAIT_MS = 450;
 const PRESENCE_STALE_MS = 12000;

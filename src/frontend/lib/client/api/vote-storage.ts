@@ -1,4 +1,4 @@
-const VOTED_STORAGE_KEY = "gotatune_voted";
+const VOTED_STORAGE_KEY = "suplio_voted";
 
 export type VoteMap = Record<string, string>;
 

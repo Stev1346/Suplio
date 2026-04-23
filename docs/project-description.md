@@ -1,8 +1,8 @@
-# GotATune Project Description
+# Suplio Project Description
 
 ## Overview
 
-GotATune is a QR-based song request platform for live DJ events. Guests use their
+Suplio is a QR-based song request platform for live DJ events. Guests use their
 phones to scan an event code, request songs, and vote on what should play next.
 DJs use a private dashboard to create and manage events, moderate requests, and
 control the event lifecycle.
@@ -15,8 +15,8 @@ Core product goals:
 
 ## Product Identity
 
-- Product name: GotATune
-- Tagline: GotATune? Scan. Request. Vote.
+- Product name: Suplio
+- Tagline: Suplio! Scan. Request. Vote.
 - Brand direction: professional, energetic, simple, event-focused
 
 ## User Flows

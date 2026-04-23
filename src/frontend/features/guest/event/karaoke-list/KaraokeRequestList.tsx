@@ -31,20 +31,20 @@ function KaraokeSection({
   requests: RequestRow[];
 }) {
   return (
-    <section className="w-full max-w-3xl rounded-lg border border-muted-20 bg-muted-10/30 p-4">
+    <section className="w-full max-w-3xl rounded-lg border border-muted-20 bg-muted-90/30 p-4">
       <h2 className="mb-3 text-lg font-semibold text-muted-60">{title}</h2>
       {requests.length === 0 ? (
         <p className="text-sm text-muted-40">No requests yet.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-2 ">
           {requests.map((r) => (
-            <li key={r.id} className="rounded-md border border-muted-20 p-3">
-              <p className="font-medium text-secondary-80">{r.song_name}</p>
+            <li key={r.id} className="rounded-md  border border-muted-20 p-3">
+              <p className="font-medium text-secondary-80">{r.song_name.toUpperCase()}</p>
               <p className="text-sm text-muted-60">
-                {r.artist ? `${r.artist}` : "Unknown artist"}
+                {r.artist ? `${r.artist.toUpperCase()}` : "Unknown artist"}
               </p>
               <p className="text-sm text-accent-80">
-                Performer: {r.performer_name ?? "Uknown performer"}
+                Performer: {r.performer_name?.toUpperCase() ?? "Uknown performer"}
               </p>
             </li>
           ))}
@@ -111,17 +111,19 @@ export default function KaraokeRequestListScreen() {
   }
 
   const karaokeRequests = requests.filter(
-    (r) => r.request_type === eventMode.lower.karaoke,
+    (r) => r.request_type === eventMode.lower.karaoke && r.removed_at == null
   );
-  const performingNow = karaokeRequests.filter(
-    (r) => r.status === karaokeRequestStatus.lower.performingNow,
-  );
-  const upNext = karaokeRequests.filter(
-    (r) => r.status === karaokeRequestStatus.lower.upNext,
-  );
-  const remainingQueue = karaokeRequests.filter(
-    (r) => r.status === karaokeRequestStatus.lower.queued,
-  );
+  const byCreated = (a: RequestRow, b: RequestRow) =>
+    new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+  const performingNow = karaokeRequests
+    .filter((r) => r.status === karaokeRequestStatus.lower.performingNow)
+    .sort(byCreated);
+  const upNext = karaokeRequests
+    .filter((r) => r.status === karaokeRequestStatus.lower.upNext)
+    .sort(byCreated);
+  const remainingQueue = karaokeRequests
+    .filter((r) => r.status === karaokeRequestStatus.lower.queued)
+    .sort(byCreated);
 
   return (
     <PageShell centralize className="flex-col">

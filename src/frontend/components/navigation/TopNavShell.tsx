@@ -32,7 +32,7 @@ export function TopNavShell() {
   const eventCode = useEventCode();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const guestEventCode = eventCode && isGuestEventPath(pathname) ? eventCode : undefined;
-  const {event} = useEvent(guestEventCode);
+  const {event} = useEvent(guestEventCode, {realtime: true});
 
   const thirdGuestLink = useMemo<NavLink | null>(() => {
     if(!guestEventCode) return null;
@@ -78,7 +78,7 @@ export function TopNavShell() {
       >
         <div className="mx-auto flex items-center">
           <Link href={"/"} className="font-semibold tracking-tight">
-            GotATune
+            Suplio
           </Link>
 
           <button
