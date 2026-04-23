@@ -1,7 +1,17 @@
 import { requestStatus } from "@/lib/shared/constants/routes";
-import { Database, SongRequestStatus } from "@/types/database";
+import { Database, RequestStatus, SongRequestStatus } from "@/types/database";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
+type SongRequestRow = RequestRow & { status: SongRequestStatus };
+
+function isSongRequestStatus(status: RequestStatus): status is SongRequestStatus {
+  return (
+    status === requestStatus.lower.pending ||
+    status === requestStatus.lower.accepted ||
+    status === requestStatus.lower.rejected ||
+    status === requestStatus.lower.played
+  );
+}
 
 const STATUS_LABELS: Record<SongRequestStatus, string> = {
   pending: requestStatus.cased.pending,
@@ -33,6 +43,10 @@ export function FullRequestList({
   onSetStatus,
   updatingId = null,
 }: FullRequestListProps) {
+  const songRequests: SongRequestRow[] = requests.filter(
+    (r): r is SongRequestRow => isSongRequestStatus(r.status),
+  );
+
   return (
     <section className={className}>
       <h2
@@ -42,10 +56,10 @@ export function FullRequestList({
         {title}
       </h2>
       <ul className="space-y-1">
-        {requests.length === 0 && (
+        {songRequests.length === 0 && (
           <li className="text-muted-40">No requests yet.</li>
         )}
-        {requests.map((r) => (
+        {songRequests.map((r) => (
           <li
             key={r.id}
             className="bg-card rounded-lg shadow border border-muted-10 p-3 flex flex-col gap-2"

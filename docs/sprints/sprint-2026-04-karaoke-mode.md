@@ -16,31 +16,20 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In Progress (Phase 5).
+**Sprint status:** In Progress (Phase 7).
 
 ### In Progress
 
-#### Phase 5 - FIFO Sorting Rules
-**Target duration:** 0.5-0.75 day  
-**Definition of Done**
-- [ ] Karaoke guest request/list screens sort by oldest-first.
-- [ ] Karaoke DJ request management list sorts by oldest-first.
-- [ ] DJ queue controls are performer-flow based (`performing_now`, `up_next`, queue) instead of `pending`/`accepted`/`rejected`/`played`.
-- [ ] DJ can remove requests from karaoke Request List and restore them later.
-- [ ] Karaoke request list and regular request list remain separated during and after mode toggles.
-- [ ] DJ karaoke views do not include a voting-order list.
-- [ ] Non-karaoke sorting behavior is unchanged.
-
----
-
-### Backlog
-
-#### Phase 6 - QA, Regression, Documentation
+#### Phase 7 - QA, Regression, Documentation
 **Target duration:** 0.75-1.0 day  
 **Definition of Done**
 - [ ] Manual QA for karaoke and non-karaoke flows passes.
 - [ ] Automated checks for karaoke paths pass.
 - [ ] Documentation updates are complete.
+
+---
+
+### Backlog
 
 ---
 
@@ -99,16 +88,37 @@ Use this board to move phases through execution.
 - [x] Karaoke request flow avoids vote-oriented redirects.
 - [x] Top Requested list UI is replaced by karaoke Request List UI in karaoke mode contexts.
 
+#### Phase 5 - FIFO Sorting Rules
+**Completed:** 2026-04-23  
+**Notes:** Karaoke guest and DJ queue views are FIFO-sorted by `created_at` with performer-flow statuses (`performing_now`, `up_next`, `queued`); remove/restore and karaoke/regular list separation are in place without changing non-karaoke behavior.
+
+**Definition of Done**
+- [x] Karaoke guest request/list screens sort by oldest-first.
+- [x] Karaoke DJ request management list sorts by oldest-first.
+- [x] DJ queue controls are performer-flow based (`performing_now`, `up_next`, queue) instead of `pending`/`accepted`/`rejected`/`played`.
+- [x] DJ can remove requests from karaoke Request List and restore them later.
+- [x] Karaoke request list and regular request list remain separated during and after mode toggles.
+- [x] DJ karaoke views do not include a voting-order list.
+- [x] Non-karaoke sorting behavior is unchanged.
+
+#### Phase 6 - Rebrand: GotATune to Suplio
+**Completed:** 2026-04-23  
+**Notes:** Product copy and core documentation were updated to Suplio naming. Technical identifiers were audited and only safe copy-level rebrand changes were applied; risky renames were intentionally deferred.
+
+**Definition of Done**
+- [x] Product name copy is updated from GotATune to Suplio across app UI text.
+- [x] Core docs and sprint artifacts use Suplio naming where applicable.
+- [x] Routes, identifiers, and technical constants are reviewed to avoid unintended breaking changes from pure copy rebrand work.
+- [x] Branding assets/metadata (title, favicon/app labels if in scope) are updated or explicitly deferred with notes.
+
 ---
 
-## Current Phase Start Checklist (Phase 5)
+## Current Phase Start Checklist (Phase 7)
 
-### FIFO queue and DJ performer-flow
-- [ ] Sort karaoke guest request and list views by oldest-first (`created_at` or agreed canonical key).
-- [ ] Sort karaoke DJ request management by oldest-first for the queue slice.
-- [ ] Shift DJ karaoke controls to performer-flow statuses (`performing_now`, `up_next`, `queued`) instead of song-request moderation statuses where karaoke is active.
-- [ ] Implement remove/restore for karaoke requests and keep karaoke vs regular lists isolated across mode toggles.
-- [ ] Confirm non-karaoke ordering and vote-oriented lists are unchanged.
+### QA, regression, and documentation handoff
+- [ ] Run manual karaoke and non-karaoke regression checklist.
+- [ ] Run automated karaoke-path checks and capture pass/fail evidence.
+- [ ] Confirm docs reflect shipped behavior and phase transitions.
 
 ## Validation Checklist (Sprint Exit)
 
@@ -125,3 +135,4 @@ Use this board to move phases through execution.
 - [ ] Verify Top Requested list is replaced by karaoke Request List where karaoke mode is active.
 - [ ] Verify karaoke vote API/action remains blocked as a guardrail (not a primary user path).
 - [ ] Confirm no regression in event lifecycle and allow-requests controls.
+- [ ] Verify rebrand copy appears as Suplio in updated UI surfaces and docs.

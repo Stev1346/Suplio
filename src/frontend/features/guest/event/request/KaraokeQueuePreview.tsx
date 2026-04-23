@@ -25,7 +25,7 @@ function PreviewLine({
   emptyLabel: string;
 }) {
   return (
-    <li>
+    <li className="gap-1 flex flex-row">
       <span className="font-medium text-secondary-80">{label}</span>
       <span className="text-muted-60">
         {head ? `${head.who} - ${head.what}` : emptyLabel}

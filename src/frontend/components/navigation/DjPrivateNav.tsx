@@ -74,11 +74,11 @@ export function DjPrivateNav() {
             href={routes.dj.dashboard}
             className="font-semibold tracking-tight"
           >
-            GotATune
+            Suplio
           </Link>
           <button
             type="button"
-            className="rounded-md p-2 hover:bg-muted-20 sm:hidden"
+            className="rounded-md p-2 hover:bg-muted-20 md:hidden"
             onClick={() => setMobileNavOpen(true)}
             aria-label="Open DJ menu"
             aria-expanded={mobileNavOpen}
@@ -87,7 +87,7 @@ export function DjPrivateNav() {
             <Menu />
           </button>
 
-          <div className="hidden items-center gap-4 sm:flex">
+          <div className="hidden items-center gap-4 md:flex">
             <nav className="flex items-center gap-4">
               {navLinks.map((link) => (
                 <Link

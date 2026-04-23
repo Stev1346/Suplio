@@ -110,11 +110,15 @@ export const karaokeRequestStatus = {
         queued: "queued",
         upNext: "up_next",
         performingNow: "performing_now",
+        performed: "performed",
+        rejected: "rejected"
     },
     cased: {
         queued: "Queued",
         upNext: "Up Next",
         performingNow: "Performing Now",
+        performed: "Performed",
+        rejected: "Removed"
     },
 } as const;
 
@@ -122,4 +126,6 @@ export const KARAOKE_REQUEST_STATUSES = [
     karaokeRequestStatus.lower.queued,
     karaokeRequestStatus.lower.upNext,
     karaokeRequestStatus.lower.performingNow,
+    karaokeRequestStatus.lower.performed,
+    karaokeRequestStatus.lower.rejected
 ] as const;

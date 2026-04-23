@@ -42,7 +42,13 @@ export default function SongRequestScreen() {
     error: requestError,
   } = useEventRequests(
     event?.id,
-    { orderBy: "song_name", ascending: true },
+    {
+      orderBy:
+        event?.event_mode === eventMode.lower.karaoke
+          ? "created_at"
+          : "song_name",
+      ascending: true,
+    },
     { realtime: true },
   );
   const topRequests = requests
@@ -60,8 +66,8 @@ export default function SongRequestScreen() {
   const [performerName, setPerformerName] = useState("");
   const CLIENT_REQUEST_COOLDOWN_SEC = 60;
   const cooldownKey = eventCode
-    ? `gotatune:request-cooldown:${eventCode}`
-    : "gotatune:request-cooldown:pending";
+    ? `suplio:request-cooldown:${eventCode}`
+    : "suplio:request-cooldown:pending";
   const { isCoolingDown, secondsLeft, startCooldown } =
     useCooldownTimer(cooldownKey);
 

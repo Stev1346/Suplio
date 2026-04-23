@@ -8,7 +8,7 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({
-  title = "GotATune",
+  title = "Suplio",
   tagLine = "Scan. Request. Vote.",
   hideDjLink = false
 }: AppHeaderProps) {

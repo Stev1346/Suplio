@@ -1,4 +1,4 @@
-# GotATune – Release Regression Checklist
+# Suplio – Release Regression Checklist
 
 Run through this before promoting a build from Preview → Production.
 
