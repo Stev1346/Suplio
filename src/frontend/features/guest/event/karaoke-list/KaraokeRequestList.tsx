@@ -25,12 +25,14 @@ type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 function KaraokeSection({
   title,
   requests,
+  className
 }: {
   title: string;
   requests: RequestRow[];
+  className?: string;
 }) {
   return (
-    <section className="w-full max-w-3xl rounded-lg border border-muted-20 bg-muted-90/30 p-4">
+    <section className={`w-full max-w-3xl rounded-lg border border-muted-20 p-4 ${className}`}>
       <h2 className="mb-3 text-lg font-semibold text-muted-60">{title}</h2>
       {requests.length === 0 ? (
         <p className="text-sm text-muted-40">No requests yet.</p>
@@ -133,9 +135,9 @@ export default function KaraokeRequestListScreen() {
       )}
 
       <div className="flex w-full flex-1 flex-col items-center gap-4">
-        <KaraokeSection title="Performing now" requests={performingNow} />
-        <KaraokeSection title="Up Next" requests={upNext} />
-        <KaraokeSection title="Remaining Queue" requests={remainingQueue} />
+        <KaraokeSection title="Performing now" requests={performingNow} className="bg-accent-95" />
+        <KaraokeSection title="Up Next" requests={upNext} className="bg-muted-90/20" />
+        <KaraokeSection title="Remaining Queue" requests={remainingQueue} className="bg-muted-40/10" />
 
         <div className="mt-2 flex flex-row gap-6">
           <Link
