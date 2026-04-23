@@ -1,5 +1,4 @@
 import { DjProfilePublicFields } from "@/features/dj/profile/DjProfilePublicView";
-import { DjProfileResponse } from "@/lib/client/api/dj";
 import { createGuestRouteContext } from "@/lib/server/guest-route-response";
 import { createAdminSupabase } from "@/lib/server/supabase-admin";
 import { NextRequest } from "next/server";

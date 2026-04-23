@@ -4,7 +4,7 @@ Related docs:
 
 - `project-description.md`
 - `DJ Login and Event Management.md`
-- `sprints/sprint-2026-04-phase-9.md`
+- `sprints/sprint-2026-04-karaoke-mode.md`
 - `runbook-regression.md`
 - `security-review.md`
 

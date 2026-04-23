@@ -35,7 +35,7 @@ Core product goals:
 3. Moderate request queue (accept/reject/played)
 4. Control event lifecycle and request availability
 
-## Current Delivered Scope (through Phase 9)
+## Current Delivered Scope (through Karaoke Mode Phase 7)
 
 - DJ auth and private route guards
 - Role-aware navigation (guest and DJ)
@@ -44,6 +44,7 @@ Core product goals:
 - DJ profile management and avatar handling
 - DJ-owned event search with UX polish
 - Lifecycle timestamping and cron-driven lifecycle sweeps
+- Karaoke mode delivery: mode-aware intake, karaoke queue views, performer-flow DJ controls, remove/restore behavior, and FIFO ordering.
 - QA and deploy readiness: Playwright E2E + RLS probes, regression runbook, deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
 
 ## Security and Data Model Direction

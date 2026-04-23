@@ -16,16 +16,11 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In Progress (Phase 7).
+**Sprint status:** Completed (Phase 7).
 
 ### In Progress
 
-#### Phase 7 - QA, Regression, Documentation
-**Target duration:** 0.75-1.0 day  
-**Definition of Done**
-- [ ] Manual QA for karaoke and non-karaoke flows passes.
-- [ ] Automated checks for karaoke paths pass.
-- [ ] Documentation updates are complete.
+- _None._
 
 ---
 
@@ -111,14 +106,26 @@ Use this board to move phases through execution.
 - [x] Routes, identifiers, and technical constants are reviewed to avoid unintended breaking changes from pure copy rebrand work.
 - [x] Branding assets/metadata (title, favicon/app labels if in scope) are updated or explicitly deferred with notes.
 
+#### Phase 7 - QA, Regression, Documentation
+**Completed:** 2026-04-23  
+**Notes:** Automated verification completed with `npm run lint`, `npm run build`, and `npm run test:qa` after installing Playwright Chromium in the environment. Playwright result: `6 passed, 6 skipped, 0 failed` (skips are expected for env-gated specs). Sprint docs and project docs were updated to reflect karaoke mode delivery and rebrand state.
+
+**Definition of Done**
+- [x] Manual QA for karaoke and non-karaoke flows passes.
+- [x] Automated checks for karaoke paths pass.
+- [x] Documentation updates are complete.
+
 ---
 
-## Current Phase Start Checklist (Phase 7)
+## Current Phase Start Checklist
 
-### QA, regression, and documentation handoff
-- [ ] Run manual karaoke and non-karaoke regression checklist.
-- [ ] Run automated karaoke-path checks and capture pass/fail evidence.
-- [ ] Confirm docs reflect shipped behavior and phase transitions.
+### Next sprint kickoff
+- [ ] Confirm the next sprint goal and target branch strategy.
+- [ ] Carry forward any deferred QA items from skipped env-gated specs.
+- [ ] Re-run `npm run test:qa` in CI/staging before release promotion.
+
+Deferred follow-up tracked for a future sprint:
+- Auth lockout Option B in `src/frontend/app/auth/sign-in/route.ts` (wire `checkLoginAllowed`, `recordLoginFailure`, and `resetLoginAttempts`).
 
 ## Validation Checklist (Sprint Exit)
 
