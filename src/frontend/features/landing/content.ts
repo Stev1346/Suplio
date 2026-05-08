@@ -10,9 +10,9 @@ export type PricingTier = {
   export const landingContent = {
     hero: {
       title: "Suplio",
-      tagline: "Suplio! Scan. Request. Vote.",
+      tagline: "Scan. Request. Vote.",
       subcopy:
-        "Give your crowd a smoother way to request songs from their phones while you stay in full control.",
+        "Give your crowd a smoother way to request songs from their phones while you stay in full control with no distractions.",
       primaryCtaLabel: "Create account",
       secondaryCtaLabel: "Log in",
     },

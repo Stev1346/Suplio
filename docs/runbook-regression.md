@@ -7,6 +7,11 @@ Run through this before promoting a build from Preview → Production.
 - `npm run build` (success)
 - `npm run test:qa` (6 passed, 6 skipped, 0 failed)
 
+**Sprint 2026-06 Public Landing (Phase 6 verification, 2026-05-08):** Automated checks executed from `src/frontend`:
+- `npm run lint` (0 errors, 3 warnings — unused imports in `app/auth/sign-in/route.ts`)
+- `npm run build` (success)
+- `npm run test:qa` (6 passed, 6 skipped, 0 failed; requires `npx playwright install chromium` where browsers are missing)
+
 Rows below remain the **human** gate for each Preview -> Production promotion. Tick boxes per release.
 
 Related docs:
@@ -14,10 +19,18 @@ Related docs:
 - `project-description.md`
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
+- `features/features-public-landing.md`
 - `sprints/sprint-2026-04-karaoke-mode.md`
-- `sprints/sprint-2026-05-custom-event-designs.md` (active sprint)
+- `sprints/sprint-2026-05-custom-event-designs.md`
+- `sprints/sprint-2026-06-public-landing.md`
 - `deploy.md`
 - `security-review.md`
+
+## Public landing (`/`)
+- [ ] `/` returns 200; page shows hero, Why Suplio, how it works (guest, DJ, karaoke), pricing, and footer.
+- [ ] Hero and footer CTAs: **Create account** → `/dj/signup`; **Log in** → `/dj/login`.
+- [ ] Spot-check visible copy has no developer or infrastructure jargon (compare to `bannedWordsChecklist` in `src/frontend/features/landing/content.ts`).
+- [ ] Responsive smoke at ~375px, ~768px, and ~1280px: landing remains readable with no unusable horizontal overflow.
 
 ## Guest flow
 - [ ] `/event/[eventCode]` loads for a `draft` event (should show Scan only, not request/vote).

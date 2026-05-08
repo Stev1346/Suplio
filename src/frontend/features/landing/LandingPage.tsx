@@ -1,16 +1,14 @@
-import Link from "next/link";
-import { routes } from "@/lib/shared/constants/routes";
-import { Button } from "@/components/ui/Button";
-import { landingContent } from "./content";
 import { LandingHero } from "./components/LandingHero";
 import { HowItWorksSection } from "./components/HowItWorksSection";
 import { LandingFooter } from "./components/LandingFooter";
 import { PricingSection } from "./components/PricingSection";
+import { WhySuplioOutcomesSection } from "./components/WhySuplioOutcomesSection";
 
 export function LandingPage() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
+    <main className="mx-auto bg-primary-95 w-full max-w-6xl px-4 py-10 my-14 rounded-md sm:px-6 lg:px-8">
       <LandingHero />
+      <WhySuplioOutcomesSection />
       <HowItWorksSection />
       <PricingSection />
       <LandingFooter />

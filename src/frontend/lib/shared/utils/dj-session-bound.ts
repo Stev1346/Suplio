@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { routes } from "../constants/routes";
 
 export const DJ_SESSION_STARTED_AT = "dj_session_started_at";
 
@@ -20,7 +21,7 @@ function baseCookieOptions(){
         httpOnly: true,
         sameSite: "lax" as const,
         secure,
-        path: "/",
+        path: `${routes.home}`,
         maxAge: 60*60*24*400
     };
 }

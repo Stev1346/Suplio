@@ -77,7 +77,7 @@ export function TopNavShell() {
       "px-4 py-3 text-secondary-80 backdrop-blur supports-backdrop-filter:bg-muted-20/50")}
       >
         <div className="mx-auto flex items-center">
-          <Link href={"/"} className="font-semibold tracking-tight">
+          <Link href={routes.home} className="font-semibold tracking-tight">
             Suplio
           </Link>
 

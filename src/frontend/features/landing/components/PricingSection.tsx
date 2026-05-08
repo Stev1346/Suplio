@@ -1,15 +1,24 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { landingContent } from "../content";
 
 export function PricingSection() {
   return (
     <section className="mt-16">
-      <h2 className="text-center text-2xl font-semibold">Pricing</h2>
+      <h2 className="text-center text-primary-40 text-2xl font-semibold">
+        Pricing
+      </h2>
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {landingContent.pricing.map((tier) => (
           <Card
             key={tier.id}
-            className={tier.isPopular ? "ring-2 ring-accent-60" : undefined}
+            className={
+              tier.isPopular ? "ring-2 shadow-lg ring-accent-60" : "shadow-lg"
+            }
           >
             <CardHeader>
               <CardTitle>{tier.name}</CardTitle>
@@ -19,9 +28,6 @@ export function PricingSection() {
                   /{tier.cadence}
                 </span>
               </p>
-              {tier.isPopular ? (
-                <p className="text-xs font-medium text-accent-60">Most popular</p>
-              ) : null}
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -32,6 +38,11 @@ export function PricingSection() {
                 ))}
               </ul>
             </CardContent>
+            {tier.isPopular ? (
+              <div className="flex items-center justify-center rounded-md bg-accent-20/10 w-40 mx-auto">
+                <p className="text-accent-40/99 text-lg">Most Popular</p>
+              </div>
+            ) : null}
           </Card>
         ))}
       </div>
