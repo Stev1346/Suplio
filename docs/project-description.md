@@ -77,6 +77,8 @@ When a phase is completed:
 2. Update **Security and Data Model Direction** if auth/RLS or policies changed.
 3. Update **Architecture Snapshot** if stack/runtime/testing decisions changed.
 4. Keep this file product-focused; put execution details in:
+   - `docs/features/` for feature plans
    - `docs/sprints/` for sprint boards
+   - `docs/backlog-ideas.md` for pre-feature ideas (before feature docs and sprint assignment)
    - `docs/runbook-regression.md` for QA checks
    - `docs/deploy.md` for deployment/runbook steps
