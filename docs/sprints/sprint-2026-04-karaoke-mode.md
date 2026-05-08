@@ -5,7 +5,7 @@ This sprint scope is karaoke-only; standard `song_request` behavior remains unch
 
 Related docs:
 
-- Feature plan: `../features-karaoke-mode.md`
+- Feature plan: `../features/features-karaoke-mode.md`
 - Project description: `../project-description.md`
 - Regression runbook: `../runbook-regression.md`
 - Deploy runbook: `../deploy.md`
@@ -120,7 +120,7 @@ Use this board to move phases through execution.
 ## Current Phase Start Checklist
 
 ### Next sprint kickoff
-- [ ] Confirm the next sprint goal and target branch strategy.
+- [x] Next sprint goal: **DJ + Guest onboarding** — see sprint tracker [`sprint-2026-05-onboarding.md`](sprint-2026-05-onboarding.md) and feature plan [`../features/features-onboarding.md`](../features/features-onboarding.md).
 - [ ] Carry forward any deferred QA items from skipped env-gated specs.
 - [ ] Re-run `npm run test:qa` in CI/staging before release promotion.
 

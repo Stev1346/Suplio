@@ -5,7 +5,7 @@ Use this checklist to complete Phase 9 security sign-off against the agreed Phas
 Related docs:
 
 - `project-description.md`
-- `DJ Login and Event Management.md`
+- `features/features-dj-login-and-event-management.md`
 - `sprints/sprint-2026-04-phase-9.md` (historical security sign-off)
 - `sprints/sprint-2026-04-karaoke-mode.md` (latest sprint tracker)
 - `runbook-regression.md`

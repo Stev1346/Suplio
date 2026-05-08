@@ -8,7 +8,7 @@ Naming convention for future sprint files:
 
 Related docs:
 
-- Roadmap and phase history: `../DJ Login and Event Management.md`
+- Feature plan: [`../features/features-dj-login-and-event-management.md`](../features/features-dj-login-and-event-management.md)
 - Project description: `../project-description.md`
 - Regression runbook: `../runbook-regression.md`
 - Deploy runbook: `../deploy.md`
