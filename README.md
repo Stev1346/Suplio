@@ -13,6 +13,7 @@ backend/data layer used to run the platform.
 - Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented.
 - Karaoke flow is implemented end-to-end (karaoke intake, queue list, performer-flow statuses, no-vote guest path).
 - Event search, lifecycle automation, regression runbooks, and deploy smoke guidance are in place.
+- Public marketing landing at `/` is planned in [`docs/sprints/sprint-2026-06-public-landing.md`](docs/sprints/sprint-2026-06-public-landing.md) (see [`docs/features/features-public-landing.md`](docs/features/features-public-landing.md)); not started.
 
 ## Tech Stack
 
@@ -94,8 +95,9 @@ npm run test:e2e:ui
 ## Documentation Index
 
 - Project description and product context: `docs/project-description.md`
-- Roadmap and phase history: `docs/DJ Login and Event Management.md`
+- DJ login and event management feature plan: `docs/features/features-dj-login-and-event-management.md`
 - Sprint trackers: `docs/sprints/`
+- Feature plans: `docs/features/`
 - Deploy runbook: `docs/deploy.md`
 - Regression runbook: `docs/runbook-regression.md`
 - Security review checklist: `docs/security-review.md`
