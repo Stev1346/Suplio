@@ -324,7 +324,7 @@ This feature is complete when all statements are true:
 
 ### Documentation
 
-- Sprint tracker: [`docs/sprints/sprint-2026-05-custom-event-designs.md`](../sprints/sprint-2026-05-custom-event-designs.md)
+- Sprint tracker: [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md)
 - Backlog: [`docs/backlog-ideas.md`](../backlog-ideas.md) — IDEA-001 row.
 - Post-delivery updates: [`docs/project-description.md`](../project-description.md), [`docs/runbook-regression.md`](../runbook-regression.md), [`docs/deploy.md`](../deploy.md).
 - Tier-gating follow-up: [IDEA-009](../backlog-ideas.md).

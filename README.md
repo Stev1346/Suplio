@@ -9,7 +9,8 @@ backend/data layer used to run the platform.
 
 ## Current Status
 
-- Karaoke Mode sprint (`docs/sprints/sprint-2026-04-karaoke-mode.md`) is complete through **Phase 7 (QA, Regression, Documentation)**.
+- Active sprint: **Custom Event Designs** — tracker [`docs/sprints/sprint-2026-07-custom-event-designs.md`](docs/sprints/sprint-2026-07-custom-event-designs.md), feature plan [`docs/features/features-custom-event-designs.md`](docs/features/features-custom-event-designs.md).
+- Karaoke Mode sprint ([`docs/sprints/sprint-2026-05-karaoke-mode.md`](docs/sprints/sprint-2026-05-karaoke-mode.md)) is complete through **Phase 7 (QA, Regression, Documentation)**.
 - Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented.
 - Karaoke flow is implemented end-to-end (karaoke intake, queue list, performer-flow statuses, no-vote guest path).
 - Event search, lifecycle automation, regression runbooks, and deploy smoke guidance are in place.
@@ -96,7 +97,7 @@ npm run test:e2e:ui
 
 - Project description and product context: `docs/project-description.md`
 - DJ login and event management feature plan: `docs/features/features-dj-login-and-event-management.md`
-- Sprint trackers: `docs/sprints/`
+- Sprint trackers: `docs/sprints/` (execution order by filename: `2026-04-dj-login`, `2026-05-karaoke-mode`, `2026-06-public-landing`, `2026-07-custom-event-designs`, `2026-08-onboarding`; next sprint should use `2026-09-*`.)
 - Feature plans: `docs/features/`
 - Deploy runbook: `docs/deploy.md`
 - Regression runbook: `docs/runbook-regression.md`

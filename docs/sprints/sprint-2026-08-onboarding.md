@@ -1,4 +1,4 @@
-# Sprint Tracker: 2026-05 Onboarding (DJ + Guest)
+# Sprint Tracker: 2026-08 Onboarding (DJ + Guest)
 
 This file tracks delivery for first-run onboarding for **DJs** (post-auth dashboard and related flows) and **Guests** (event pages under `/event/[eventCode]`). Standard song-request, karaoke, auth, and RLS behavior remain unchanged unless Phase 1 explicitly adds `dj_profiles` fields and matching server updates.
 

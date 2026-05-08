@@ -2,7 +2,7 @@
 
 Run through this before promoting a build from Preview → Production.
 
-**Sprint 2026-04 Karaoke Mode (through Phase 7, 2026-04-23):** Automated checks executed from `src/frontend`:
+**Karaoke Mode delivery** (Phase 7 complete 2026-04-23; sprint tracker `sprints/sprint-2026-05-karaoke-mode.md`): Automated checks executed from `src/frontend`:
 - `npm run lint` (0 errors, warnings only)
 - `npm run build` (success)
 - `npm run test:qa` (6 passed, 6 skipped, 0 failed)
@@ -20,8 +20,8 @@ Related docs:
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
 - `features/features-public-landing.md`
-- `sprints/sprint-2026-04-karaoke-mode.md`
-- `sprints/sprint-2026-05-custom-event-designs.md`
+- `sprints/sprint-2026-05-karaoke-mode.md`
+- `sprints/sprint-2026-07-custom-event-designs.md`
 - `sprints/sprint-2026-06-public-landing.md`
 - `deploy.md`
 - `security-review.md`

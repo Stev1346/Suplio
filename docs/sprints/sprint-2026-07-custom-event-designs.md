@@ -1,10 +1,10 @@
-# Sprint Tracker: 2026-05 Custom Event Designs
+# Sprint Tracker: 2026-07 Custom Event Designs
 
 This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](../backlog-ideas.md)). Scope is custom event code (vanity slug, edit-twice cap), custom event color (guest theming), QR design picker, downloadable QR PNG, corner Scan popup, and a guest queue filter on the Vote page (`song_request` mode). Karaoke, auth, RLS, lifecycle, and existing request/vote behavior are unchanged unless a phase explicitly extends them.
 
 **Subscription tier gating is intentionally deferred to [IDEA-009](../backlog-ideas.md).** Phase 0 lands a single tier-gate helper (returns `true` today) so the eventual gate flip is one file.
 
-This sprint runs **ahead of** the unstarted [`sprint-2026-05-onboarding.md`](sprint-2026-05-onboarding.md) and [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md); those trackers remain in their **Not started** state and are picked up after this one.
+**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). **Onboarding** (DJ + guest first-run) is still **not started** — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md). This sprint is the current delivery focus.
 
 Related docs:
 

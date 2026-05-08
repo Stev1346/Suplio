@@ -1,4 +1,4 @@
-# Sprint Tracker: 2026-04 Karaoke Mode
+# Sprint Tracker: 2026-05 Karaoke Mode
 
 This file tracks delivery for the Karaoke Mode feature.
 This sprint scope is karaoke-only; standard `song_request` behavior remains unchanged unless explicitly noted.
@@ -120,7 +120,7 @@ Use this board to move phases through execution.
 ## Current Phase Start Checklist
 
 ### Next sprint kickoff
-- [x] Next sprint goal: **DJ + Guest onboarding** — see sprint tracker [`sprint-2026-05-onboarding.md`](sprint-2026-05-onboarding.md) and feature plan [`../features/features-onboarding.md`](../features/features-onboarding.md).
+- [x] Next sprint goal: **DJ + Guest onboarding** — see sprint tracker [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md) and feature plan [`../features/features-onboarding.md`](../features/features-onboarding.md).
 - [ ] Carry forward any deferred QA items from skipped env-gated specs.
 - [ ] Re-run `npm run test:qa` in CI/staging before release promotion.
 
