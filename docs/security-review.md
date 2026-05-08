@@ -6,8 +6,9 @@ Related docs:
 
 - `project-description.md`
 - `features/features-dj-login-and-event-management.md`
-- `sprints/sprint-2026-04-phase-9.md` (historical security sign-off)
-- `sprints/sprint-2026-04-karaoke-mode.md` (latest sprint tracker)
+- `sprints/sprint-2026-04-dj-login.md` (Phase 9 security sign-off history; there is no separate `phase-9` tracker file)
+- `sprints/sprint-2026-05-karaoke-mode.md` (Karaoke Mode, complete)
+- `sprints/sprint-2026-07-custom-event-designs.md` (current feature work, in progress)
 - `runbook-regression.md`
 - `deploy.md`
 

@@ -200,5 +200,5 @@ This feature is complete when all statements are true:
 
 ### Documentation
 
-- Sprint tracker: [`docs/sprints/sprint-2026-05-onboarding.md`](../sprints/sprint-2026-05-onboarding.md)
+- Sprint tracker: [`docs/sprints/sprint-2026-08-onboarding.md`](../sprints/sprint-2026-08-onboarding.md)
 - Post-delivery updates: [`docs/project-description.md`](../project-description.md), [`docs/runbook-regression.md`](../runbook-regression.md)

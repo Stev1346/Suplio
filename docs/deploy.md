@@ -5,8 +5,8 @@ Related docs:
 - `project-description.md`
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
-- `sprints/sprint-2026-04-karaoke-mode.md`
-- `sprints/sprint-2026-05-custom-event-designs.md` (active sprint)
+- `sprints/sprint-2026-05-karaoke-mode.md`
+- `sprints/sprint-2026-07-custom-event-designs.md` (active sprint)
 - `runbook-regression.md`
 - `security-review.md`
 
