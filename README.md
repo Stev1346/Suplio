@@ -13,7 +13,7 @@ backend/data layer used to run the platform.
 - Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented.
 - Karaoke flow is implemented end-to-end (karaoke intake, queue list, performer-flow statuses, no-vote guest path).
 - Event search, lifecycle automation, regression runbooks, and deploy smoke guidance are in place.
-- Public marketing landing at `/` is planned in [`docs/sprints/sprint-2026-06-public-landing.md`](docs/sprints/sprint-2026-06-public-landing.md) (see [`docs/features/features-public-landing.md`](docs/features/features-public-landing.md)); not started.
+- Public marketing landing is shipped at `/`. Tracker: [`docs/sprints/sprint-2026-06-public-landing.md`](docs/sprints/sprint-2026-06-public-landing.md). Feature plan: [`docs/features/features-public-landing.md`](docs/features/features-public-landing.md).
 
 ## Tech Stack
 

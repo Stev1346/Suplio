@@ -3,6 +3,7 @@ import { AppHeader } from "./ui/AppHeader";
 import { Button } from "./ui/Button";
 import { PageShell } from "./ui/PageShell";
 import { SearchX } from "lucide-react";
+import { routes } from "@/lib/shared/constants/routes";
 
 type NotFoundProps = {
   variant?: "page" | "event";
@@ -24,7 +25,7 @@ export function NotFound({ variant = "page", message }: NotFoundProps) {
         <p className="text-muted-60 mb-6 flex flex-row w-80">
           <SearchX className="mr-2 size-15" /> {message ?? defaultMessage}
         </p>
-        <Link href="/">
+        <Link href={routes.home}>
           <Button variant="secondary">Go home</Button>
         </Link>
       </div>

@@ -1,12 +1,21 @@
 import { test, expect } from "@playwright/test";
 
-test("login rejects invalid credentials and does not set session", async ({ page }) => {
-  await page.goto("/dj/login");
-  await page.getByLabel("Email").fill("not-a-user@example.test");
-  await page.locator('input[type="password"]').first().fill("wrong-password-123");
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page.getByText(/invalid|incorrect/i).first()).toBeVisible();
-  await expect(page).toHaveURL(/\/dj\/login/);
+test("login rejects invalid credentials and does not set session (strict payload)", async ({ page, context }) => {
+  const res = await page.request.post("/auth/sign-in", {
+    data: {
+      email: "invalid-user@example.test",
+      password: "definitely-wrong-password",
+    },
+  });
+
+  expect(res.status()).toBe(401);
+  await expect(res.json()).resolves.toEqual({
+    error: "Invalid login credentials",
+  });
+
+  // Failed auth must not set the DJ session-bound cookie
+  const cookies = await context.cookies();
+  expect(cookies.find((c) => c.name === "dj_session_started_at")).toBeUndefined();
 });
 
 test("signup requires stage_name", async ({ page }) => {

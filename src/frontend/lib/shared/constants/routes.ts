@@ -1,5 +1,6 @@
 //DJ Routes
 export const routes = {
+    home: "/",
     dj: {
         entry: "/dj",
         login: "/dj/login",

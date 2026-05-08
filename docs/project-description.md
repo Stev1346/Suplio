@@ -35,7 +35,7 @@ Core product goals:
 3. Moderate request queue (accept/reject/played)
 4. Control event lifecycle and request availability
 
-## Current Delivered Scope (through Karaoke Mode Phase 7)
+## Current Delivered Scope (through Public Landing + Karaoke Mode Phase 7)
 
 - DJ auth and private route guards
 - Role-aware navigation (guest and DJ)
@@ -45,6 +45,7 @@ Core product goals:
 - DJ-owned event search with UX polish
 - Lifecycle timestamping and cron-driven lifecycle sweeps
 - Karaoke mode delivery: mode-aware intake, karaoke queue views, performer-flow DJ controls, remove/restore behavior, and FIFO ordering.
+- Public marketing landing at `/`: DJ-facing hero, Why Suplio outcomes, guest and DJ “how it works” plus karaoke note, pricing tiers, footer CTAs to signup/login, and page metadata (title, description, social previews).
 - QA and deploy readiness: Playwright E2E + RLS probes, regression runbook, deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
 
 ## Security and Data Model Direction
