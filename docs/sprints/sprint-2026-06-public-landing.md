@@ -98,6 +98,10 @@ Related docs:
 - [x] Confirm whether analytics or tracking pixels are in scope (default: none until explicitly added).
 - [x] Reserve time for regression pass including new `/` rows at end of Phase 6.
 
+### Next sprint kickoff
+
+- [x] Next sprint goal: **Custom Event Designs** — see sprint tracker [`sprint-2026-07-custom-event-designs.md`](sprint-2026-07-custom-event-designs.md) and feature plan [`../features/features-custom-event-designs.md`](../features/features-custom-event-designs.md).
+
 ---
 
 ## Validation Checklist (Sprint Exit)
