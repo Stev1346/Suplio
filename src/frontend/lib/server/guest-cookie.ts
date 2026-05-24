@@ -1,5 +1,6 @@
 import { createHmac, createHash, randomUUID, timingSafeEqual } from "crypto";
 import type { NextRequest, NextResponse } from "next/server";
+import { routes } from "../shared/constants/routes";
 
 export const GUEST_COOKIE_NAME = "gt_guest";
 
@@ -82,7 +83,7 @@ export function guestCookieOptions(): {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/",
+    path: `${routes.home}`,
     maxAge: 60 * 60 * 24 * 365,
   };
 }

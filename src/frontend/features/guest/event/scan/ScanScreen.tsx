@@ -10,10 +10,13 @@ import { useGuestDjProfileModal } from "@/contexts/GuestDjProfileModalContext";
 import { useEventCode } from "@/contexts/GuestEventContext";
 import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
+import { downloadEventQrPng } from "@/lib/client/download-event-qr-png";
 import { compareRankedRequests } from "@/lib/request-ranking";
+import { featureFlags } from "@/lib/shared/config/feature-flags";
 import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
+import { useRef } from "react";
 import toast from "react-hot-toast";
 
 export default function ScanScreen() {
@@ -25,8 +28,9 @@ export default function ScanScreen() {
   } = useEvent(eventCode, { realtime: true });
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
   const requestUrl = eventCode ? `${baseUrl}/event/${eventCode}/request` : "";
+  const exportQrRef = useRef<HTMLDivElement>(null);
 
-  const {open} = useGuestDjProfileModal();
+  const { open } = useGuestDjProfileModal();
   const {
     requests,
     loading: requestLoading,
@@ -53,6 +57,22 @@ export default function ScanScreen() {
       toast.success("Link copied to clipboard!");
     } catch {
       toast.error("Could not copy link.");
+    }
+  }
+
+  function handleDownloadQr() {
+    if (!eventCode || !requestUrl) return;
+
+    const canvas = exportQrRef.current?.querySelector("canvas");
+    if (!canvas) {
+      toast.error("Could not prepare QR for download");
+      return;
+    }
+    try {
+      downloadEventQrPng(canvas, eventCode);
+      toast.success("QR downloaded.");
+    } catch {
+      toast.error("Could not download QR.");
     }
   }
 
@@ -101,6 +121,24 @@ export default function ScanScreen() {
         <p className="text-muted-80 text-lg mb-2">Scan to request a song:</p>
         <div className="bg-white p-4 rounded-xl shadow mb-4">
           <QRCodeSVG value={requestUrl} size={220} level="M" />
+        </div>
+        {featureFlags.customEventDesigns && (
+          <Button
+            variant="secondary"
+            onClick={handleDownloadQr}
+            className="mb-4"
+          >
+            Download QR (PNG)
+          </Button>
+        )}
+        <div ref={exportQrRef} className="sr-only" aria-hidden>
+          <QRCodeCanvas
+            value={requestUrl}
+            size={960}
+            level="M"
+            bgColor="transparent"
+            fgColor="#000000"
+          />
         </div>
         <p className="text-muted-60 mb-2">Share this link with others:</p>
         <Button

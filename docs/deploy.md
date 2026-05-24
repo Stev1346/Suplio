@@ -5,8 +5,8 @@ Related docs:
 - `project-description.md`
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
-- `sprints/sprint-2026-04-karaoke-mode.md`
-- `sprints/sprint-2026-05-custom-event-designs.md` (active sprint)
+- `sprints/sprint-2026-05-karaoke-mode.md`
+- `sprints/sprint-2026-07-custom-event-designs.md` (active sprint)
 - `runbook-regression.md`
 - `security-review.md`
 
@@ -23,6 +23,7 @@ Related docs:
 | `GUEST_SESSION_SECRET` | Preview + Production (server-only) | 32+ random chars |
 | `NEXT_PUBLIC_ENABLE_DJ_ANALYTICS` | Preview/Production (optional) | Feature flag (`true/false` or `1/0`) |
 | `NEXT_PUBLIC_ENABLE_DEBUG_PANEL` | Preview/Production (optional) | Feature flag (`true/false` or `1/0`) |
+| `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` | Preview/Production (optional) | Feature flag for custom event designs UI (`true/false` or `1/0`; default off) |
 
 ## Local and CI checks
 
@@ -45,6 +46,7 @@ Feature flags are centralized in `src/frontend/lib/shared/config/feature-flags.t
 
 - Use `NEXT_PUBLIC_ENABLE_*` variables for client-visible toggles.
 - Recommended staged rollout: enable in Preview, validate smoke checks, then promote and mirror the same value in Production.
+- Custom Event Designs (`NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): enable in Preview during sprint development; keep off in Production until Phase 7 sign-off.
 
 ## Observability baseline
 - Server route exceptions are logged via `captureServerError()` in `src/frontend/lib/server/observability.ts`.

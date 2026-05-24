@@ -1,0 +1,265 @@
+# Sprint Tracker: 2026-07 Custom Event Designs
+
+This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](../backlog-ideas.md)). Scope is custom event code (vanity slug, edit-twice cap), custom event color (guest theming), QR design picker, downloadable QR PNG, corner Scan popup, and a guest queue filter on the Vote page (`song_request` mode). Karaoke, auth, RLS, lifecycle, and existing request/vote behavior are unchanged unless a phase explicitly extends them.
+
+**Subscription tier gating is intentionally deferred to [IDEA-009](../backlog-ideas.md).** Phase 0 lands a single tier-gate helper (returns `true` today) so the eventual gate flip is one file.
+
+**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). **Onboarding** (DJ + guest first-run) is still **not started** — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md). This sprint is the current delivery focus.
+
+Related docs:
+
+- Feature plan: [`../features/features-custom-event-designs.md`](../features/features-custom-event-designs.md)
+- Backlog: [`../backlog-ideas.md`](../backlog-ideas.md) (IDEA-001)
+- Project description: [`../project-description.md`](../project-description.md)
+- Regression runbook: [`../runbook-regression.md`](../runbook-regression.md)
+- Deploy runbook: [`../deploy.md`](../deploy.md)
+- Tier-gating follow-up: [IDEA-009](../backlog-ideas.md)
+
+---
+
+## Sprint Board
+
+Use this board to move phases through execution.
+
+**Sprint status:** In progress (Phase 1 active).
+
+### In Progress
+
+#### Phase 1 - Data model and types
+
+**Status:** In progress.
+
+**Target duration:** 0.5 day
+
+**Definition of Done**
+
+- [ ] Idempotent migration adds `events.event_color`, `events.qr_design`, and `events.event_code_edits_remaining` (default `2`).
+- [ ] Existing events remain valid after migration (defaults applied).
+- [ ] [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) is updated with new fields (`Row`, `Insert`, `Update`).
+- [ ] No regression to existing reads/writes that ignore the new fields.
+
+---
+
+### Phase 0 Decisions (locked)
+
+- QR library: `qrcode.react` (keep existing dependency) + design wrapper for presets.
+- Rationale:
+  - already in use on guest Scan page;
+  - lower migration risk than swapping renderer mid-sprint;
+  - enough for preset-driven style variants and PNG export pipeline.
+- Edit counter: `events.event_code_edits_remaining` starts at `2`.
+- Decrement rule: decrement only when normalized code value actually changes.
+- No decrement on failed validation, duplicate conflict, or no-op edit.
+- Audit log actions:
+  - `event_code_changed`
+  - `event_color_changed`
+  - `event_qr_design_changed`
+- Audit metadata shape:
+  - `{ eventId, field, previousValue, nextValue, editsRemainingAfter? }`
+- PNG export:
+  - Resolution: 1024x1024
+  - Margin: 32px quiet zone
+  - Background: white
+  - Filename: `suplio-qr-{eventCode}.png`
+- Event color policy:
+  - Input format: hex `#RRGGBB`
+  - Contrast thresholds: text 4.5:1, large text 3.0:1 (WCAG AA)
+  - Per-surface fallback: if chosen color fails threshold on a surface, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`)
+  - Surfaces: `primaryButton`, `headingAccent`, `focusRing`, `badgeAccent`
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/color-policy.ts`
+- Custom event code rules:
+  - Length: 4–24 chars
+  - Pattern: `^[a-z0-9-]+$` (normalized to lowercase)
+  - Reserved: `admin`, `api`, `dj`, `event`, `events`, `login`, `signup`, `scan`
+  - Uniqueness scope: unique among **non-archived** events (`draft`, `live`, `ended`)
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/event-code-rules.ts`
+- Feature flag:
+  - Env var: `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`
+  - Code key: `featureFlags.customEventDesigns`
+  - Default when unset: `false`
+  - Preview rollout: `true`
+  - Production rollout: `false` until Phase 7 sign-off
+  - Source: `src/frontend/lib/shared/config/feature-flags.ts`
+- Tier gate (IDEA-009 deferred):
+  - File: `src/frontend/lib/server/tier-gates.ts`
+  - Signature: `isTierAllowedForFeature({ djId, feature: "custom_event_designs" }): Promise<boolean>`
+  - Current behavior: always returns `true`
+  - Future: only this helper changes when subscription tiers ship
+---
+
+### Backlog
+
+#### Phase 2 - Event creation flow
+
+**Target duration:** 1.0-1.5 days
+
+**Definition of Done**
+
+- [ ] [`CreateEventForm.tsx`](../../src/frontend/features/dj/dashboard/components/CreateEventForm.tsx) captures optional custom code, color, and QR design.
+- [ ] [`/api/dj/events`](../../src/frontend/app/api/dj/events/route.ts) validates and persists new fields (custom code regex / reserved / uniqueness checks per Phase 0).
+- [ ] Tier-gate helper is referenced at the API boundary (returns `true` today).
+- [ ] [`useCreateEvent`](../../src/frontend/hooks/dj/useCreateEvent.ts) and [`lib/client/api/events.ts`](../../src/frontend/lib/client/api/events.ts) carry new fields.
+- [ ] Event creation without any new fields still works (backwards compatible).
+
+#### Phase 3 - Event management edits + edit-twice rule
+
+**Target duration:** 1.0-1.5 days
+
+**Definition of Done**
+
+- [ ] [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) supports editing custom code, color, and QR design.
+- [ ] **Edits remaining** is surfaced for the custom code; UI hides / disables the editor at `0`.
+- [ ] API decrements `event_code_edits_remaining` only on a successful actual code change.
+- [ ] API rejects code edit when counter is `0`.
+- [ ] `dj_audit_log` entries emitted for each code / color / QR-design change.
+
+#### Phase 4 - Guest event theming
+
+**Target duration:** 0.5-1.0 day
+
+**Definition of Done**
+
+- [ ] Guest event layout under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) applies `event_color` via CSS custom properties.
+- [ ] Affected surfaces (CTAs, headings, focus rings, accent areas) reflect the chosen color.
+- [ ] Contrast fallback engages for poor-contrast colors per Phase 0 policy.
+- [ ] DJ shells, auth pages, and marketing surfaces are unaffected.
+- [ ] No new hydration warnings on guest event pages.
+
+#### Phase 5 - QR designs + PNG download
+
+**Target duration:** 1.0-1.5 days
+
+**Prerequisites:** Phase 1 (`events.event_color`, `events.qr_design` on `events` and in client types/fetches). Phase 4 guest theming is not required for QR tinting, but both read the same `event_color` field.
+
+**Implementation notes (locked for Phase 5 build):**
+
+- **Shared color resolver:** add [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) that maps `event_color` → `{ fgColor, bgColor }`.
+  - Validate hex via `EVENT_COLOR_POLICY.inputFormat` from [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
+  - Default when unset / invalid: `fgColor` `#000000`, on-screen `bgColor` `#ffffff`.
+  - **Scannability gate:** if `event_color` contrast against `#ffffff` is below ~3:1, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`) for QR modules (stricter than UI surface rules in Phase 4 — QR needs readable modules, not just WCAG text).
+  - UI theming (Phase 4) and QR tinting share `event_color` but may resolve to different effective colors when contrast fails.
+- **Reusable QR component:** add [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) — single source for display + export props.
+  - Props: `value`, `size`, `eventColor?`, `qrDesign?` (from [`qr-presets.ts`](../../src/frontend/lib/shared/custom-event-designs/qr-presets.ts)), `variant: "display" | "export"`.
+  - `variant="display"` → `QRCodeSVG` with white background (matches existing white card on Scan).
+  - `variant="export"` → `QRCodeCanvas` with **transparent** background for PNG compositing (Phase 0 locked white for PNG; **Phase 5 amends to transparent** so DJs can place the asset on any flyer/slide background).
+  - Both variants call `resolveQrColors()` so on-screen and downloaded QR match module color.
+  - Preset `basic`: `qrcode.react` `fgColor` / `bgColor` only. Presets `rounded`, `frame`, `bold`: thin design wrapper around the same renderer (no library swap).
+- **Data in guest fetch:** extend [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) `.select(...)` and [`EventState`](../../src/frontend/hooks/guest/useEventByCode.ts) with `event_color` and `qr_design` so [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) can pass them into `EventQrCode`.
+- **PNG pipeline:** keep [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) as compositor only (1024×1024, 32px quiet zone, filename `suplio-qr-{eventCode}.png`). Do **not** hardcode colors in the download helper — colors come from the hidden export `EventQrCode` canvas (`fgColor` from resolver; no white `fillRect` unless an explicit solid export option is added later).
+- **Feature flag:** custom colors and download CTA only when `featureFlags.customEventDesigns` is on **and** the event has design fields; flag off or no color → current black-on-white basic QR.
+
+**Color / background summary**
+
+| Surface | Module color (`fgColor`) | Background (`bgColor`) |
+| --- | --- | --- |
+| Scan page (display) | Resolved `event_color` | `#ffffff` (white card) |
+| PNG export | Same as display | `transparent` |
+| Flag off / no color | `#000000` | `#ffffff` / `transparent` |
+
+**Definition of Done**
+
+- [ ] [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) implements hex validation, scannability fallback, and defaults per implementation notes above.
+- [ ] [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) renders display (`QRCodeSVG`) and export (`QRCodeCanvas`) variants with matching resolved colors.
+- [ ] Guest fetch includes `event_color` and `qr_design`; [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) uses `EventQrCode` for both visible QR and hidden export canvas.
+- [ ] All curated QR designs render on Scan and DJ surfaces ([`CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx), [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx)).
+- [ ] **Download QR (PNG)** CTA works on the DJ event-management surface and the guest Scan page; downloaded file matches on-screen module color and uses transparent background.
+- [ ] PNG resolution and filename pattern match Phase 0 decisions (background amended to transparent per notes above).
+- [ ] Default behavior (no design selected / flag off) renders the existing basic black-on-white QR.
+- [ ] Light brand colors that fail the scannability gate fall back to `fallbackAccent` on QR modules only; UI theming unchanged.
+
+#### Phase 6 - Scan popup + guest queue filter
+
+**Target duration:** 0.5-1.0 day
+
+**Definition of Done**
+
+- [ ] Corner QR icon visible on guest event pages while `live`; opens Scan in a Radix dialog without navigation.
+- [ ] Popup is keyboard-operable (focus trap + Escape) and respects reduced motion.
+- [ ] Underlying page state (e.g. partially typed request) survives popup close.
+- [ ] Icon hidden on `ended` / `archived` (matches `EventOver`).
+- [ ] [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) gains an All / Active only / Played only filter; default **All** matches current behavior.
+- [ ] Filter is client-only (no API changes).
+- [ ] Karaoke pages unchanged.
+
+#### Phase 7 - QA, regression, and documentation
+
+**Target duration:** 0.5-1.0 day
+
+**Definition of Done**
+
+- [ ] `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend` pass.
+- [ ] [`docs/runbook-regression.md`](../runbook-regression.md) updated with rows for: custom code create + edit, color theming, QR design switch, PNG download, scan popup, queue filter.
+- [ ] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
+- [ ] [`docs/deploy.md`](../deploy.md) lists the new feature flag env var (and any others introduced this sprint).
+- [ ] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done**.
+
+---
+
+### Blocked
+
+- _None._
+
+---
+
+### Done
+
+#### Phase 0 - Discovery and decisions
+
+**Completed:** 2026-05-08  
+**Notes:** Decisions locked in this sprint doc and shared constants under `src/frontend/lib/shared/custom-event-designs/`, `src/frontend/lib/server/tier-gates.ts`, and `src/frontend/lib/shared/config/feature-flags.ts`. Feature flag env var documented in [`deploy.md`](../deploy.md) and [`src/frontend/.env.example`](../../src/frontend/.env.example).
+
+**Definition of Done**
+
+- [x] QR library decision recorded with rationale (`qrcode.react` + design wrapper vs `qr-code-styling`).
+- [x] Custom event code rules frozen (regex, min/max length, case handling, reserved-word list, uniqueness scope).
+- [x] Edit-counter mechanic and audit-log shape documented (column name, decrement-only-on-change rule).
+- [x] Color contrast / fallback policy documented (threshold + per-surface fallback rule).
+- [x] Curated QR design preset list approved.
+- [x] Tier-gate helper file path and signature documented (single flip point for [IDEA-009](../backlog-ideas.md)).
+- [x] Feature flag name and default documented (extend [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) with a `NEXT_PUBLIC_ENABLE_*` entry).
+- [x] PNG download resolution and filename pattern documented.
+
+---
+
+## Current Phase Start Checklist
+
+### Sprint kickoff
+
+- [x] Confirm tier-gate deferral approach (single helper today; flipped by [IDEA-009](../backlog-ideas.md)).
+- [x] Confirm feature flag default for Preview vs Production (on in Preview, off in Production until Phase 7 sign-off).
+- [ ] Reserve time for the Phase 7 regression pass with the new runbook rows.
+
+### Phase 0 entry
+
+- [x] Identify the QR rendering library to use (carry-forward decision in sprint notes).
+- [x] Draft the custom event code regex + reserved-word list.
+- [x] Draft the QR design preset list (names + visual brief) for sign-off.
+- [x] Draft the contrast threshold and per-surface fallback rule.
+
+### Phase 1 entry
+
+- [ ] Create idempotent migration for `event_color`, `qr_design`, and `event_code_edits_remaining`.
+- [ ] Sync [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) after migration lands.
+
+### Phase 5 entry
+
+- [ ] Confirm `event_color` and `qr_design` are on `events` and included in guest/DJ event fetches.
+- [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
+- [ ] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
+
+---
+
+## Validation Checklist (Sprint Exit)
+
+- [ ] DJ can create an event with optional custom code, color, and QR design; defaults preserved when omitted.
+- [ ] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
+- [ ] DJ can change color and QR design freely from event management.
+- [ ] Guest event pages reflect the chosen color; non-event surfaces unaffected.
+- [ ] All curated QR designs render correctly across DJ and guest surfaces.
+- [ ] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
+- [ ] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.
+- [ ] Corner Scan popup opens / closes correctly with keyboard support and reduced-motion compliance.
+- [ ] Vote page filter shows **All / Active only / Played only**; default behavior unchanged; karaoke unchanged.
+- [ ] Feature flag off = no new UI; current flows behave as today.
+- [ ] No regressions in DJ, karaoke, lifecycle, auth, or guest core flows.
+- [ ] Documentation set is consistent: feature plan, this sprint, regression runbook, deploy runbook, project description.
