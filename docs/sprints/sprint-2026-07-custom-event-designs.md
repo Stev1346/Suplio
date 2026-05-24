@@ -21,30 +21,13 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress (Phase 0 active).
+**Sprint status:** In progress (Phase 1 active).
 
 ### In Progress
 
-#### Phase 0 - Discovery and decisions
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] QR library decision recorded with rationale (`qrcode.react` + design wrapper vs `qr-code-styling`).
-- [ ] Custom event code rules frozen (regex, min/max length, case handling, reserved-word list, uniqueness scope).
-- [ ] Edit-counter mechanic and audit-log shape documented (column name, decrement-only-on-change rule).
-- [ ] Color contrast / fallback policy documented (threshold + per-surface fallback rule).
-- [ ] Curated QR design preset list approved.
-- [ ] Tier-gate helper file path and signature documented (single flip point for [IDEA-009](../backlog-ideas.md)).
-- [ ] Feature flag name and default documented (extend [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) with a `NEXT_PUBLIC_ENABLE_*` entry).
-- [ ] PNG download resolution and filename pattern documented.
-
----
-
-### Backlog
-
 #### Phase 1 - Data model and types
+
+**Status:** In progress.
 
 **Target duration:** 0.5 day
 
@@ -54,6 +37,57 @@ Use this board to move phases through execution.
 - [ ] Existing events remain valid after migration (defaults applied).
 - [ ] [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) is updated with new fields (`Row`, `Insert`, `Update`).
 - [ ] No regression to existing reads/writes that ignore the new fields.
+
+---
+
+### Phase 0 Decisions (locked)
+
+- QR library: `qrcode.react` (keep existing dependency) + design wrapper for presets.
+- Rationale:
+  - already in use on guest Scan page;
+  - lower migration risk than swapping renderer mid-sprint;
+  - enough for preset-driven style variants and PNG export pipeline.
+- Edit counter: `events.event_code_edits_remaining` starts at `2`.
+- Decrement rule: decrement only when normalized code value actually changes.
+- No decrement on failed validation, duplicate conflict, or no-op edit.
+- Audit log actions:
+  - `event_code_changed`
+  - `event_color_changed`
+  - `event_qr_design_changed`
+- Audit metadata shape:
+  - `{ eventId, field, previousValue, nextValue, editsRemainingAfter? }`
+- PNG export:
+  - Resolution: 1024x1024
+  - Margin: 32px quiet zone
+  - Background: white
+  - Filename: `suplio-qr-{eventCode}.png`
+- Event color policy:
+  - Input format: hex `#RRGGBB`
+  - Contrast thresholds: text 4.5:1, large text 3.0:1 (WCAG AA)
+  - Per-surface fallback: if chosen color fails threshold on a surface, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`)
+  - Surfaces: `primaryButton`, `headingAccent`, `focusRing`, `badgeAccent`
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/color-policy.ts`
+- Custom event code rules:
+  - Length: 4–24 chars
+  - Pattern: `^[a-z0-9-]+$` (normalized to lowercase)
+  - Reserved: `admin`, `api`, `dj`, `event`, `events`, `login`, `signup`, `scan`
+  - Uniqueness scope: unique among **non-archived** events (`draft`, `live`, `ended`)
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/event-code-rules.ts`
+- Feature flag:
+  - Env var: `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`
+  - Code key: `featureFlags.customEventDesigns`
+  - Default when unset: `false`
+  - Preview rollout: `true`
+  - Production rollout: `false` until Phase 7 sign-off
+  - Source: `src/frontend/lib/shared/config/feature-flags.ts`
+- Tier gate (IDEA-009 deferred):
+  - File: `src/frontend/lib/server/tier-gates.ts`
+  - Signature: `isTierAllowedForFeature({ djId, feature: "custom_event_designs" }): Promise<boolean>`
+  - Current behavior: always returns `true`
+  - Future: only this helper changes when subscription tiers ship
+---
+
+### Backlog
 
 #### Phase 2 - Event creation flow
 
@@ -138,7 +172,21 @@ Use this board to move phases through execution.
 
 ### Done
 
-- _None._
+#### Phase 0 - Discovery and decisions
+
+**Completed:** 2026-05-08  
+**Notes:** Decisions locked in this sprint doc and shared constants under `src/frontend/lib/shared/custom-event-designs/`, `src/frontend/lib/server/tier-gates.ts`, and `src/frontend/lib/shared/config/feature-flags.ts`. Feature flag env var documented in [`deploy.md`](../deploy.md) and [`src/frontend/.env.example`](../../src/frontend/.env.example).
+
+**Definition of Done**
+
+- [x] QR library decision recorded with rationale (`qrcode.react` + design wrapper vs `qr-code-styling`).
+- [x] Custom event code rules frozen (regex, min/max length, case handling, reserved-word list, uniqueness scope).
+- [x] Edit-counter mechanic and audit-log shape documented (column name, decrement-only-on-change rule).
+- [x] Color contrast / fallback policy documented (threshold + per-surface fallback rule).
+- [x] Curated QR design preset list approved.
+- [x] Tier-gate helper file path and signature documented (single flip point for [IDEA-009](../backlog-ideas.md)).
+- [x] Feature flag name and default documented (extend [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) with a `NEXT_PUBLIC_ENABLE_*` entry).
+- [x] PNG download resolution and filename pattern documented.
 
 ---
 
@@ -146,16 +194,21 @@ Use this board to move phases through execution.
 
 ### Sprint kickoff
 
-- [ ] Confirm tier-gate deferral approach (single helper today; flipped by [IDEA-009](../backlog-ideas.md)).
-- [ ] Confirm feature flag default for Preview vs Production (recommended: on in Preview, off in Production until Phase 7 sign-off).
+- [x] Confirm tier-gate deferral approach (single helper today; flipped by [IDEA-009](../backlog-ideas.md)).
+- [x] Confirm feature flag default for Preview vs Production (on in Preview, off in Production until Phase 7 sign-off).
 - [ ] Reserve time for the Phase 7 regression pass with the new runbook rows.
 
 ### Phase 0 entry
 
-- [ ] Identify the QR rendering library to use (carry-forward decision in sprint notes).
-- [ ] Draft the custom event code regex + reserved-word list.
-- [ ] Draft the QR design preset list (names + visual brief) for sign-off.
-- [ ] Draft the contrast threshold and per-surface fallback rule.
+- [x] Identify the QR rendering library to use (carry-forward decision in sprint notes).
+- [x] Draft the custom event code regex + reserved-word list.
+- [x] Draft the QR design preset list (names + visual brief) for sign-off.
+- [x] Draft the contrast threshold and per-surface fallback rule.
+
+### Phase 1 entry
+
+- [ ] Create idempotent migration for `event_color`, `qr_design`, and `event_code_edits_remaining`.
+- [ ] Sync [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) after migration lands.
 
 ---
 

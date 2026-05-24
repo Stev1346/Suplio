@@ -120,7 +120,7 @@ Use this board to move phases through execution.
 ## Current Phase Start Checklist
 
 ### Next sprint kickoff
-- [x] Next sprint goal: **DJ + Guest onboarding** — see sprint tracker [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md) and feature plan [`../features/features-onboarding.md`](../features/features-onboarding.md).
+- [x] Next sprint goal: **Public Landing Page** — see sprint tracker [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md) and feature plan [`../features/features-public-landing.md`](../features/features-public-landing.md).
 - [ ] Carry forward any deferred QA items from skipped env-gated specs.
 - [ ] Re-run `npm run test:qa` in CI/staging before release promotion.
 

@@ -16,7 +16,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 - DJ may set a **custom event code** at event creation. If omitted, the existing auto-generated code remains.
 - **Edit rule:** the custom code can be **edited up to 2 times after creation** (3 total possible values: initial + 2 edits). Once exhausted, the event-management UI hides the edit affordance and the API rejects further edits.
-- **Validation:** length, allowed character set (URL-safe), case rules, reserved-word list, and uniqueness across active (non-archived) events. Exact regex frozen in Phase 0.
+- **Validation:** length, allowed character set (URL-safe), case rules, reserved-word list, and uniqueness across active (non-archived) events. Rules locked in Phase 0 — see [`event-code-rules.ts`](../../src/frontend/lib/shared/custom-event-designs/event-code-rules.ts).
 - **Audit:** every code change emits a `dj_audit_log` entry with the previous and new code.
 - **Routing:** existing public route shape `/event/[eventCode]` is unchanged; the slug being DJ-set vs auto-generated is invisible to guests.
 - **Old-code behavior:** the previous code is **not preserved** as a redirect alias for this sprint (kept simple); existing materials referring to the old code are the DJ's responsibility, and the edit-twice cap helps prevent thrash. A redirect alias model can be revisited as a follow-up idea if the data shows demand.
@@ -26,7 +26,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - DJ picks a color (hex) at create time and may change it any time from event management — **not** subject to the 2-edit cap.
 - The chosen color drives **guest event pages only** (`/event/[eventCode]/*` shells: scan, request, vote, karaoke list). DJ surfaces and the marketing/auth shells are **not** themed.
 - Implemented as a CSS custom property override at the guest event layout level so existing tokens (e.g. accent / primary scales) re-derive from the chosen hue without per-component edits.
-- **Contrast safety:** if the chosen color produces unreadable contrast against page backgrounds or buttons, the system falls back to the existing accent token for the affected surface. The exact contrast threshold is finalized in Phase 0.
+- **Contrast safety:** if the chosen color produces unreadable contrast against page backgrounds or buttons, the system falls back to the existing accent token for the affected surface. Threshold and per-surface rules locked in Phase 0 — see [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
 
 ### QR code design
 
@@ -40,7 +40,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
   - The DJ event-management surface (so DJs can grab the asset for promo materials).
   - The guest Scan page (so guests / promoters can save and share offline).
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
-- PNG resolution is high enough to print legibly at common flyer sizes (target finalized in Phase 0).
+- PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
 ### Corner scan popup
 
@@ -57,13 +57,15 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 ### Cross-cutting
 
 - **Tier gate:** a single helper (target location: `src/frontend/lib/shared/auth/dj-tier.ts`) returns `true` today and is the only place to flip when [IDEA-009](../backlog-ideas.md) ships. UI affordances and API guards both reference this helper rather than inlining tier checks.
-- **Feature flag:** all new UI is gated by a single new flag on [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) with the `NEXT_PUBLIC_ENABLE_*` pattern (exact name finalized in Phase 0). Flag off = current behavior, no console errors.
+- **Feature flag:** all new UI is gated by `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` → `featureFlags.customEventDesigns` on [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts). Default off; Preview on, Production off until Phase 7 sign-off. Flag off = current behavior, no console errors.
 - **Accessibility:** color picker, QR picker, scan popup, and queue filter must be keyboard operable with visible focus and `prefers-reduced-motion` respected.
 - **No RLS expansion:** new columns inherit existing `events` owner-based policy; no new permissive policies introduced.
 
 ## Implementation Phases
 
 ### Phase 0 - Discovery and decisions
+
+**Status:** Complete (2026-05-08). Decisions recorded in [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md#phase-0-decisions-locked).
 
 **Goal:** Lock the small set of decisions that gate downstream work so build phases do not stall.
 
@@ -80,16 +82,18 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
-- [ ] QR library decision recorded with rationale.
-- [ ] Custom event code rules frozen (regex, length, reserved words, uniqueness scope).
-- [ ] Edit-counter mechanic and audit-log shape documented.
-- [ ] Color contrast / fallback policy documented.
-- [ ] QR design preset list approved.
-- [ ] Tier-gate helper file path and signature documented.
-- [ ] Feature flag name and default value documented.
-- [ ] PNG download resolution and filename pattern documented.
+- [x] QR library decision recorded with rationale.
+- [x] Custom event code rules frozen (regex, length, reserved words, uniqueness scope).
+- [x] Edit-counter mechanic and audit-log shape documented.
+- [x] Color contrast / fallback policy documented.
+- [x] QR design preset list approved.
+- [x] Tier-gate helper file path and signature documented.
+- [x] Feature flag name and default value documented.
+- [x] PNG download resolution and filename pattern documented.
 
 ### Phase 1 - Data model and types
+
+**Status:** In progress.
 
 **Goal:** Schema additions land safely behind defaults so existing events stay valid.
 
