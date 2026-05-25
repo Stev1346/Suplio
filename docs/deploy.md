@@ -46,7 +46,7 @@ Feature flags are centralized in `src/frontend/lib/shared/config/feature-flags.t
 
 - Use `NEXT_PUBLIC_ENABLE_*` variables for client-visible toggles.
 - Recommended staged rollout: enable in Preview, validate smoke checks, then promote and mirror the same value in Production.
-- Custom Event Designs (`NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): enable in Preview during sprint development; keep off in Production until Phase 7 sign-off.
+- Custom Event Designs (`NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): enable in Preview during sprint development; keep off in Production until Phase 7 sign-off. When on, guest Scan exposes **Download QR (PNG)** (interim spike; DJ surfaces and DB fields follow Phase 1+). Local: set in `src/frontend/.env.local` and restart the dev server after changing `NEXT_PUBLIC_*` values.
 
 ## Observability baseline
 - Server route exceptions are logged via `captureServerError()` in `src/frontend/lib/server/observability.ts`.

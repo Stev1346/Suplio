@@ -21,13 +21,13 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress (Phase 1 active).
+**Sprint status:** In progress — **Phase 1** (data model) active; **Phase 5 interim spike** (guest Scan PNG download) landed ahead of Phase 1.
 
 ### In Progress
 
 #### Phase 1 - Data model and types
 
-**Status:** In progress.
+**Status:** In progress (started after Phase 5 interim spike; migration not yet applied).
 
 **Target duration:** 0.5 day
 
@@ -37,6 +37,27 @@ Use this board to move phases through execution.
 - [ ] Existing events remain valid after migration (defaults applied).
 - [ ] [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) is updated with new fields (`Row`, `Insert`, `Update`).
 - [ ] No regression to existing reads/writes that ignore the new fields.
+
+#### Interim — Phase 5 spike (guest Scan PNG download, pre–Phase 1)
+
+**Status:** Landed (2026-05-24). Does **not** complete Phase 5; unblocks PNG pipeline validation before schema and DJ surfaces exist.
+
+**Scope delivered**
+
+- [`src/frontend/lib/client/download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — client compositor: 1024×1024 canvas, 32px quiet zone, filename `suplio-qr-{eventCode}.png`; optional `backgroundColor` for a future solid export (spike export canvas uses transparent `bgColor`).
+- [`src/frontend/features/guest/event/scan/ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) — on-screen `QRCodeSVG` unchanged; hidden `QRCodeCanvas` (960px) for export; **Download QR (PNG)** behind `featureFlags.customEventDesigns`.
+- No `events.event_color` / `events.qr_design` yet — export uses default black modules (`#000000`) and transparent PNG background.
+
+**Definition of Done (interim only)**
+
+- [x] Guest Scan exposes download when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS=true`.
+- [x] Downloaded PNG matches Phase 0 resolution and filename pattern.
+- [x] Flag off hides download CTA; existing Scan UX unchanged.
+- [ ] DJ event-management download (Phase 5).
+- [ ] Curated QR presets and `event_color` tint (Phase 5 after Phase 1–3).
+- [ ] `EventQrCode` / `resolve-qr-colors` refactor (Phase 5 build notes below).
+
+**Handoff to Phase 5 completion:** Replace inline SVG/canvas in `ScanScreen` with shared `EventQrCode`; wire compositor to export variant colors; add DJ surfaces.
 
 ---
 
@@ -128,6 +149,8 @@ Use this board to move phases through execution.
 #### Phase 5 - QR designs + PNG download
 
 **Target duration:** 1.0-1.5 days
+
+**Interim spike (done):** Guest Scan PNG download + [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — see **Interim — Phase 5 spike** under In Progress above. Remaining Phase 5 work is below.
 
 **Prerequisites:** Phase 1 (`events.event_color`, `events.qr_design` on `events` and in client types/fetches). Phase 4 guest theming is not required for QR tinting, but both read the same `event_color` field.
 
@@ -241,7 +264,13 @@ Use this board to move phases through execution.
 - [ ] Create idempotent migration for `event_color`, `qr_design`, and `event_code_edits_remaining`.
 - [ ] Sync [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) after migration lands.
 
-### Phase 5 entry
+### Phase 5 interim spike (complete)
+
+- [x] Add [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) compositor.
+- [x] Wire guest Scan download CTA behind `featureFlags.customEventDesigns`.
+- [x] Smoke-test PNG on a live event Scan page with flag on in Preview/local.
+
+### Phase 5 entry (remaining)
 
 - [ ] Confirm `event_color` and `qr_design` are on `events` and included in guest/DJ event fetches.
 - [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
