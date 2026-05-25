@@ -42,6 +42,8 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
+**Interim delivery (2026-05-24, pre–Phase 1):** Guest Scan only. [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) composites a hidden `QRCodeCanvas` into the PNG; CTA is gated by `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`. Default black modules, transparent export background; no `event_color` / preset wiring until Phase 5 completes. See sprint tracker **Interim — Phase 5 spike**.
+
 ### Corner scan popup
 
 - Guest event pages display a small QR icon in a corner of the event chrome. Clicking it opens the **Scan view as a Radix dialog popup** layered over the current page (request, vote, or karaoke list) without navigating away.
@@ -174,6 +176,8 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 5 - QR designs + PNG download
 
+**Status:** Partial — guest Scan PNG download spike landed; full phase blocked on Phase 1 (schema) and Phases 2–3 (DJ surfaces, presets, tint).
+
 **Goal:** Render the chosen QR design and let DJs / guests download a PNG.
 
 **Scope**
@@ -188,8 +192,9 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
+- [x] *(Interim)* Guest Scan PNG download at agreed resolution and filename pattern when feature flag is on ([`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx), [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts)).
 - [ ] All curated QR designs render correctly across DJ and guest surfaces.
-- [ ] PNG download produces a file at the agreed resolution and filename pattern.
+- [ ] PNG download on DJ event-management surface.
 - [ ] Download works for tinted and non-tinted designs; tint behavior matches Phase 0 spec.
 - [ ] No regression to current basic QR rendering when no design is selected (default preset behaves as today).
 
@@ -276,7 +281,7 @@ This feature is complete when all statements are true:
 ### QR PNG download
 
 - [ ] DJ can download the QR PNG from event management.
-- [ ] Guest can download the QR PNG from Scan.
+- [x] *(Interim)* Guest can download the QR PNG from Scan when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` is on.
 - [ ] Filename follows the Phase 0 pattern; resolution matches Phase 0 target.
 
 ### Scan popup

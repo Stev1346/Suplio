@@ -26,6 +26,17 @@ Related docs:
 - `deploy.md`
 - `security-review.md`
 
+## Custom Event Designs — interim (guest Scan PNG, flag-gated)
+
+Requires `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS=true` on the deployment under test (Preview recommended; keep off in Production until Phase 7).
+
+- [ ] `/event/[live_eventCode]/scan` shows **Download QR (PNG)** when the flag is on.
+- [ ] With the flag off, Scan page has no download button and matches pre-sprint behavior.
+- [ ] Download produces `suplio-qr-{eventCode}.png` (~1024×1024); QR scans to `/event/{eventCode}/request`.
+- [ ] Ended/archived events still show EventOver on Scan (no download on that path).
+
+_Full custom designs regression (code, color, presets, DJ download, popup, vote filter) — Phase 7._
+
 ## Public landing (`/`)
 - [ ] `/` returns 200; page shows hero, Why Suplio, how it works (guest, DJ, karaoke), pricing, and footer.
 - [ ] Hero and footer CTAs: **Create account** → `/dj/signup`; **Log in** → `/dj/login`.

@@ -48,6 +48,10 @@ Core product goals:
 - Public marketing landing at `/`: DJ-facing hero, Why Suplio outcomes, guest and DJ “how it works” plus karaoke note, pricing tiers, footer CTAs to signup/login, and page metadata (title, description, social previews).
 - QA and deploy readiness: Playwright E2E + RLS probes, regression runbook, deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
 
+### In progress — Custom Event Designs (Sprint 2026-07)
+
+Tracked in [`docs/sprints/sprint-2026-07-custom-event-designs.md`](sprints/sprint-2026-07-custom-event-designs.md). **Phase 1** (migration + types) in progress. **Interim:** guest Scan **Download QR (PNG)** behind `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` (Preview/local validation; not part of production delivered scope until Phase 7). Remaining: custom code, guest theming, QR presets, DJ download, scan popup, vote filter.
+
 ## Security and Data Model Direction
 
 - Supabase Auth-only session strategy
