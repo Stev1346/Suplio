@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Interim delivery (2026-05-24, pre–Phase 1):** Guest Scan only. [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) composites a hidden `QRCodeCanvas` into the PNG; CTA is gated by `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`. Default black modules, transparent export background; no `event_color` / preset wiring until Phase 5 completes. See sprint tracker **Interim — Phase 5 spike**.
+**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts); create/fetch/UI wiring for design fields starts in Phase 2+. See sprint tracker.
 
 ### Corner scan popup
 
@@ -95,7 +95,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 1 - Data model and types
 
-**Status:** In progress.
+**Status:** Complete (2026-05-24). Migration [`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql); types in [`database.ts`](../../src/frontend/types/database.ts).
 
 **Goal:** Schema additions land safely behind defaults so existing events stay valid.
 
@@ -110,12 +110,14 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
-- [ ] Migration is idempotent and safe to re-run.
-- [ ] Existing events remain valid after migration (defaults applied).
-- [ ] `Database` types include all new fields with correct nullability.
-- [ ] No regression in existing reads/writes that ignore the new fields.
+- [x] Migration is idempotent and safe to re-run.
+- [x] Existing events remain valid after migration (defaults applied).
+- [x] `Database` types include all new fields with correct nullability (`QrDesignPresetId`, optional `Insert` fields).
+- [x] No regression in existing reads/writes that ignore the new fields.
 
 ### Phase 2 - Event creation flow
+
+**Status:** In progress (current sprint phase).
 
 **Goal:** DJs can set custom code, color, and QR design at create time.
 
@@ -176,7 +178,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 5 - QR designs + PNG download
 
-**Status:** Partial — guest Scan PNG download spike landed; full phase blocked on Phase 1 (schema) and Phases 2–3 (DJ surfaces, presets, tint).
+**Status:** Partial — guest Scan PNG download spike landed; Phase 1 schema complete; full phase blocked on Phases 2–3 (persist/edit design fields) and guest/DJ fetches + `EventQrCode`.
 
 **Goal:** Render the chosen QR design and let DJs / guests download a PNG.
 
@@ -310,7 +312,7 @@ This feature is complete when all statements are true:
 ### Data model changes
 
 - `events.event_color` (text, nullable).
-- `events.qr_design` (text, default `'classic'` or equivalent, check-constrained over the curated set).
+- `events.qr_design` (text, default `'basic'`, check-constrained: `basic`, `rounded`, `frame`, `bold`).
 - `events.event_code_edits_remaining` (integer, not null, default `2`).
 - New audit-log behavior reuses `public.dj_audit_log`.
 - Migration under `supabase/migrations/*` (idempotent).

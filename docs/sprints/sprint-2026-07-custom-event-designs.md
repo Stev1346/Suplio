@@ -21,43 +21,23 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 1** (data model) active; **Phase 5 interim spike** (guest Scan PNG download) landed ahead of Phase 1.
+**Sprint status:** In progress — **Phase 2** (event creation flow) active. **Phase 1** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
 
 ### In Progress
 
-#### Phase 1 - Data model and types
+#### Phase 2 - Event creation flow
 
-**Status:** In progress (started after Phase 5 interim spike; migration not yet applied).
+**Status:** In progress.
 
-**Target duration:** 0.5 day
+**Target duration:** 1.0-1.5 days
 
 **Definition of Done**
 
-- [ ] Idempotent migration adds `events.event_color`, `events.qr_design`, and `events.event_code_edits_remaining` (default `2`).
-- [ ] Existing events remain valid after migration (defaults applied).
-- [ ] [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) is updated with new fields (`Row`, `Insert`, `Update`).
-- [ ] No regression to existing reads/writes that ignore the new fields.
-
-#### Interim — Phase 5 spike (guest Scan PNG download, pre–Phase 1)
-
-**Status:** Landed (2026-05-24). Does **not** complete Phase 5; unblocks PNG pipeline validation before schema and DJ surfaces exist.
-
-**Scope delivered**
-
-- [`src/frontend/lib/client/download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — client compositor: 1024×1024 canvas, 32px quiet zone, filename `suplio-qr-{eventCode}.png`; optional `backgroundColor` for a future solid export (spike export canvas uses transparent `bgColor`).
-- [`src/frontend/features/guest/event/scan/ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) — on-screen `QRCodeSVG` unchanged; hidden `QRCodeCanvas` (960px) for export; **Download QR (PNG)** behind `featureFlags.customEventDesigns`.
-- No `events.event_color` / `events.qr_design` yet — export uses default black modules (`#000000`) and transparent PNG background.
-
-**Definition of Done (interim only)**
-
-- [x] Guest Scan exposes download when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS=true`.
-- [x] Downloaded PNG matches Phase 0 resolution and filename pattern.
-- [x] Flag off hides download CTA; existing Scan UX unchanged.
-- [ ] DJ event-management download (Phase 5).
-- [ ] Curated QR presets and `event_color` tint (Phase 5 after Phase 1–3).
-- [ ] `EventQrCode` / `resolve-qr-colors` refactor (Phase 5 build notes below).
-
-**Handoff to Phase 5 completion:** Replace inline SVG/canvas in `ScanScreen` with shared `EventQrCode`; wire compositor to export variant colors; add DJ surfaces.
+- [ ] [`CreateEventForm.tsx`](../../src/frontend/features/dj/dashboard/components/CreateEventForm.tsx) captures optional custom code, color, and QR design.
+- [ ] [`/api/dj/events`](../../src/frontend/app/api/dj/events/route.ts) validates and persists new fields (custom code regex / reserved / uniqueness checks per Phase 0).
+- [ ] Tier-gate helper is referenced at the API boundary (returns `true` today).
+- [ ] [`useCreateEvent`](../../src/frontend/hooks/dj/useCreateEvent.ts) and [`lib/client/api/events.ts`](../../src/frontend/lib/client/api/events.ts) carry new fields.
+- [ ] Event creation without any new fields still works (backwards compatible).
 
 ---
 
@@ -110,18 +90,6 @@ Use this board to move phases through execution.
 
 ### Backlog
 
-#### Phase 2 - Event creation flow
-
-**Target duration:** 1.0-1.5 days
-
-**Definition of Done**
-
-- [ ] [`CreateEventForm.tsx`](../../src/frontend/features/dj/dashboard/components/CreateEventForm.tsx) captures optional custom code, color, and QR design.
-- [ ] [`/api/dj/events`](../../src/frontend/app/api/dj/events/route.ts) validates and persists new fields (custom code regex / reserved / uniqueness checks per Phase 0).
-- [ ] Tier-gate helper is referenced at the API boundary (returns `true` today).
-- [ ] [`useCreateEvent`](../../src/frontend/hooks/dj/useCreateEvent.ts) and [`lib/client/api/events.ts`](../../src/frontend/lib/client/api/events.ts) carry new fields.
-- [ ] Event creation without any new fields still works (backwards compatible).
-
 #### Phase 3 - Event management edits + edit-twice rule
 
 **Target duration:** 1.0-1.5 days
@@ -150,9 +118,9 @@ Use this board to move phases through execution.
 
 **Target duration:** 1.0-1.5 days
 
-**Interim spike (done):** Guest Scan PNG download + [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — see **Interim — Phase 5 spike** under In Progress above. Remaining Phase 5 work is below.
+**Interim spike (done):** Guest Scan PNG download + [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — see **Interim — Phase 5 spike** under Done above. Remaining Phase 5 work is below.
 
-**Prerequisites:** Phase 1 (`events.event_color`, `events.qr_design` on `events` and in client types/fetches). Phase 4 guest theming is not required for QR tinting, but both read the same `event_color` field.
+**Prerequisites:** Phase 1 schema + types complete ([`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql), [`database.ts`](../../src/frontend/types/database.ts)). Guest/DJ **fetches** that include `event_color` and `qr_design` ship in Phase 5 (or Phase 2/3 where needed). Phase 4 guest theming is not required for QR tinting, but both read the same `event_color` field.
 
 **Implementation notes (locked for Phase 5 build):**
 
@@ -226,6 +194,38 @@ Use this board to move phases through execution.
 
 ### Done
 
+#### Phase 1 - Data model and types
+
+**Completed:** 2026-05-24  
+**Notes:** Migration [`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql) adds `event_color` (nullable), `qr_design` (default `basic`, check-constrained), `event_code_edits_remaining` (default `2`). [`database.ts`](../../src/frontend/types/database.ts) includes `QrDesignPresetId` and new `Row` / optional `Insert` fields. APIs and guest selects unchanged until Phase 2+ (DB defaults apply on create).
+
+**Definition of Done**
+
+- [x] Idempotent migration adds `events.event_color`, `events.qr_design`, and `events.event_code_edits_remaining` (default `2`).
+- [x] Existing events remain valid after migration (defaults applied).
+- [x] [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) is updated with new fields (`Row`, `Insert`, `Update`).
+- [x] No regression to existing reads/writes that ignore the new fields (`npm run build` passes).
+
+#### Interim — Phase 5 spike (guest Scan PNG download)
+
+**Completed:** 2026-05-24 (landed before Phase 1 schema; UI still uses default black modules until Phase 5 reads `event_color` / `qr_design` from fetches).
+
+**Scope delivered**
+
+- [`src/frontend/lib/client/download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — client compositor: 1024×1024 canvas, 32px quiet zone, filename `suplio-qr-{eventCode}.png`; optional `backgroundColor` for a future solid export (spike export canvas uses transparent `bgColor`).
+- [`src/frontend/features/guest/event/scan/ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) — on-screen `QRCodeSVG` unchanged; hidden `QRCodeCanvas` (960px) for export; **Download QR (PNG)** behind `featureFlags.customEventDesigns`.
+
+**Definition of Done (interim only)**
+
+- [x] Guest Scan exposes download when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS=true`.
+- [x] Downloaded PNG matches Phase 0 resolution and filename pattern.
+- [x] Flag off hides download CTA; existing Scan UX unchanged.
+- [ ] DJ event-management download (Phase 5).
+- [ ] Curated QR presets and `event_color` tint wired from DB (Phase 5 after Phase 2–3).
+- [ ] `EventQrCode` / `resolve-qr-colors` refactor (Phase 5 build notes in backlog).
+
+**Handoff to Phase 5 completion:** Replace inline SVG/canvas in `ScanScreen` with shared `EventQrCode`; extend guest/DJ fetches; add DJ surfaces.
+
 #### Phase 0 - Discovery and decisions
 
 **Completed:** 2026-05-08  
@@ -261,8 +261,14 @@ Use this board to move phases through execution.
 
 ### Phase 1 entry
 
-- [ ] Create idempotent migration for `event_color`, `qr_design`, and `event_code_edits_remaining`.
-- [ ] Sync [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) after migration lands.
+- [x] Create idempotent migration for `event_color`, `qr_design`, and `event_code_edits_remaining`.
+- [x] Sync [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) after migration lands.
+
+### Phase 2 entry
+
+- [ ] Extend create-event form and `POST /api/dj/events` for optional custom code, color, and QR design.
+- [ ] Reference tier-gate helper at API boundary.
+- [ ] Confirm create without new fields still succeeds (DB defaults).
 
 ### Phase 5 interim spike (complete)
 
@@ -272,7 +278,8 @@ Use this board to move phases through execution.
 
 ### Phase 5 entry (remaining)
 
-- [ ] Confirm `event_color` and `qr_design` are on `events` and included in guest/DJ event fetches.
+- [x] Confirm `event_color` and `qr_design` are on `events` (Phase 1 migration + types).
+- [ ] Include `event_color` and `qr_design` in guest/DJ event fetches.
 - [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
 - [ ] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
 
