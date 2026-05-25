@@ -4,6 +4,7 @@ export type EventMode ="song_request" | "karaoke";
 export type KaraokeRequestStatus = "queued" | "up_next" | "performing_now" | "performed" | "rejected";
 export type RequestStatus = SongRequestStatus | KaraokeRequestStatus;
 export type RequestType = "song_request" | "karaoke";
+export type QrDesignPresetId = "basic" | "rounded" | "frame" | "bold";
 
 type Json =
   | string
@@ -29,6 +30,9 @@ export interface Database {
           ended_entered_at: string | null;
           event_mode: EventMode;
           event_date: string | null;
+          event_color: string | null;
+          qr_design: QrDesignPresetId;
+          event_code_edits_remaining: number;
         };
         Insert: {
           id?: string;
@@ -42,6 +46,9 @@ export interface Database {
           ended_entered_at?: string | null;
           event_mode?: EventMode;
           event_date?: string | null;
+          event_color?: string | null;
+          qr_design?: QrDesignPresetId;
+          event_code_edits_remaining?: number;
         };
         Update: Partial<Database['public']['Tables']['events']['Insert']>;
       };
