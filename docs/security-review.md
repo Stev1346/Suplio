@@ -8,7 +8,7 @@ Related docs:
 - `features/features-dj-login-and-event-management.md`
 - `sprints/sprint-2026-04-dj-login.md` (Phase 9 security sign-off history; there is no separate `phase-9` tracker file)
 - `sprints/sprint-2026-05-karaoke-mode.md` (Karaoke Mode, complete)
-- `sprints/sprint-2026-07-custom-event-designs.md` (current feature work; Phase 1 complete; Phase 2 active; guest Scan PNG download interim client-only)
+- `sprints/sprint-2026-07-custom-event-designs.md` (current feature work; Phases 1-2 complete; Phase 3 active; guest Scan PNG download interim client-only)
 - `runbook-regression.md`
 - `deploy.md`
 

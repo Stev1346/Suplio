@@ -1,4 +1,5 @@
 import { useSetEventCode } from "@/contexts/GuestEventContext";
+import { CreateEventDesignFields } from "@/lib/client/api/events";
 import { EventMode } from "@/types/database";
 import { useCallback, useState } from "react";
 
@@ -6,7 +7,7 @@ export type CreateEventPayload = {
   name: string;
   event_mode: EventMode;
   event_date: string | null;
-}
+} & CreateEventDesignFields;
 
 export function useCreateEvent() {
   const setEventCode = useSetEventCode();
@@ -32,8 +33,15 @@ export function useCreateEvent() {
           name: payload.name.trim(),
           event_mode: payload.event_mode,
           ...(payload.event_date !== null && payload.event_date !== ""
-              ? {event_date: payload.event_date}
-              : {}),
+            ? { event_date: payload.event_date }
+            : {}),
+          ...(payload.event_code?.trim()
+            ? { event_code: payload.event_code.trim() }
+            : {}),
+          ...(payload.event_color?.trim()
+            ? { event_color: payload.event_color.trim() }
+            : {}),
+          ...(payload.qr_design ? { qr_design: payload.qr_design } : {}),
         }),
       });
 

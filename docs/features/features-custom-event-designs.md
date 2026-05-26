@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts); create/fetch/UI wiring for design fields starts in Phase 2+. See sprint tracker.
+**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API now supports optional custom code, event color, and QR design behind the feature flag. See sprint tracker.
 
 ### Corner scan popup
 
@@ -103,7 +103,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 - New idempotent migration under `supabase/migrations/*` adding:
   - `events.event_color` (text, nullable).
-  - `events.qr_design` (text, default the chosen "classic" preset, check constraint over the curated set).
+  - `events.qr_design` (text, default the chosen `basic` preset, check constraint over the curated set).
   - `events.event_code_edits_remaining` (integer, not null, default `2`).
 - Sync new fields into [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) (`Row`, `Insert`, `Update` shapes).
 - No RLS changes.
@@ -117,7 +117,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 2 - Event creation flow
 
-**Status:** In progress (current sprint phase).
+**Status:** Complete (2026-05-24). Validation: `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend` (QA: 6 passed, 6 skipped).
 
 **Goal:** DJs can set custom code, color, and QR design at create time.
 
@@ -133,12 +133,14 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
-- [ ] Create Event form captures optional custom code, color, and QR design.
-- [ ] API persists new fields and rejects invalid / duplicate custom codes with a usable error message.
-- [ ] Tier-gate helper is wired at the API boundary (returns `true` today; single flip point for IDEA-009).
-- [ ] Existing event creation (no custom fields supplied) still works.
+- [x] Create Event form captures optional custom code, color, and QR design.
+- [x] API persists new fields and rejects invalid / duplicate custom codes with a usable error message.
+- [x] Tier-gate helper is wired at the API boundary (returns `true` today; single flip point for IDEA-009).
+- [x] Existing event creation (no custom fields supplied) still works.
 
 ### Phase 3 - Event management edits + edit-twice rule
+
+**Status:** In progress (current sprint phase).
 
 **Goal:** DJs can change custom code (within the 2-edit cap), color, and QR design from event management.
 

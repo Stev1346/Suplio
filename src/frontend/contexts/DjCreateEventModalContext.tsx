@@ -81,7 +81,7 @@ export function DjCreateEventModalProvider({
       if (!code) return false;
       await afterCreateRef.current?.();
       handleOpenChange(false);
-      toast.success(payload.name + " event created!")
+      toast.success(payload.name + " event created!");
       return true;
     },
     [submit, handleOpenChange],
@@ -104,7 +104,7 @@ export function DjCreateEventModalProvider({
           <DialogHeader>
             <DialogTitle>Create Event</DialogTitle>
             <DialogDescription className="sr-only">
-              Create a new event with name, date and event mode.
+              Create a new event with name, date, mode, and optional branding.
             </DialogDescription>
           </DialogHeader>
           <CreateEventForm
