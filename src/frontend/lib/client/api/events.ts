@@ -12,10 +12,14 @@ export type CreateEventDesignFields = {
 export type EventBasic = {
   id: string;
   name?: string;
+  event_code?: string;
   allow_requests?: boolean;
   lifecycle_status?: EventLifecycleStatus;
   event_mode?: EventMode;
   event_date?: string | null;
+  event_color?: string | null;
+  qr_design?: QrDesignPresetId;
+  event_code_edits_remaining?: number;
 };
 
 export async function fetchEventByCode(
@@ -24,7 +28,9 @@ export async function fetchEventByCode(
 ) {
   const { data, error } = await supabase
     .from("events")
-    .select("id, name, allow_requests, lifecycle_status, event_mode, event_date")
+    .select(
+      "id, name, event_code, allow_requests, lifecycle_status, event_mode, event_date, event_color, qr_design, event_code_edits_remaining",
+    )
     .eq("event_code", eventCode)
     .maybeSingle();
   return { data: data as EventBasic | null, error };

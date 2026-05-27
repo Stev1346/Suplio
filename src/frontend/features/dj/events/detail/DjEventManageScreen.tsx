@@ -195,6 +195,8 @@ export default function DjEventManageScreen() {
     return <NotFound variant="event" />;
   }
 
+  const displayEventCode = event.event_code ?? eventCode;
+
   return (
     <PageShell className="flex flex-col">
       <header className="mb-3 flex flex-col justify-center items-center">
@@ -205,11 +207,11 @@ export default function DjEventManageScreen() {
           </p>
         )}
         <Link
-          href={routes.guest.eventLanding(eventCode)}
+          href={routes.guest.eventLanding(displayEventCode)}
           target="_blank"
           className="text-accent-80 text-md hover:underline"
         >
-          Event code: {eventCode}
+          Event code: {displayEventCode}
         </Link>
       </header>
       {(eventError || requestError) && (

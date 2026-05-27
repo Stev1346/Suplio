@@ -13,12 +13,20 @@ import {
   patchEventAllowRequests,
   patchEventDetails,
 } from "@/lib/client/api/dj";
-import { lifecycleStatus } from "@/lib/shared/constants/routes";
-import { EventLifecycleStatus, EventMode } from "@/types/database";
+import { lifecycleStatus, routes } from "@/lib/shared/constants/routes";
+import {
+  EventLifecycleStatus,
+  EventMode,
+  QrDesignPresetId,
+} from "@/types/database";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { DJ_EVENTS_MODE_OPTIONS } from "../../dashboard/dj-events-mode-options";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
+import { useRouter } from "next/navigation";
+import { featureFlags } from "@/lib/shared/config/feature-flags";
+import { normalizeEventColor } from "@/lib/shared/custom-event-designs/normalize-event-color";
+import { QR_DESIGN_PRESETS } from "@/lib/shared/custom-event-designs/qr-presets";
 
 export type DjEventControlsCardProps = {
   event: NonNullable<EventState>;
@@ -39,7 +47,16 @@ const DJ_EVENT_LIFECYCLE_OPTIONS: LabeledSelectOption<EventLifecycleStatus>[] =
   ];
 
 function serverFormFieldsSnapshot(event: NonNullable<EventState>) {
-  return `${event.id}|${event.name}|${event.event_mode}|${event.event_date ?? ""}`;
+  return [
+    event.id,
+    event.name,
+    event.event_mode,
+    event.event_date ?? "",
+    event.event_code,
+    event.event_color ?? "",
+    event.qr_design,
+    event.event_code_edits_remaining,
+  ].join("|");
 }
 
 export function DjEventControlsCard(props: DjEventControlsCardProps) {
@@ -54,9 +71,10 @@ export function DjEventControlsCard(props: DjEventControlsCardProps) {
 function DjEventControlsCardInner({
   event,
   setEvent,
-  refetchEvent,
   className = "",
 }: DjEventControlsCardProps) {
+  const router = useRouter();
+
   const [nameDraft, setNameDraft] = useState(event.name);
   const [savingName, setSavingName] = useState(false);
 
@@ -67,6 +85,20 @@ function DjEventControlsCardInner({
   const [updatingLifecycle, setUpdatingLifecycle] = useState(false);
   const [togglingAllow, setTogglingAllow] = useState(false);
 
+  const [codeDraft, setCodeDraft] = useState(event.event_code);
+  const [savingCode, setSavingCode] = useState(false);
+  const [colorDraft, setColorDraft] = useState(event.event_color ?? "");
+  const [savingColor, setSavingColor] = useState(false);
+  const [colorError, setColorError] = useState<string | null>(null);
+  const [qrDesignDraft, setQrDesignDraft] = useState<QrDesignPresetId>(
+    event.qr_design,
+  );
+  const [savingQrDesign, setSavingQrDesign] = useState(false);
+  const showDesignFields = featureFlags.customEventDesigns;
+  const canEditCode = event.event_code_edits_remaining > 0;
+  const colorPickerValue =
+    normalizeEventColor(colorDraft) ?? event.event_color ?? "#7c3aed";
+
   const isEventLive = event.lifecycle_status === lifecycleStatus.lower.live;
   const disableAllowRequestsToggle = togglingAllow || !isEventLive;
 
@@ -74,42 +106,41 @@ function DjEventControlsCardInner({
     if (savingName) return;
     const next = nameDraft.trim();
     if (!next || next === event.name) return;
+
     setSavingName(true);
-    const { error } = await patchEventDetails(event.id, { name: next });
+
+    const result = await patchEventDetails(event.id, { name: next });
+
     setSavingName(false);
-    if (error) {
-      toast.error(error);
-      return;
-    }
-    setEvent((prev) => (prev ? { ...prev, name: next } : prev));
+
+    if (!applyPatchedEvent(result, "Could not update event name")) return;
+
     toast.success("Event name updated");
   }
   async function handleLifecycleChange(next: EventLifecycleStatus) {
     if (updatingLifecycle || next === event.lifecycle_status) return;
     setUpdatingLifecycle(true);
-    const { error } = await patchEventDetails(event.id, {
+
+    const result = await patchEventDetails(event.id, {
       lifecycle_status: next,
     });
+
     setUpdatingLifecycle(false);
-    if (error) {
-      toast.error(error);
-      return;
-    }
-    await refetchEvent?.();
+
+    if (!applyPatchedEvent(result, "Could not update lifecycle")) return;
+
     toast.success("Lifecycle updated");
   }
   async function handleModeChange(next: EventMode) {
     if (updatingMode || next === event.event_mode) return;
     setUpdatingMode(true);
-    const { error } = await patchEventDetails(event.id, {
-      event_mode: next,
-    });
+
+    const result = await patchEventDetails(event.id, { event_mode: next });
+
     setUpdatingMode(false);
-    if (error) {
-      toast.error(error);
-      return;
-    }
-    await refetchEvent?.();
+
+    if (!applyPatchedEvent(result, "Could not update event mode")) return;
+
     toast.success("Event mode updated");
   }
   async function handleSaveDate() {
@@ -117,16 +148,74 @@ function DjEventControlsCardInner({
     const nextDate = dateDraft.trim() === "" ? null : dateDraft.trim();
     if (nextDate === event.event_date) return;
     setSavingDate(true);
-    const { error } = await patchEventDetails(event.id, {
-      event_date: nextDate,
-    });
+
+    const result = await patchEventDetails(event.id, { event_date: nextDate });
+
     setSavingDate(false);
-    if (error) {
-      toast.error(error);
+
+    if (!applyPatchedEvent(result, "Could not update event date")) return;
+
+    toast.success("Event date updated");
+  }
+  async function handleSaveCode() {
+    if (savingCode || !canEditCode) return;
+
+    const next = codeDraft.trim();
+    if (!next || next === event.event_code) return;
+
+    setSavingCode(true);
+
+    const result = await patchEventDetails(event.id, { event_code: next });
+
+    setSavingCode(false);
+
+    if (!applyPatchedEvent(result, "Could not update event code")) return;
+
+    const updated = result.data;
+    if (updated && updated.event_code !== event.event_code) {
+      router.replace(routes.dj.eventDetailByCode(updated.event_code));
+    }
+
+    toast.success("Event code updated");
+  }
+
+  async function handleSaveColor() {
+    if (savingColor) return;
+
+    const next =
+      colorDraft.trim() === "" ? null : normalizeEventColor(colorDraft.trim());
+
+    if (colorDraft.trim() !== "" && !next) {
+      setColorError("Enter a valid color: hex, rgb, hsl, or name like purple");
       return;
     }
-    setEvent((prev) => (prev ? { ...prev, event_date: nextDate } : prev));
-    toast.success("Event settings updated");
+
+    if (next === event.event_color) return;
+
+    setSavingColor(true);
+
+    const result = await patchEventDetails(event.id, { event_color: next });
+
+    setSavingColor(false);
+
+    if (!applyPatchedEvent(result, "Could not update event color")) return;
+
+    toast.success("Event color updated");
+  }
+
+  async function handleQrDesignChange(next: QrDesignPresetId) {
+    if (savingQrDesign || next === event.qr_design) return;
+
+    setQrDesignDraft(next);
+    setSavingQrDesign(true);
+
+    const result = await patchEventDetails(event.id, { qr_design: next });
+
+    setSavingQrDesign(false);
+
+    if (!applyPatchedEvent(result, "Could not update QR design")) return;
+
+    toast.success("QR design updated");
   }
   async function handleToggleAllowRequests() {
     if (togglingAllow || event.lifecycle_status !== lifecycleStatus.lower.live)
@@ -142,6 +231,21 @@ function DjEventControlsCardInner({
     setEvent((prev) =>
       prev ? { ...prev, allow_requests: allowRequests } : prev,
     );
+  }
+
+  function applyPatchedEvent(
+    result: {
+      data: Awaited<ReturnType<typeof patchEventDetails>>["data"];
+      error: string | null;
+    },
+    fallbackMessage: string,
+  ): boolean {
+    if (result.error || !result.data) {
+      toast.error(result.error ?? fallbackMessage);
+      return false;
+    }
+    setEvent((prev) => (prev ? { ...prev, ...result.data! } : prev));
+    return true;
   }
 
   const dateUnchanged =
@@ -248,6 +352,122 @@ function DjEventControlsCardInner({
             </p>
           )}
         </div>
+
+        {showDesignFields ? (
+          <div className="space-y-4 rounded-lg border border-muted-20 p-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <Label
+                  htmlFor={`dj-event-code-${event.id}`}
+                  className="text-muted-80"
+                >
+                  Custom event code:
+                </Label>
+                <span className="text-xs text-muted-60">
+                  {event.event_code_edits_remaining} edits remaining
+                </span>
+              </div>
+
+              {canEditCode ? (
+                <div className="flex flex-wrap gap-2">
+                  <Input
+                    id={`dj-event-code-${event.id}`}
+                    value={codeDraft}
+                    onChange={(e) => setCodeDraft(e.target.value)}
+                    placeholder="my-friday-set"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    disabled={savingCode}
+                    className="min-w-48 flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSaveCode}
+                    disabled={
+                      savingCode ||
+                      !codeDraft.trim() ||
+                      codeDraft.trim() === event.event_code
+                    }
+                    className="border-muted-90 text-muted-90"
+                  >
+                    {savingCode ? "Saving..." : "Save code"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-60">
+                  This event has used all custom code edits.
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor={`dj-event-color-${event.id}`}
+                className="text-muted-80"
+              >
+                Event color:
+              </Label>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id={`dj-event-color-${event.id}`}
+                  type="color"
+                  value={colorPickerValue}
+                  onChange={(e) => {
+                    setColorDraft(e.target.value);
+                    setColorError(null);
+                  }}
+                  className="h-10 w-14 cursor-pointer p-1"
+                />
+                <Input
+                  value={colorDraft}
+                  onChange={(e) => {
+                    setColorDraft(e.target.value);
+                    setColorError(null);
+                  }}
+                  placeholder="#7c3aed, rgb(124, 58, 237), purple"
+                  className="min-w-48 flex-1 font-mono text-sm"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveColor}
+                  disabled={
+                    savingColor ||
+                    colorDraft.trim() === (event.event_color ?? "")
+                  }
+                  className="border-muted-90 text-muted-90"
+                >
+                  {savingColor ? "Saving..." : "Save color"}
+                </Button>
+              </div>
+
+              {colorError ? (
+                <p className="text-xs text-red-500">{colorError}</p>
+              ) : (
+                <p className="text-xs text-muted-60">
+                  Leave blank to clear the custom color.
+                </p>
+              )}
+            </div>
+
+            <LabeledSelect
+              id={`dj-event-qr-design-${event.id}`}
+              label="QR design"
+              labelClassName="text-md text-muted-80"
+              value={qrDesignDraft}
+              onValueChange={(next) =>
+                void handleQrDesignChange(next as QrDesignPresetId)
+              }
+              options={QR_DESIGN_PRESETS.map((preset) => ({
+                value: preset.id,
+                label: preset.label,
+              }))}
+              disabled={savingQrDesign}
+            />
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );
