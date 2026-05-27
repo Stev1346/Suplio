@@ -1,5 +1,13 @@
 import type { AppSupabaseClient } from "@/lib/supabase/app-client";
 import { EventLifecycleStatus, EventMode } from "@/types/database";
+import type { QrDesignPresetId } from "@/types/database";
+
+/** Fields optional on create; carried by useCreateEvent → POST /api/dj/events */
+export type CreateEventDesignFields = {
+  event_code?: string;
+  event_color?: string | null;
+  qr_design?: QrDesignPresetId;
+};
 
 export type EventBasic = {
   id: string;

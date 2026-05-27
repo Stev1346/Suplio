@@ -21,11 +21,11 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 2** (event creation flow) active. **Phase 1** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
+**Sprint status:** In progress — **Phase 3** (event management edits + edit-twice rule) active. **Phase 2** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
 
 ### In Progress
 
-#### Phase 2 - Event creation flow
+#### Phase 3 - Event management edits + edit-twice rule
 
 **Status:** In progress.
 
@@ -33,11 +33,11 @@ Use this board to move phases through execution.
 
 **Definition of Done**
 
-- [ ] [`CreateEventForm.tsx`](../../src/frontend/features/dj/dashboard/components/CreateEventForm.tsx) captures optional custom code, color, and QR design.
-- [ ] [`/api/dj/events`](../../src/frontend/app/api/dj/events/route.ts) validates and persists new fields (custom code regex / reserved / uniqueness checks per Phase 0).
-- [ ] Tier-gate helper is referenced at the API boundary (returns `true` today).
-- [ ] [`useCreateEvent`](../../src/frontend/hooks/dj/useCreateEvent.ts) and [`lib/client/api/events.ts`](../../src/frontend/lib/client/api/events.ts) carry new fields.
-- [ ] Event creation without any new fields still works (backwards compatible).
+- [ ] [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) supports editing custom code, color, and QR design.
+- [ ] **Edits remaining** is surfaced for the custom code; UI hides / disables the editor at `0`.
+- [ ] API decrements `event_code_edits_remaining` only on a successful actual code change.
+- [ ] API rejects code edit when counter is `0`.
+- [ ] `dj_audit_log` entries emitted for each code / color / QR-design change.
 
 ---
 
@@ -89,18 +89,6 @@ Use this board to move phases through execution.
 ---
 
 ### Backlog
-
-#### Phase 3 - Event management edits + edit-twice rule
-
-**Target duration:** 1.0-1.5 days
-
-**Definition of Done**
-
-- [ ] [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) supports editing custom code, color, and QR design.
-- [ ] **Edits remaining** is surfaced for the custom code; UI hides / disables the editor at `0`.
-- [ ] API decrements `event_code_edits_remaining` only on a successful actual code change.
-- [ ] API rejects code edit when counter is `0`.
-- [ ] `dj_audit_log` entries emitted for each code / color / QR-design change.
 
 #### Phase 4 - Guest event theming
 
@@ -194,10 +182,23 @@ Use this board to move phases through execution.
 
 ### Done
 
+#### Phase 2 - Event creation flow
+
+**Completed:** 2026-05-24  
+**Notes:** Create-event flow now carries optional custom code, color, and QR design behind `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`. Validation is centralized in [`parse-create-design-fields.ts`](../../src/frontend/lib/server/custom-event-designs/parse-create-design-fields.ts); `/api/dj/events` persists the new fields, checks duplicate non-archived custom codes, and references the inert tier gate. `npm run lint`, `npm run build`, and `npm run test:qa` were run from `src/frontend` (QA: 6 passed, 6 skipped).
+
+**Definition of Done**
+
+- [x] [`CreateEventForm.tsx`](../../src/frontend/features/dj/dashboard/components/CreateEventForm.tsx) captures optional custom code, color, and QR design.
+- [x] [`/api/dj/events`](../../src/frontend/app/api/dj/events/route.ts) validates and persists new fields (custom code regex / reserved / uniqueness checks per Phase 0).
+- [x] Tier-gate helper is referenced at the API boundary (returns `true` today).
+- [x] [`useCreateEvent`](../../src/frontend/hooks/dj/useCreateEvent.ts) and [`lib/client/api/events.ts`](../../src/frontend/lib/client/api/events.ts) carry new fields.
+- [x] Event creation without any new fields still works (backwards compatible).
+
 #### Phase 1 - Data model and types
 
 **Completed:** 2026-05-24  
-**Notes:** Migration [`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql) adds `event_color` (nullable), `qr_design` (default `basic`, check-constrained), `event_code_edits_remaining` (default `2`). [`database.ts`](../../src/frontend/types/database.ts) includes `QrDesignPresetId` and new `Row` / optional `Insert` fields. APIs and guest selects unchanged until Phase 2+ (DB defaults apply on create).
+**Notes:** Migration [`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql) adds `event_color` (nullable), `qr_design` (default `basic`, check-constrained), `event_code_edits_remaining` (default `2`). [`database.ts`](../../src/frontend/types/database.ts) includes `QrDesignPresetId` and new `Row` / optional `Insert` fields. Phase 2 now wires create-time API usage; guest event fetches remain unchanged until Phase 5.
 
 **Definition of Done**
 
@@ -266,9 +267,15 @@ Use this board to move phases through execution.
 
 ### Phase 2 entry
 
-- [ ] Extend create-event form and `POST /api/dj/events` for optional custom code, color, and QR design.
-- [ ] Reference tier-gate helper at API boundary.
-- [ ] Confirm create without new fields still succeeds (DB defaults).
+- [x] Extend create-event form and `POST /api/dj/events` for optional custom code, color, and QR design.
+- [x] Reference tier-gate helper at API boundary.
+- [x] Confirm create without new fields still succeeds (DB defaults).
+
+### Phase 3 entry
+
+- [ ] Extend event-management controls for custom code, color, and QR design edits.
+- [ ] Surface edit count and enforce the code-edit cap at UI + API.
+- [ ] Emit `dj_audit_log` entries for code, color, and QR-design changes.
 
 ### Phase 5 interim spike (complete)
 
@@ -287,7 +294,7 @@ Use this board to move phases through execution.
 
 ## Validation Checklist (Sprint Exit)
 
-- [ ] DJ can create an event with optional custom code, color, and QR design; defaults preserved when omitted.
+- [x] DJ can create an event with optional custom code, color, and QR design; defaults preserved when omitted.
 - [ ] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
 - [ ] DJ can change color and QR design freely from event management.
 - [ ] Guest event pages reflect the chosen color; non-event surfaces unaffected.
