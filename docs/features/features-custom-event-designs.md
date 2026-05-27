@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API now supports optional custom code, event color, and QR design behind the feature flag. See sprint tracker.
+**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API supports optional custom code, event color, and QR design behind the feature flag. **Phase 3 (2026-05-27):** DJ event-management edits (code edit cap, color, QR design) via [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) and [`PATCH /api/dj/events/[eventId]`](../../src/frontend/app/api/dj/events/[eventId]/route.ts). See sprint tracker.
 
 ### Corner scan popup
 
@@ -140,7 +140,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 3 - Event management edits + edit-twice rule
 
-**Status:** In progress (current sprint phase).
+**Status:** Complete (2026-05-27). See [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md).
 
 **Goal:** DJs can change custom code (within the 2-edit cap), color, and QR design from event management.
 
@@ -154,11 +154,11 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
-- [ ] DJs can edit custom code from event management when edits remain.
-- [ ] DJs can edit color and QR design any time (no cap).
-- [ ] API decrements `event_code_edits_remaining` exactly on successful code changes.
-- [ ] API rejects code edits when the counter is `0`.
-- [ ] Audit log entries are emitted for each change.
+- [x] DJs can edit custom code from event management when edits remain.
+- [x] DJs can edit color and QR design any time (no cap).
+- [x] API decrements `event_code_edits_remaining` exactly on successful code changes.
+- [x] API rejects code edits when the counter is `0`.
+- [x] Audit log entries are emitted for each change.
 
 ### Phase 4 - Guest event theming
 
@@ -180,7 +180,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 5 - QR designs + PNG download
 
-**Status:** Partial — guest Scan PNG download spike landed; Phase 1 schema complete; full phase blocked on Phases 2–3 (persist/edit design fields) and guest/DJ fetches + `EventQrCode`.
+**Status:** Partial — guest Scan PNG download spike landed; Phases 1–3 complete (schema, create/edit design fields, event fetch includes `event_color` / `qr_design`); remaining: `EventQrCode`, guest/DJ QR rendering, DJ download.
 
 **Goal:** Render the chosen QR design and let DJs / guests download a PNG.
 
@@ -263,11 +263,11 @@ This feature is complete when all statements are true:
 
 ### Custom event code
 
-- [ ] Creating an event with a valid custom code persists and routes correctly.
-- [ ] Creating with an invalid / reserved / duplicate code shows a clear error.
-- [ ] Editing a custom code decrements the counter only on actual change.
-- [ ] After 2 successful edits, further edit attempts are rejected at API + hidden in UI.
-- [ ] Audit log contains an entry per code change with old/new values.
+- [x] Creating an event with a valid custom code persists and routes correctly.
+- [x] Creating with an invalid / reserved / duplicate code shows a clear error.
+- [x] Editing a custom code decrements the counter only on actual change.
+- [x] After 2 successful edits, further edit attempts are rejected at API + hidden in UI.
+- [x] Audit log contains an entry per code change with old/new values.
 
 ### Custom event color
 

@@ -1,4 +1,4 @@
-import type { EventLifecycleStatus, EventMode, RequestStatus } from "@/types/database";
+import type { EventLifecycleStatus, EventMode, QrDesignPresetId, RequestStatus } from "@/types/database";
 
 export type DjEventListItem = {
   id: string;
@@ -49,6 +49,19 @@ export type DjProfileResponse = {
   created_at: string;
   updated_at: string;
 }
+
+export type PatchEventDetailsData = {
+  id: string;
+  name: string;
+  event_code: string;
+  allow_requests: boolean;
+  lifecycle_status: EventLifecycleStatus;
+  event_mode: EventMode;
+  event_date: string | null;
+  event_color: string | null;
+  qr_design: QrDesignPresetId;
+  event_code_edits_remaining: number;
+};
 
 export type DjEventSearchItem = {
   id: string;
@@ -109,12 +122,15 @@ export async function patchRequestStatus(
 export async function patchEventDetails(
   eventId: string,
   input: {
-    name?: string; 
-    lifecycle_status?: EventLifecycleStatus; 
-    event_mode?: EventMode; 
+    name?: string;
+    lifecycle_status?: EventLifecycleStatus;
+    event_mode?: EventMode;
     event_date?: string | null;
-  }):
-  Promise<{ error: string | null }> {
+    event_code?: string;
+    event_color?: string | null;
+    qr_design?: QrDesignPresetId;
+  },
+): Promise<{ data: PatchEventDetailsData | null; error: string | null }> {
   const res = await fetch(`/api/dj/events/${encodeURIComponent(eventId)}`, {
     method: "PATCH",
     credentials: "include",
@@ -122,11 +138,16 @@ export async function patchEventDetails(
     body: JSON.stringify(input),
   });
 
+  const body = (await res.json().catch(() => ({}))) as {
+    data?: PatchEventDetailsData;
+    error?: string;
+  };
+
   if (!res.ok) {
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
-    return { error: data.error ?? "Request failed" };
+    return { data: null, error: body.error ?? "Request failed" };
   }
-  return { error: null };
+
+  return { data: body.data ?? null, error: null };
 }
 
 export async function getDjDashboard(): Promise<{ data: DjDashboardResponse | null; error: string | null }> {

@@ -21,23 +21,23 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 3** (event management edits + edit-twice rule) active. **Phase 2** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
+**Sprint status:** In progress — **Phase 4** (guest event theming) active. **Phases 1–3** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
 
 ### In Progress
 
-#### Phase 3 - Event management edits + edit-twice rule
+#### Phase 4 - Guest event theming
 
 **Status:** In progress.
 
-**Target duration:** 1.0-1.5 days
+**Target duration:** 0.5-1.0 day
 
 **Definition of Done**
 
-- [ ] [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) supports editing custom code, color, and QR design.
-- [ ] **Edits remaining** is surfaced for the custom code; UI hides / disables the editor at `0`.
-- [ ] API decrements `event_code_edits_remaining` only on a successful actual code change.
-- [ ] API rejects code edit when counter is `0`.
-- [ ] `dj_audit_log` entries emitted for each code / color / QR-design change.
+- [ ] Guest event layout under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) applies `event_color` via CSS custom properties.
+- [ ] Affected surfaces (CTAs, headings, focus rings, accent areas) reflect the chosen color.
+- [ ] Contrast fallback engages for poor-contrast colors per Phase 0 policy.
+- [ ] DJ shells, auth pages, and marketing surfaces are unaffected.
+- [ ] No new hydration warnings on guest event pages.
 
 ---
 
@@ -89,18 +89,6 @@ Use this board to move phases through execution.
 ---
 
 ### Backlog
-
-#### Phase 4 - Guest event theming
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] Guest event layout under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) applies `event_color` via CSS custom properties.
-- [ ] Affected surfaces (CTAs, headings, focus rings, accent areas) reflect the chosen color.
-- [ ] Contrast fallback engages for poor-contrast colors per Phase 0 policy.
-- [ ] DJ shells, auth pages, and marketing surfaces are unaffected.
-- [ ] No new hydration warnings on guest event pages.
 
 #### Phase 5 - QR designs + PNG download
 
@@ -181,6 +169,19 @@ Use this board to move phases through execution.
 ---
 
 ### Done
+
+#### Phase 3 - Event management edits + edit-twice rule
+
+**Completed:** 2026-05-27  
+**Notes:** [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) edits custom code, color, and QR design behind `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`. [`PATCH /api/dj/events/[eventId]`](../../src/frontend/app/api/dj/events/[eventId]/route.ts) validates design fields, enforces the edit-twice cap (decrement only on actual code change), and emits `event_code_changed`, `event_color_changed`, and `event_qr_design_changed` audit entries. [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) and [`EventState`](../../src/frontend/hooks/guest/useEventByCode.ts) include design fields for the DJ manage screen; successful code renames call `router.replace` to the new `/dj/events/[eventCode]` URL. Shared `applyPatchedEvent` merges API responses for all patch handlers (name, lifecycle, mode, date, and design fields).
+
+**Definition of Done**
+
+- [x] [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) supports editing custom code, color, and QR design.
+- [x] **Edits remaining** is surfaced for the custom code; UI hides / disables the editor at `0`.
+- [x] API decrements `event_code_edits_remaining` only on a successful actual code change.
+- [x] API rejects code edit when counter is `0`.
+- [x] `dj_audit_log` entries emitted for each code / color / QR-design change.
 
 #### Phase 2 - Event creation flow
 
@@ -273,9 +274,15 @@ Use this board to move phases through execution.
 
 ### Phase 3 entry
 
-- [ ] Extend event-management controls for custom code, color, and QR design edits.
-- [ ] Surface edit count and enforce the code-edit cap at UI + API.
-- [ ] Emit `dj_audit_log` entries for code, color, and QR-design changes.
+- [x] Extend event-management controls for custom code, color, and QR design edits.
+- [x] Surface edit count and enforce the code-edit cap at UI + API.
+- [x] Emit `dj_audit_log` entries for code, color, and QR-design changes.
+
+### Phase 4 entry
+
+- [ ] Apply `event_color` on guest event layout via CSS custom properties.
+- [ ] Implement contrast fallback per [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
+- [ ] Confirm DJ, auth, and marketing shells are unaffected.
 
 ### Phase 5 interim spike (complete)
 
@@ -286,7 +293,7 @@ Use this board to move phases through execution.
 ### Phase 5 entry (remaining)
 
 - [x] Confirm `event_color` and `qr_design` are on `events` (Phase 1 migration + types).
-- [ ] Include `event_color` and `qr_design` in guest/DJ event fetches.
+- [x] Include `event_color` and `qr_design` in event fetches via [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) (Phase 3; guest theming and QR rendering still Phase 4–5).
 - [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
 - [ ] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
 
@@ -295,8 +302,8 @@ Use this board to move phases through execution.
 ## Validation Checklist (Sprint Exit)
 
 - [x] DJ can create an event with optional custom code, color, and QR design; defaults preserved when omitted.
-- [ ] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
-- [ ] DJ can change color and QR design freely from event management.
+- [x] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
+- [x] DJ can change color and QR design freely from event management.
 - [ ] Guest event pages reflect the chosen color; non-event surfaces unaffected.
 - [ ] All curated QR designs render correctly across DJ and guest surfaces.
 - [ ] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
