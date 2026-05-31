@@ -110,7 +110,7 @@ export default function ScanScreen() {
         </h1>
         <Link
           href="#"
-          className="text-lg text-accent-80 hover:underline"
+          className="text-lg text-(--guest-badge-accent) hover:underline"
           onClick={(e) => {
             e.preventDefault();
             open();

@@ -23,7 +23,7 @@ export function AppHeader({
       </p>
       <Link
         href="#"
-        className="text-lg text-accent-80 hover:underline"
+        className="text-lg text-(--guest-heading-accent) hover:underline"
         onClick={(e) => {
           e.preventDefault();
           open();

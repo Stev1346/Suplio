@@ -26,7 +26,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - DJ picks a color (hex) at create time and may change it any time from event management — **not** subject to the 2-edit cap.
 - The chosen color drives **guest event pages only** (`/event/[eventCode]/*` shells: scan, request, vote, karaoke list). DJ surfaces and the marketing/auth shells are **not** themed.
 - Implemented as a CSS custom property override at the guest event layout level so existing tokens (e.g. accent / primary scales) re-derive from the chosen hue without per-component edits.
-- **Contrast safety:** if the chosen color produces unreadable contrast against page backgrounds or buttons, the system falls back to the existing accent token for the affected surface. Threshold and per-surface rules locked in Phase 0 — see [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
+- **Contrast safety:** if the chosen color produces unreadable contrast on a guest surface (CTA, heading accent, focus ring, badge accent), only that surface falls back to the platform default hue (`170`); page background tokens keep the DJ's chosen hue. Threshold and per-surface rules in [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
 
 ### QR code design
 
@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API supports optional custom code, event color, and QR design behind the feature flag. **Phase 3 (2026-05-27):** DJ event-management edits (code edit cap, color, QR design) via [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) and [`PATCH /api/dj/events/[eventId]`](../../src/frontend/app/api/dj/events/[eventId]/route.ts). See sprint tracker.
+**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API supports optional custom code, event color, and QR design behind the feature flag. **Phase 3 (2026-05-27):** DJ event-management edits (code edit cap, color, QR design) via [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) and [`PATCH /api/dj/events/[eventId]`](../../src/frontend/app/api/dj/events/[eventId]/route.ts). **Phase 4 (2026-05-30):** guest event theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx) and [`resolve-guest-event-theme.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-guest-event-theme.ts). See sprint tracker.
 
 ### Corner scan popup
 
@@ -162,25 +162,27 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 4 - Guest event theming
 
+**Status:** Complete (2026-05-30). See [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md).
+
 **Goal:** Guest event pages reflect the chosen event color without leakage into other shells.
 
 **Scope**
 
-- Apply `event_color` via CSS custom property on the guest event layout that wraps `/event/[eventCode]/*` ([`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/)).
-- Re-derive existing accent / primary tokens from the chosen hue where this is straightforward; otherwise apply the override only on the surfaces that benefit (CTAs, headings, focus rings).
-- Implement the contrast fallback policy from Phase 0.
-- Confirm DJ shells, marketing landing (when shipped), and auth pages are unaffected.
+- Apply `event_color` via CSS custom property on the guest event layout that wraps `/event/[eventCode]/*` ([`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx) at [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/)).
+- Re-derive existing accent / primary tokens from the chosen hue; guest CTAs and accent links consume per-surface `--guest-*` vars from [`resolveGuestEventTheme`](../../src/frontend/lib/shared/custom-event-designs/resolve-guest-event-theme.ts).
+- Implement per-surface contrast fallback (platform default hue for failing surfaces).
+- Confirm DJ shells, marketing landing, and auth pages are unaffected.
 
 **Definition of Done**
 
-- [ ] Guest event pages reflect `event_color` for affected surfaces.
-- [ ] Non-event surfaces (DJ shells, auth, marketing) are visually unchanged.
-- [ ] Contrast fallback applies when chosen color fails the threshold.
-- [ ] No hydration warnings introduced by the theming layer.
+- [x] Guest event pages reflect `event_color` for affected surfaces.
+- [x] Non-event surfaces (DJ shells, auth, marketing) are visually unchanged.
+- [x] Contrast fallback applies when chosen color fails the threshold on a surface.
+- [x] No hydration warnings introduced by the theming layer.
 
 ### Phase 5 - QR designs + PNG download
 
-**Status:** Partial — guest Scan PNG download spike landed; Phases 1–3 complete (schema, create/edit design fields, event fetch includes `event_color` / `qr_design`); remaining: `EventQrCode`, guest/DJ QR rendering, DJ download.
+**Status:** In progress (2026-05-30). Partial — guest Scan PNG download spike landed; Phases 1–4 complete; remaining: `EventQrCode`, guest/DJ QR rendering, DJ download.
 
 **Goal:** Render the chosen QR design and let DJs / guests download a PNG.
 
