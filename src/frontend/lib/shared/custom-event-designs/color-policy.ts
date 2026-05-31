@@ -3,6 +3,7 @@ export const EVENT_COLOR_POLICY = {
   minContrastForText: 4.5,
   minContrastForLargeText: 3.0,
   fallbackAccent: "#7c3aed",
+  platformDefaultHue: 170
 } as const;
 
 export type SurfaceKey =

@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-accent-60 text-white hover:bg-accent-40 hover:opacity-90 hover:cursor-pointer",
+          "bg-(--guest-primary-button) text-white hover:bg-(--guest-primary-button-hover) hover:opacity-90 hover:cursor-pointer focus-visible:outline-2 focus-visible:outline-(--guest-focus-ring)",
         secondary:
           "border border-secondary-60 text-white hover:bg-secondary-20 hover:cursor-pointer",
         ghost:
@@ -32,9 +32,15 @@ const buttonVariants = cva(
 );
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
-  VariantProps<typeof buttonVariants> & { asChild?: boolean};
+  VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
-export function Button({ className, variant, size, asChild= false, ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button";
   return (
     <Comp

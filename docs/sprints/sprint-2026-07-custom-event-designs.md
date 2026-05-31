@@ -21,76 +21,13 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 4** (guest event theming) active. **Phases 1–3** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
+**Sprint status:** In progress — **Phase 5** (QR designs + PNG download) active. **Phases 1–4** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
 
 ### In Progress
 
-#### Phase 4 - Guest event theming
+#### Phase 5 - QR designs + PNG download
 
 **Status:** In progress.
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] Guest event layout under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) applies `event_color` via CSS custom properties.
-- [ ] Affected surfaces (CTAs, headings, focus rings, accent areas) reflect the chosen color.
-- [ ] Contrast fallback engages for poor-contrast colors per Phase 0 policy.
-- [ ] DJ shells, auth pages, and marketing surfaces are unaffected.
-- [ ] No new hydration warnings on guest event pages.
-
----
-
-### Phase 0 Decisions (locked)
-
-- QR library: `qrcode.react` (keep existing dependency) + design wrapper for presets.
-- Rationale:
-  - already in use on guest Scan page;
-  - lower migration risk than swapping renderer mid-sprint;
-  - enough for preset-driven style variants and PNG export pipeline.
-- Edit counter: `events.event_code_edits_remaining` starts at `2`.
-- Decrement rule: decrement only when normalized code value actually changes.
-- No decrement on failed validation, duplicate conflict, or no-op edit.
-- Audit log actions:
-  - `event_code_changed`
-  - `event_color_changed`
-  - `event_qr_design_changed`
-- Audit metadata shape:
-  - `{ eventId, field, previousValue, nextValue, editsRemainingAfter? }`
-- PNG export:
-  - Resolution: 1024x1024
-  - Margin: 32px quiet zone
-  - Background: white
-  - Filename: `suplio-qr-{eventCode}.png`
-- Event color policy:
-  - Input format: hex `#RRGGBB`
-  - Contrast thresholds: text 4.5:1, large text 3.0:1 (WCAG AA)
-  - Per-surface fallback: if chosen color fails threshold on a surface, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`)
-  - Surfaces: `primaryButton`, `headingAccent`, `focusRing`, `badgeAccent`
-  - Source of truth: `src/frontend/lib/shared/custom-event-designs/color-policy.ts`
-- Custom event code rules:
-  - Length: 4–24 chars
-  - Pattern: `^[a-z0-9-]+$` (normalized to lowercase)
-  - Reserved: `admin`, `api`, `dj`, `event`, `events`, `login`, `signup`, `scan`
-  - Uniqueness scope: unique among **non-archived** events (`draft`, `live`, `ended`)
-  - Source of truth: `src/frontend/lib/shared/custom-event-designs/event-code-rules.ts`
-- Feature flag:
-  - Env var: `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`
-  - Code key: `featureFlags.customEventDesigns`
-  - Default when unset: `false`
-  - Preview rollout: `true`
-  - Production rollout: `false` until Phase 7 sign-off
-  - Source: `src/frontend/lib/shared/config/feature-flags.ts`
-- Tier gate (IDEA-009 deferred):
-  - File: `src/frontend/lib/server/tier-gates.ts`
-  - Signature: `isTierAllowedForFeature({ djId, feature: "custom_event_designs" }): Promise<boolean>`
-  - Current behavior: always returns `true`
-  - Future: only this helper changes when subscription tiers ship
----
-
-### Backlog
-
-#### Phase 5 - QR designs + PNG download
 
 **Target duration:** 1.0-1.5 days
 
@@ -134,6 +71,59 @@ Use this board to move phases through execution.
 - [ ] Default behavior (no design selected / flag off) renders the existing basic black-on-white QR.
 - [ ] Light brand colors that fail the scannability gate fall back to `fallbackAccent` on QR modules only; UI theming unchanged.
 
+---
+
+### Phase 0 Decisions (locked)
+
+- QR library: `qrcode.react` (keep existing dependency) + design wrapper for presets.
+- Rationale:
+  - already in use on guest Scan page;
+  - lower migration risk than swapping renderer mid-sprint;
+  - enough for preset-driven style variants and PNG export pipeline.
+- Edit counter: `events.event_code_edits_remaining` starts at `2`.
+- Decrement rule: decrement only when normalized code value actually changes.
+- No decrement on failed validation, duplicate conflict, or no-op edit.
+- Audit log actions:
+  - `event_code_changed`
+  - `event_color_changed`
+  - `event_qr_design_changed`
+- Audit metadata shape:
+  - `{ eventId, field, previousValue, nextValue, editsRemainingAfter? }`
+- PNG export:
+  - Resolution: 1024x1024
+  - Margin: 32px quiet zone
+  - Background: white
+  - Filename: `suplio-qr-{eventCode}.png`
+- Event color policy (guest UI theming — Phase 4):
+  - Input format: hex `#RRGGBB`
+  - Contrast thresholds: text 4.5:1, large text 3.0:1 (WCAG AA)
+  - Per-surface fallback: if chosen color fails threshold on a surface, use tokens derived from `EVENT_COLOR_POLICY.platformDefaultHue` (`170`); page background tokens keep the DJ's chosen hue
+  - Surfaces: `primaryButton`, `headingAccent`, `focusRing`, `badgeAccent`
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/color-policy.ts` + `resolve-guest-event-theme.ts`
+- QR module color policy (Phase 5):
+  - Scannability gate: if `event_color` contrast against `#ffffff` is below ~3:1, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`) for QR modules only (UI theming unchanged)
+- Custom event code rules:
+  - Length: 4–24 chars
+  - Pattern: `^[a-z0-9-]+$` (normalized to lowercase)
+  - Reserved: `admin`, `api`, `dj`, `event`, `events`, `login`, `signup`, `scan`
+  - Uniqueness scope: unique among **non-archived** events (`draft`, `live`, `ended`)
+  - Source of truth: `src/frontend/lib/shared/custom-event-designs/event-code-rules.ts`
+- Feature flag:
+  - Env var: `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`
+  - Code key: `featureFlags.customEventDesigns`
+  - Default when unset: `false`
+  - Preview rollout: `true`
+  - Production rollout: `false` until Phase 7 sign-off
+  - Source: `src/frontend/lib/shared/config/feature-flags.ts`
+- Tier gate (IDEA-009 deferred):
+  - File: `src/frontend/lib/server/tier-gates.ts`
+  - Signature: `isTierAllowedForFeature({ djId, feature: "custom_event_designs" }): Promise<boolean>`
+  - Current behavior: always returns `true`
+  - Future: only this helper changes when subscription tiers ship
+---
+
+### Backlog
+
 #### Phase 6 - Scan popup + guest queue filter
 
 **Target duration:** 0.5-1.0 day
@@ -169,6 +159,19 @@ Use this board to move phases through execution.
 ---
 
 ### Done
+
+#### Phase 4 - Guest event theming
+
+**Completed:** 2026-05-30  
+**Notes:** [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx) wraps guest event routes with a themed `<main>` and syncs CSS vars to `<html>` for overscroll. [`resolveGuestEventTheme`](../../src/frontend/lib/shared/custom-event-designs/resolve-guest-event-theme.ts) maps `event_color` → `--hue` plus derived background/foreground tokens; per-surface contrast fallback (`primaryButton`, `headingAccent`, `focusRing`, `badgeAccent`) uses `EVENT_COLOR_POLICY.platformDefaultHue` (170) when a surface fails WCAG thresholds while preserving the DJ's chosen hue on page tokens. Realtime updates via `useEvent(..., { realtime: true })`. Guest CTAs consume `--guest-*` vars in [`Button.tsx`](../../src/frontend/components/ui/Button.tsx), [`AppHeader.tsx`](../../src/frontend/components/ui/AppHeader.tsx), and [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx). DJ, auth, and marketing shells unchanged.
+
+**Definition of Done**
+
+- [x] Guest event layout under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) applies `event_color` via CSS custom properties.
+- [x] Affected surfaces (CTAs, headings, focus rings, accent areas) reflect the chosen color.
+- [x] Contrast fallback engages for poor-contrast colors per Phase 0 policy (per-surface; platform default hue for failing surfaces).
+- [x] DJ shells, auth pages, and marketing surfaces are unaffected.
+- [x] No new hydration warnings on guest event pages.
 
 #### Phase 3 - Event management edits + edit-twice rule
 
@@ -280,9 +283,9 @@ Use this board to move phases through execution.
 
 ### Phase 4 entry
 
-- [ ] Apply `event_color` on guest event layout via CSS custom properties.
-- [ ] Implement contrast fallback per [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
-- [ ] Confirm DJ, auth, and marketing shells are unaffected.
+- [x] Apply `event_color` on guest event layout via CSS custom properties.
+- [x] Implement contrast fallback per [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
+- [x] Confirm DJ, auth, and marketing shells are unaffected.
 
 ### Phase 5 interim spike (complete)
 
@@ -290,10 +293,10 @@ Use this board to move phases through execution.
 - [x] Wire guest Scan download CTA behind `featureFlags.customEventDesigns`.
 - [x] Smoke-test PNG on a live event Scan page with flag on in Preview/local.
 
-### Phase 5 entry (remaining)
+### Phase 5 entry
 
 - [x] Confirm `event_color` and `qr_design` are on `events` (Phase 1 migration + types).
-- [x] Include `event_color` and `qr_design` in event fetches via [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) (Phase 3; guest theming and QR rendering still Phase 4–5).
+- [x] Include `event_color` and `qr_design` in event fetches via [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) (Phase 3; guest theming complete in Phase 4).
 - [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
 - [ ] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
 
@@ -304,7 +307,7 @@ Use this board to move phases through execution.
 - [x] DJ can create an event with optional custom code, color, and QR design; defaults preserved when omitted.
 - [x] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
 - [x] DJ can change color and QR design freely from event management.
-- [ ] Guest event pages reflect the chosen color; non-event surfaces unaffected.
+- [x] Guest event pages reflect the chosen color; non-event surfaces unaffected.
 - [ ] All curated QR designs render correctly across DJ and guest surfaces.
 - [ ] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
 - [ ] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.

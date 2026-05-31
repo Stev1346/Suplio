@@ -6,7 +6,7 @@ export default function GuestLayout({
   return (
     <>
       <GuestCookieInformationBanner />
-      <main className="min-h-dvh bg-background pt-15">{children}</main>
+      {children}
     </>
   );
 }
