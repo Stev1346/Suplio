@@ -19,7 +19,7 @@ import {
   EventMode,
   QrDesignPresetId,
 } from "@/types/database";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { DJ_EVENTS_MODE_OPTIONS } from "../../dashboard/dj-events-mode-options";
 import { AllowRequestsSwitch } from "@/components/ui/AllowRequestsSwitch";
@@ -27,6 +27,8 @@ import { useRouter } from "next/navigation";
 import { featureFlags } from "@/lib/shared/config/feature-flags";
 import { normalizeEventColor } from "@/lib/shared/custom-event-designs/normalize-event-color";
 import { QR_DESIGN_PRESETS } from "@/lib/shared/custom-event-designs/qr-presets";
+import { downloadEventQrPng } from "@/lib/client/download-event-qr-png";
+import { EventQrCode } from "@/components/custom-event-designs/EventQrCode";
 
 export type DjEventControlsCardProps = {
   event: NonNullable<EventState>;
@@ -101,6 +103,10 @@ function DjEventControlsCardInner({
 
   const isEventLive = event.lifecycle_status === lifecycleStatus.lower.live;
   const disableAllowRequestsToggle = togglingAllow || !isEventLive;
+
+  const exportQrRef = useRef<HTMLDivElement>(null);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const requestUrl = `${baseUrl}/event/${event.event_code}/request`;
 
   async function handleSaveName() {
     if (savingName) return;
@@ -217,6 +223,20 @@ function DjEventControlsCardInner({
 
     toast.success("QR design updated");
   }
+  function handleDownloadQr() {
+    const canvas = exportQrRef.current?.querySelector("canvas");
+    if (!canvas) {
+      toast.error("Could not prepare QR for download");
+      return;
+    }
+    try {
+      downloadEventQrPng(canvas, event.event_code);
+      toast.success("QR downloaded.");
+    } catch {
+      toast.error("Could not download QR.");
+    }
+  }
+
   async function handleToggleAllowRequests() {
     if (togglingAllow || event.lifecycle_status !== lifecycleStatus.lower.live)
       return;
@@ -466,6 +486,35 @@ function DjEventControlsCardInner({
               }))}
               disabled={savingQrDesign}
             />
+
+            <div className="space-y-2 pt-2">
+              <p className="text-sm text-muted-80">Share QR</p>
+              <div className="flex justify-center rounded-lg bg-white p-4">
+                <EventQrCode
+                  value={requestUrl}
+                  size={180}
+                  eventColor={event.event_color}
+                  qrDesign={event.qr_design}
+                  variant="display"
+                />
+              </div>
+              <Button
+                type="button"
+                variant={"outline"}
+                onClick={handleDownloadQr}
+              >
+                Download QR (PNG)
+              </Button>
+              <div ref={exportQrRef} className="sr-only" aria-hidden>
+                <EventQrCode
+                  value={requestUrl}
+                  size={960}
+                  eventColor={event.event_color}
+                  qrDesign={event.qr_design}
+                  variant="export"
+                />
+              </div>
+            </div>
           </div>
         ) : null}
       </CardContent>

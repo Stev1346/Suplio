@@ -6,12 +6,18 @@ import {
   DjEventsLifecycleFilter,
   patchEventDetails,
 } from "@/lib/client/api/dj";
-import { lifecycleStatus, routes } from "@/lib/shared/constants/routes";
-import Link from "next/link";
+import { lifecycleStatus } from "@/lib/shared/constants/routes";
 import { DJ_EVENTS_LIFECYCLE_FILTER_OPTIONS } from "../dj-events-lifecycle-filter-options";
 import { EventLifecycleStatus } from "@/types/database";
 import { useState } from "react";
 import { ArchiveIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import CreatedEventInfo from "../../events/components/CreatedEventInfo";
 
 type RecentEventsListProps = {
   items: DjEventListItem[];
@@ -52,6 +58,7 @@ function EventRow({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
   const isArchived = event.lifecycle_status === lifecycleStatus.lower.archived;
   async function handleArchive() {
     if (busy || isArchived) return;
@@ -91,14 +98,11 @@ function EventRow({
         ) : null}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={routes.guest.scan(event.event_code)}>
-          <Button variant="primary">Guest Page</Button>
-        </Link>
-        <Link href={routes.dj.eventDetailByCode(event.event_code)}>
-          <Button variant="outline">Manage</Button>
-        </Link>
+        <Button variant={"outline"} onClick={() => setInfoOpen(true)}>
+          View Event Info
+        </Button>
         <Button
-          variant="outline"
+          variant={"danger"}
           onClick={handleArchive}
           disabled={busy || isArchived}
           aria-label={isArchived ? "Event already archived" : "Archive event"}
@@ -106,6 +110,21 @@ function EventRow({
           {isArchived ? "Archived" : busy ? "Archiving..." : <ArchiveIcon />}
         </Button>
       </div>
+
+      <Dialog open={infoOpen} onOpenChange={setInfoOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{event.name}</DialogTitle>
+          </DialogHeader>
+
+          <CreatedEventInfo
+            createdCode={event.event_code}
+            eventColor={event.event_color}
+            qrDesign={event.qr_design}
+            title="Event Info"
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -119,7 +138,7 @@ export function RecentEventsList({
   lifecycle,
   onLifecycleChange,
   onChanged,
-  className
+  className,
 }: RecentEventsListProps) {
   return (
     <Card className={className}>

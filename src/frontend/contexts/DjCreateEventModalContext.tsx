@@ -11,7 +11,9 @@ import {
   CreateEventForm,
   CreateEventFormPayload,
 } from "@/features/dj/dashboard/components/CreateEventForm";
+import CreatedEventInfo from "@/features/dj/events/components/CreatedEventInfo";
 import { useCreateEvent } from "@/hooks/dj/useCreateEvent";
+import { QrDesignPresetId } from "@/types/database";
 import {
   ComponentPropsWithoutRef,
   createContext,
@@ -25,6 +27,12 @@ import {
 import toast from "react-hot-toast";
 
 type AfterCreateFn = () => void | Promise<void>;
+
+type CreatedEventState = {
+  code: string;
+  eventColor?: string | null;
+  qrDesign?: QrDesignPresetId;
+};
 
 type DjCreateEventModalContextValue = {
   open: () => void;
@@ -54,6 +62,10 @@ export function DjCreateEventModalProvider({
   const afterCreateRef = useRef<AfterCreateFn | null>(null);
   const { submit, loading, error, setError } = useCreateEvent();
 
+  const [createdEvent, setCreatedEvent] = useState<CreatedEventState | null>(
+    null,
+  );
+
   const registerAfterCreate = useCallback((fn: AfterCreateFn) => {
     afterCreateRef.current = fn;
     return () => {
@@ -64,7 +76,10 @@ export function DjCreateEventModalProvider({
   const handleOpenChange = useCallback(
     (next: boolean) => {
       setOpen(next);
-      if (!next) setError(null);
+      if (!next) {
+        setError(null);
+        setCreatedEvent(null);
+      }
     },
     [setError],
   );
@@ -79,12 +94,19 @@ export function DjCreateEventModalProvider({
     async (payload: CreateEventFormPayload) => {
       const code = await submit(payload);
       if (!code) return false;
+
       await afterCreateRef.current?.();
-      handleOpenChange(false);
+
+      setCreatedEvent({
+        code,
+        eventColor: payload.event_color ?? null,
+        qrDesign: payload.qr_design ?? "basic",
+      });
+
       toast.success(payload.name + " event created!");
       return true;
     },
-    [submit, handleOpenChange],
+    [submit],
   );
 
   const value = useMemo(
@@ -107,14 +129,22 @@ export function DjCreateEventModalProvider({
               Create a new event with name, date, mode, and optional branding.
             </DialogDescription>
           </DialogHeader>
-          <CreateEventForm
-            loading={loading}
-            error={error}
-            onSubmit={handleSubmit}
-            showCancel
-            onCancel={closeModal}
-            submitLabel="Create"
-          />
+          {createdEvent ? (
+            <CreatedEventInfo
+              createdCode={createdEvent.code}
+              eventColor={createdEvent.eventColor}
+              qrDesign={createdEvent.qrDesign}
+            />
+          ) : (
+            <CreateEventForm
+              loading={loading}
+              error={error}
+              onSubmit={handleSubmit}
+              showCancel
+              onCancel={closeModal}
+              submitLabel="Create"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </DjCreateEventModalContext.Provider>
