@@ -204,7 +204,8 @@ export async function GET(req: Request) {
         : null;
 
     let query = supabase.from("events")
-        .select("id, name, event_code, allow_requests, created_at, lifecycle_status, event_mode, event_date", { count: "exact" })
+        .select("id, name, event_code, allow_requests, created_at, lifecycle_status, event_mode, event_date, event_color, qr_design",
+            { count: "exact" })
         .eq("dj_id", user.id);
 
     if (lifecycle) {

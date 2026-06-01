@@ -9,6 +9,8 @@ export type DjEventListItem = {
   lifecycle_status: EventLifecycleStatus;
   event_mode: EventMode;
   event_date: string | null;
+  event_color: string | null;
+  qr_design: QrDesignPresetId;
 }
 
 export type DjEventsPageResponse = {

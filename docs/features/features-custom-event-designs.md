@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Interim delivery (2026-05-24):** Guest Scan PNG download only — [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts), flag-gated CTA on Scan. **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design` (default `basic`), `events.event_code_edits_remaining` in DB + [`database.ts`](../../src/frontend/types/database.ts). **Phase 2 (2026-05-24):** create-event form/API supports optional custom code, event color, and QR design behind the feature flag. **Phase 3 (2026-05-27):** DJ event-management edits (code edit cap, color, QR design) via [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx) and [`PATCH /api/dj/events/[eventId]`](../../src/frontend/app/api/dj/events/[eventId]/route.ts). **Phase 4 (2026-05-30):** guest event theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx) and [`resolve-guest-event-theme.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-guest-event-theme.ts). See sprint tracker.
+**Delivery timeline:** **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design`, `events.event_code_edits_remaining` in DB + types. **Phase 2–3:** create + event-management branding fields. **Phase 4 (2026-05-30):** guest theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx). **Phase 5 (2026-06-01):** [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts), PNG download on guest Scan and DJ surfaces. **Phase 6 in progress:** scan popup + vote filter. See sprint tracker.
 
 ### Corner scan popup
 
@@ -182,7 +182,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 5 - QR designs + PNG download
 
-**Status:** In progress (2026-05-30). Partial — guest Scan PNG download spike landed; Phases 1–4 complete; remaining: `EventQrCode`, guest/DJ QR rendering, DJ download.
+**Status:** Complete (2026-06-01). See [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md).
 
 **Goal:** Render the chosen QR design and let DJs / guests download a PNG.
 
@@ -198,13 +198,15 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 **Definition of Done**
 
-- [x] *(Interim)* Guest Scan PNG download at agreed resolution and filename pattern when feature flag is on ([`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx), [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts)).
-- [ ] All curated QR designs render correctly across DJ and guest surfaces.
-- [ ] PNG download on DJ event-management surface.
-- [ ] Download works for tinted and non-tinted designs; tint behavior matches Phase 0 spec.
-- [ ] No regression to current basic QR rendering when no design is selected (default preset behaves as today).
+- [x] Guest Scan PNG download at agreed resolution and filename pattern when feature flag is on ([`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx), [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts)).
+- [x] All curated QR designs render correctly across DJ and guest surfaces ([`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx), [`CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx)).
+- [x] PNG download on DJ event-management surface and post-create / View Event Info handoffs.
+- [x] Tinted designs reflect `event_color` with scannability fallback; flag off uses basic black-on-white QR.
+- [x] No regression when no design color is set (default preset behaves as today).
 
 ### Phase 6 - Scan popup + guest queue filter
+
+**Status:** In progress (2026-06-01).
 
 **Goal:** Guests can re-surface the QR via a corner popup and filter the Vote page queue.
 
@@ -247,13 +249,13 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 This feature is complete when all statements are true:
 
-- [ ] DJ can set a custom event code at creation, subject to the documented validation rules.
-- [ ] DJ can edit the custom event code up to 2 times after creation; further edits are blocked at API + UI.
-- [ ] DJ can set and freely change a custom event color from creation and event management.
-- [ ] DJ can pick and freely change a QR design from creation and event management.
-- [ ] Guest event pages reflect the chosen event color, with contrast fallback when needed; non-event surfaces are unaffected.
-- [ ] Guest Scan and DJ event-management surfaces render the chosen QR design.
-- [ ] Both DJ and guest surfaces expose a working Download QR (PNG) action.
+- [x] DJ can set a custom event code at creation, subject to the documented validation rules.
+- [x] DJ can edit the custom event code up to 2 times after creation; further edits are blocked at API + UI.
+- [x] DJ can set and freely change a custom event color from creation and event management.
+- [x] DJ can pick and freely change a QR design from creation and event management.
+- [x] Guest event pages reflect the chosen event color, with contrast fallback when needed; non-event surfaces are unaffected.
+- [x] Guest Scan and DJ event-management surfaces render the chosen QR design.
+- [x] Both DJ and guest surfaces expose a working Download QR (PNG) action.
 - [ ] Guest event pages expose a corner QR icon that opens Scan as a popup; closing returns to the underlying page intact.
 - [ ] Vote page (song_request mode) has an All / Active / Played filter; default behavior is unchanged.
 - [ ] All new UI is gated by the feature flag; flag off equals current behavior with no console errors.
@@ -280,15 +282,15 @@ This feature is complete when all statements are true:
 
 ### QR design
 
-- [ ] All curated designs render on Scan and DJ event-management surfaces.
-- [ ] Tinted designs reflect the event color; non-tinted designs render in the default palette as documented.
-- [ ] Switching designs from event management updates rendered output.
+- [x] All curated designs render on Scan and DJ event-management surfaces.
+- [x] Tinted designs reflect the event color; scannability fallback applies for light colors.
+- [x] Switching designs from event management updates rendered output.
 
 ### QR PNG download
 
-- [ ] DJ can download the QR PNG from event management.
-- [x] *(Interim)* Guest can download the QR PNG from Scan when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` is on.
-- [ ] Filename follows the Phase 0 pattern; resolution matches Phase 0 target.
+- [x] DJ can download the QR PNG from event management.
+- [x] Guest can download the QR PNG from Scan when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` is on.
+- [x] Filename follows the Phase 0 pattern; resolution matches Phase 0 target (transparent background).
 
 ### Scan popup
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { EventQrCode } from "@/components/custom-event-designs/EventQrCode";
 import { EventOver } from "@/components/EventOver";
 import { NotFound } from "@/components/NotFound";
 import { AppHeader } from "@/components/ui/AppHeader";
@@ -15,7 +16,6 @@ import { compareRankedRequests } from "@/lib/request-ranking";
 import { featureFlags } from "@/lib/shared/config/feature-flags";
 import { lifecycleStatus, requestStatus } from "@/lib/shared/constants/routes";
 import Link from "next/link";
-import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import { useRef } from "react";
 import toast from "react-hot-toast";
 
@@ -120,7 +120,13 @@ export default function ScanScreen() {
         </Link>
         <p className="text-muted-80 text-lg mb-2">Scan to request a song:</p>
         <div className="bg-white p-4 rounded-xl shadow mb-4">
-          <QRCodeSVG value={requestUrl} size={220} level="M" />
+          <EventQrCode
+            value={requestUrl}
+            size={220}
+            eventColor={event.event_color}
+            qrDesign={event.qr_design}
+            variant="display"
+          />
         </div>
         {featureFlags.customEventDesigns && (
           <Button
@@ -132,12 +138,12 @@ export default function ScanScreen() {
           </Button>
         )}
         <div ref={exportQrRef} className="sr-only" aria-hidden>
-          <QRCodeCanvas
+          <EventQrCode
             value={requestUrl}
             size={960}
-            level="M"
-            bgColor="transparent"
-            fgColor="#000000"
+            eventColor={event.event_color}
+            qrDesign={event.qr_design}
+            variant="export"
           />
         </div>
         <p className="text-muted-60 mb-2">Share this link with others:</p>

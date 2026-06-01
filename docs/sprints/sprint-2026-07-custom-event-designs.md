@@ -21,55 +21,25 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 5** (QR designs + PNG download) active. **Phases 1–4** complete; **Phase 5 interim spike** (guest Scan PNG download) landed 2026-05-24.
+**Sprint status:** In progress — **Phase 6** (scan popup + guest queue filter) active. **Phases 1–5** complete (through 2026-06-01).
 
 ### In Progress
 
-#### Phase 5 - QR designs + PNG download
+#### Phase 6 - Scan popup + guest queue filter
 
 **Status:** In progress.
 
-**Target duration:** 1.0-1.5 days
-
-**Interim spike (done):** Guest Scan PNG download + [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — see **Interim — Phase 5 spike** under Done above. Remaining Phase 5 work is below.
-
-**Prerequisites:** Phase 1 schema + types complete ([`20260524120000_custom_event_designs_phase1.sql`](../../supabase/migrations/20260524120000_custom_event_designs_phase1.sql), [`database.ts`](../../src/frontend/types/database.ts)). Guest/DJ **fetches** that include `event_color` and `qr_design` ship in Phase 5 (or Phase 2/3 where needed). Phase 4 guest theming is not required for QR tinting, but both read the same `event_color` field.
-
-**Implementation notes (locked for Phase 5 build):**
-
-- **Shared color resolver:** add [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) that maps `event_color` → `{ fgColor, bgColor }`.
-  - Validate hex via `EVENT_COLOR_POLICY.inputFormat` from [`color-policy.ts`](../../src/frontend/lib/shared/custom-event-designs/color-policy.ts).
-  - Default when unset / invalid: `fgColor` `#000000`, on-screen `bgColor` `#ffffff`.
-  - **Scannability gate:** if `event_color` contrast against `#ffffff` is below ~3:1, use `EVENT_COLOR_POLICY.fallbackAccent` (`#7c3aed`) for QR modules (stricter than UI surface rules in Phase 4 — QR needs readable modules, not just WCAG text).
-  - UI theming (Phase 4) and QR tinting share `event_color` but may resolve to different effective colors when contrast fails.
-- **Reusable QR component:** add [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) — single source for display + export props.
-  - Props: `value`, `size`, `eventColor?`, `qrDesign?` (from [`qr-presets.ts`](../../src/frontend/lib/shared/custom-event-designs/qr-presets.ts)), `variant: "display" | "export"`.
-  - `variant="display"` → `QRCodeSVG` with white background (matches existing white card on Scan).
-  - `variant="export"` → `QRCodeCanvas` with **transparent** background for PNG compositing (Phase 0 locked white for PNG; **Phase 5 amends to transparent** so DJs can place the asset on any flyer/slide background).
-  - Both variants call `resolveQrColors()` so on-screen and downloaded QR match module color.
-  - Preset `basic`: `qrcode.react` `fgColor` / `bgColor` only. Presets `rounded`, `frame`, `bold`: thin design wrapper around the same renderer (no library swap).
-- **Data in guest fetch:** extend [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) `.select(...)` and [`EventState`](../../src/frontend/hooks/guest/useEventByCode.ts) with `event_color` and `qr_design` so [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) can pass them into `EventQrCode`.
-- **PNG pipeline:** keep [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) as compositor only (1024×1024, 32px quiet zone, filename `suplio-qr-{eventCode}.png`). Do **not** hardcode colors in the download helper — colors come from the hidden export `EventQrCode` canvas (`fgColor` from resolver; no white `fillRect` unless an explicit solid export option is added later).
-- **Feature flag:** custom colors and download CTA only when `featureFlags.customEventDesigns` is on **and** the event has design fields; flag off or no color → current black-on-white basic QR.
-
-**Color / background summary**
-
-| Surface | Module color (`fgColor`) | Background (`bgColor`) |
-| --- | --- | --- |
-| Scan page (display) | Resolved `event_color` | `#ffffff` (white card) |
-| PNG export | Same as display | `transparent` |
-| Flag off / no color | `#000000` | `#ffffff` / `transparent` |
+**Target duration:** 0.5-1.0 day
 
 **Definition of Done**
 
-- [ ] [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) implements hex validation, scannability fallback, and defaults per implementation notes above.
-- [ ] [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) renders display (`QRCodeSVG`) and export (`QRCodeCanvas`) variants with matching resolved colors.
-- [ ] Guest fetch includes `event_color` and `qr_design`; [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) uses `EventQrCode` for both visible QR and hidden export canvas.
-- [ ] All curated QR designs render on Scan and DJ surfaces ([`CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx), [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx)).
-- [ ] **Download QR (PNG)** CTA works on the DJ event-management surface and the guest Scan page; downloaded file matches on-screen module color and uses transparent background.
-- [ ] PNG resolution and filename pattern match Phase 0 decisions (background amended to transparent per notes above).
-- [ ] Default behavior (no design selected / flag off) renders the existing basic black-on-white QR.
-- [ ] Light brand colors that fail the scannability gate fall back to `fallbackAccent` on QR modules only; UI theming unchanged.
+- [ ] Corner QR icon visible on guest event pages while `live`; opens Scan in a Radix dialog without navigation.
+- [ ] Popup is keyboard-operable (focus trap + Escape) and respects reduced motion.
+- [ ] Underlying page state (e.g. partially typed request) survives popup close.
+- [ ] Icon hidden on `ended` / `archived` (matches `EventOver`).
+- [ ] [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) gains an All / Active only / Played only filter; default **All** matches current behavior.
+- [ ] Filter is client-only (no API changes).
+- [ ] Karaoke pages unchanged.
 
 ---
 
@@ -124,20 +94,6 @@ Use this board to move phases through execution.
 
 ### Backlog
 
-#### Phase 6 - Scan popup + guest queue filter
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] Corner QR icon visible on guest event pages while `live`; opens Scan in a Radix dialog without navigation.
-- [ ] Popup is keyboard-operable (focus trap + Escape) and respects reduced motion.
-- [ ] Underlying page state (e.g. partially typed request) survives popup close.
-- [ ] Icon hidden on `ended` / `archived` (matches `EventOver`).
-- [ ] [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) gains an All / Active only / Played only filter; default **All** matches current behavior.
-- [ ] Filter is client-only (no API changes).
-- [ ] Karaoke pages unchanged.
-
 #### Phase 7 - QA, regression, and documentation
 
 **Target duration:** 0.5-1.0 day
@@ -159,6 +115,22 @@ Use this board to move phases through execution.
 ---
 
 ### Done
+
+#### Phase 5 - QR designs + PNG download
+
+**Completed:** 2026-06-01  
+**Notes:** [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) resolves module/background colors with hex validation, 3:1 scannability gate vs white, and `fallbackAccent` for light brand colors (UI theming unchanged). [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) is the single renderer for `display` (`QRCodeSVG`) and `export` (`QRCodeCanvas`, transparent background) with preset shells (`basic`, `rounded`, `frame`, `bold`). Wired on guest [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx), DJ [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx), post-create [`CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx) via [`DjCreateEventModalContext.tsx`](../../src/frontend/contexts/DjCreateEventModalContext.tsx), and **View Event Info** dialogs on [`RecentEventsList.tsx`](../../src/frontend/features/dj/dashboard/components/RecentEventsList.tsx) and [`DjEventManageScreen.tsx`](../../src/frontend/features/dj/events/detail/DjEventManageScreen.tsx). PNG compositor: [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) (1024×1024, 32px quiet zone, `suplio-qr-{eventCode}.png`). Guest fetch already includes `event_color` / `qr_design` via [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts). Validation from `src/frontend`: `npm run lint` (warnings only), `npm run build`, `npm run test:qa` (6 passed, 6 skipped).
+
+**Definition of Done**
+
+- [x] [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts) implements hex validation, scannability fallback, and defaults per implementation notes.
+- [x] [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx) renders display and export variants with matching resolved colors.
+- [x] Guest fetch includes `event_color` and `qr_design`; [`ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) uses `EventQrCode` for visible QR and hidden export canvas.
+- [x] Curated QR designs render on Scan and DJ surfaces ([`CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx), [`DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx)).
+- [x] **Download QR (PNG)** on DJ event-management and guest Scan; transparent background; module color matches display.
+- [x] PNG resolution and filename pattern match Phase 0 (background amended to transparent).
+- [x] Flag off / no color → basic black-on-white QR.
+- [x] Low-contrast `event_color` falls back to `fallbackAccent` on QR modules only.
 
 #### Phase 4 - Guest event theming
 
@@ -213,23 +185,18 @@ Use this board to move phases through execution.
 
 #### Interim — Phase 5 spike (guest Scan PNG download)
 
-**Completed:** 2026-05-24 (landed before Phase 1 schema; UI still uses default black modules until Phase 5 reads `event_color` / `qr_design` from fetches).
+**Completed:** 2026-05-24 (superseded by full Phase 5 on 2026-06-01).
 
-**Scope delivered**
+**Scope delivered (interim)**
 
-- [`src/frontend/lib/client/download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) — client compositor: 1024×1024 canvas, 32px quiet zone, filename `suplio-qr-{eventCode}.png`; optional `backgroundColor` for a future solid export (spike export canvas uses transparent `bgColor`).
-- [`src/frontend/features/guest/event/scan/ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx) — on-screen `QRCodeSVG` unchanged; hidden `QRCodeCanvas` (960px) for export; **Download QR (PNG)** behind `featureFlags.customEventDesigns`.
+- [`download-event-qr-png.ts`](../../src/frontend/lib/client/download-event-qr-png.ts) compositor and guest Scan download CTA (later refactored to `EventQrCode` + tinted modules in Phase 5).
 
 **Definition of Done (interim only)**
 
 - [x] Guest Scan exposes download when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS=true`.
 - [x] Downloaded PNG matches Phase 0 resolution and filename pattern.
 - [x] Flag off hides download CTA; existing Scan UX unchanged.
-- [ ] DJ event-management download (Phase 5).
-- [ ] Curated QR presets and `event_color` tint wired from DB (Phase 5 after Phase 2–3).
-- [ ] `EventQrCode` / `resolve-qr-colors` refactor (Phase 5 build notes in backlog).
-
-**Handoff to Phase 5 completion:** Replace inline SVG/canvas in `ScanScreen` with shared `EventQrCode`; extend guest/DJ fetches; add DJ surfaces.
+- [x] DJ download, presets, and `EventQrCode` / `resolve-qr-colors` — completed in Phase 5 (2026-06-01).
 
 #### Phase 0 - Discovery and decisions
 
@@ -297,8 +264,14 @@ Use this board to move phases through execution.
 
 - [x] Confirm `event_color` and `qr_design` are on `events` (Phase 1 migration + types).
 - [x] Include `event_color` and `qr_design` in event fetches via [`fetchEventByCode`](../../src/frontend/lib/client/api/events.ts) (Phase 3; guest theming complete in Phase 4).
-- [ ] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
-- [ ] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
+- [x] Implement `resolveQrColors()` and `EventQrCode` per Phase 5 implementation notes.
+- [x] Wire Scan + DJ surfaces; verify PNG export matches display module color with transparent background.
+
+### Phase 6 entry
+
+- [ ] Add corner QR icon on guest event chrome (request/vote) while `live`; Radix dialog with Scan content.
+- [ ] Ensure popup keyboard/focus behavior and `prefers-reduced-motion` compliance.
+- [ ] Add Vote page All / Active only / Played only client filter (default All).
 
 ---
 
@@ -308,9 +281,9 @@ Use this board to move phases through execution.
 - [x] DJ can edit custom code up to 2 times; further attempts blocked at API + UI.
 - [x] DJ can change color and QR design freely from event management.
 - [x] Guest event pages reflect the chosen color; non-event surfaces unaffected.
-- [ ] All curated QR designs render correctly across DJ and guest surfaces.
-- [ ] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
-- [ ] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.
+- [x] All curated QR designs render correctly across DJ and guest surfaces.
+- [x] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
+- [x] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.
 - [ ] Corner Scan popup opens / closes correctly with keyboard support and reduced-motion compliance.
 - [ ] Vote page filter shows **All / Active only / Played only**; default behavior unchanged; karaoke unchanged.
 - [ ] Feature flag off = no new UI; current flows behave as today.
