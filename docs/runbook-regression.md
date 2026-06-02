@@ -36,17 +36,17 @@ Related docs:
 
 ## Sprint 2026-08 Onboarding (and navigation/metadata)
 
-Onboarding tours require `NEXT_PUBLIC_ENABLE_ONBOARDING=true` when exercising flag-gated UI. **Return-to-event link** and **document titles** are always on (not gated by the onboarding flag). Human rows below remain the gate until implementation is complete and checked on Preview.
+Onboarding tours require `NEXT_PUBLIC_ENABLE_ONBOARDING=true` when exercising flag-gated UI. **Return-to-event link** and **document titles** are always on (not gated by the onboarding flag). **Phase 0 UX locked 2026-06-02** — see [`features/features-onboarding.md`](features/features-onboarding.md); expand human rows in Phase 5 when implementation lands. Human rows below remain the gate until checked on Preview.
 
 ### Onboarding (flag-gated)
 
-- [ ] With flag on: DJ first-run onboarding shows on agreed entry route; skip/done persist per Phase 1.
+- [ ] With flag on: DJ first-run onboarding shows on `/dj/dashboard`; Done on step 6 persists; dismiss without Done re-shows per Phase 0.
 - [ ] With flag on: guest first-run onboarding shows per first-visit rules; not on every in-event navigation.
 - [ ] With flag off: no onboarding UI; no console errors.
 
 ### Return to event (always on)
 
-- [ ] Visit live guest event → go to `/` via Suplio logo → **Return to event** (or equivalent) visible → returns to correct `eventCode`.
+- [ ] Visit live guest event (note subpath, e.g. Vote) → go to `/` via Suplio logo → **Return to {EventName}** visible → returns to last subpath (fallback Scan).
 - [ ] Same flow via **Are you a DJ?** → DJ login → return link still available → returns to event.
 - [ ] Incognito / no prior event → no return link on `/` or DJ login.
 - [ ] Mobile sheet menu shows return link when applicable.
