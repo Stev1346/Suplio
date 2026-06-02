@@ -2,7 +2,7 @@
 
 ## Overview
 
-Custom Event Designs gives DJs branded, recognizable events. DJs can pick a **custom event code** (vanity URL slug), choose a **custom event color** that themes the entire guest event experience, select a **QR code design** from a small curated set, and **download** the rendered QR as a PNG to drop into flyers, slides, or signage. The same sprint also adds two guest-facing extras explicitly attached to this idea: a **corner scan popup** so guests can re-surface the QR over the current page, and a **queue filter** that lets guests view played-only / active-only / all on the Vote page (`song_request` mode).
+Custom Event Designs gives DJs branded, recognizable events. DJs can pick a **custom event code** (vanity URL slug), choose a **custom event color** that themes the entire guest event experience, select a **QR code design** from a small curated set, and **download** the rendered QR as a PNG to drop into flyers, slides, or signage. The same sprint also adds two guest-facing extras explicitly attached to this idea: a **header Scan popup** so guests can re-surface the QR over the current page, and a **queue filter** that lets guests view played-only / active-only / all on the Vote page (`song_request` mode).
 
 **Subscription gating is deferred to [IDEA-009](../backlog-ideas.md).** This sprint is built and shipped without tier checks today: a single tier-gate helper is introduced in Phase 0 that returns `true` for all DJs and is referenced everywhere this feature would otherwise be tier-gated. When [IDEA-009](../backlog-ideas.md) lands, only that helper changes — call sites do not.
 
@@ -42,19 +42,20 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Delivery timeline:** **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design`, `events.event_code_edits_remaining` in DB + types. **Phase 2–3:** create + event-management branding fields. **Phase 4 (2026-05-30):** guest theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx). **Phase 5 (2026-06-01):** [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts), PNG download on guest Scan and DJ surfaces. **Phase 6 in progress:** scan popup + vote filter. See sprint tracker.
+**Delivery timeline:** **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design`, `events.event_code_edits_remaining` in DB + types. **Phase 2–3:** create + event-management branding fields. **Phase 4 (2026-05-30):** guest theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx). **Phase 5 (2026-06-01):** [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts), PNG download on guest Scan and DJ surfaces. **Phase 6 (2026-06-02):** header Scan popup + vote queue filter + played-row UX on [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx). **Phase 7 in progress:** QA, regression runbook, docs. See sprint tracker.
 
-### Corner scan popup
+### Header Scan popup
 
-- Guest event pages display a small QR icon in a corner of the event chrome. Clicking it opens the **Scan view as a Radix dialog popup** layered over the current page (request, vote, or karaoke list) without navigating away.
+- Guest event pages (request, vote, karaoke list) show a QR icon in the **AppHeader action row** (alongside the DJ profile button and a context nav toggle). Clicking it opens the **Scan view as a Radix dialog popup** layered over the current page without navigating away.
 - Closing the popup returns the guest to the page they were on, with no state loss in the underlying view.
-- Hidden when the event lifecycle is `ended` / `archived` (matches the existing `EventOver` behavior).
+- Hidden when the event lifecycle is `ended` / `archived` (matches the existing `EventOver` behavior) or when `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS` is off.
 
 ### Guest queue filter (song_request mode)
 
-- The guest **Vote page** gains a filter control with three options: **All** (default — current behavior), **Active only** (hide played), **Played only** (show played history).
+- The guest **Vote page** gains a filter control with three options: **All**, **Active** (hide played; **default**), and **Played** (show played history).
 - Filter is **session-scoped** UI state only; no persistence and no API change.
-- **Karaoke mode is unchanged.** The karaoke Request List already segments `Performing Now` / `Up Next` / queue and is out of scope for this filter.
+- Played rows show a subtle **Played** badge and have voting disabled in [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx).
+- **Karaoke mode** does not use the vote filter; karaoke guest pages share the same header chrome (DJ + QR popup + nav toggle).
 
 ### Cross-cutting
 
@@ -206,26 +207,28 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 6 - Scan popup + guest queue filter
 
-**Status:** In progress (2026-06-01).
+**Status:** Complete (2026-06-02). See [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md).
 
-**Goal:** Guests can re-surface the QR via a corner popup and filter the Vote page queue.
+**Goal:** Guests can re-surface the QR via a header popup and filter the Vote page queue.
 
 **Scope**
 
-- Add a small QR icon in the guest event chrome (visible on request and vote pages while the event is `live`); click opens a **Radix dialog** rendering the Scan view content (no navigation).
-- Hide the icon for `ended` / `archived` (matches `EventOver`).
-- Add a filter control on [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) with **All / Active only / Played only**; default **All** preserves current behavior.
-- Karaoke flows are not modified.
+- Add a QR icon in the guest **AppHeader** action row (visible on request, vote, and karaoke-list pages while the event is `live`); click opens a **Radix dialog** rendering the Scan view content (no navigation).
+- Hide the control for `ended` / `archived` (matches `EventOver`).
+- Add a filter control on [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) with **All / Active / Played**; default **Active**.
+- Show played indication and disable vote buttons on played rows in [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx).
 
 **Definition of Done**
 
-- [ ] Corner QR icon opens Scan in a popup on guest event pages without navigating away.
-- [ ] Popup is keyboard-operable (focus trap, Escape closes) and respects reduced motion.
-- [ ] Vote page filter renders all three options and updates the visible list correctly.
-- [ ] Filter does not modify any API call; only client filtering.
-- [ ] Karaoke pages are unchanged.
+- [x] QR control opens Scan in a popup on guest event pages without navigating away.
+- [x] Popup is keyboard-operable (focus trap, Escape closes) and respects reduced motion on dialog content.
+- [x] Vote page filter renders all three options and updates the visible list correctly.
+- [x] Filter does not modify any API call; only client filtering.
+- [x] Karaoke guest pages share the same header chrome including QR popup.
 
 ### Phase 7 - QA, regression, and documentation
+
+**Status:** In progress (2026-06-02).
 
 **Goal:** Production-ready behavior with documentation and rollback in place.
 
@@ -256,10 +259,10 @@ This feature is complete when all statements are true:
 - [x] Guest event pages reflect the chosen event color, with contrast fallback when needed; non-event surfaces are unaffected.
 - [x] Guest Scan and DJ event-management surfaces render the chosen QR design.
 - [x] Both DJ and guest surfaces expose a working Download QR (PNG) action.
-- [ ] Guest event pages expose a corner QR icon that opens Scan as a popup; closing returns to the underlying page intact.
-- [ ] Vote page (song_request mode) has an All / Active / Played filter; default behavior is unchanged.
+- [x] Guest event pages expose a header QR control that opens Scan as a popup; closing returns to the underlying page intact.
+- [x] Vote page (song_request mode) has an All / Active / Played filter; default is Active.
 - [ ] All new UI is gated by the feature flag; flag off equals current behavior with no console errors.
-- [ ] Tier-gate helper is in place and inert today; flipping it (planned for [IDEA-009](../backlog-ideas.md)) is a single-file change.
+- [x] Tier-gate helper is in place and inert today; flipping it (planned for [IDEA-009](../backlog-ideas.md)) is a single-file change.
 - [ ] No regressions in existing DJ, guest, karaoke, lifecycle, or auth flows.
 - [ ] Documentation set is consistent (feature plan, sprint tracker, regression runbook, deploy runbook, project description).
 
@@ -294,18 +297,19 @@ This feature is complete when all statements are true:
 
 ### Scan popup
 
-- [ ] Corner QR icon visible on guest event pages while `live`.
-- [ ] Clicking opens a popup with Scan view content.
-- [ ] Escape and overlay click close the popup.
-- [ ] Underlying page state survives popup close (e.g. partially typed request).
-- [ ] Hidden on `ended` / `archived`.
+- [x] QR control visible on guest event pages while `live` (AppHeader action row).
+- [x] Clicking opens a popup with Scan view content.
+- [x] Escape and overlay click close the popup.
+- [x] Underlying page state survives popup close (e.g. partially typed request).
+- [x] Hidden on `ended` / `archived`.
 
 ### Queue filter (song_request mode)
 
-- [ ] Vote page renders **All / Active only / Played only**.
-- [ ] Default selection equals current Vote behavior.
-- [ ] Filter changes only the visible list; no API changes.
-- [ ] Karaoke pages unchanged.
+- [x] Vote page renders **All / Active / Played**.
+- [x] Default selection is **Active** (product choice).
+- [x] Filter changes only the visible list; no API changes.
+- [x] Played rows show badge and disabled vote in RequestCard.
+- [x] Karaoke guest pages share header QR chrome; vote filter not shown on karaoke list.
 
 ### Cross-cutting
 
@@ -333,7 +337,10 @@ This feature is complete when all statements are true:
 - [`src/frontend/features/dj/events/components/DjEventControlsCard.tsx`](../../src/frontend/features/dj/events/components/DjEventControlsCard.tsx)
 - [`src/frontend/features/dj/events/components/CreatedEventInfo.tsx`](../../src/frontend/features/dj/events/components/CreatedEventInfo.tsx)
 - [`src/frontend/features/guest/event/scan/ScanScreen.tsx`](../../src/frontend/features/guest/event/scan/ScanScreen.tsx)
+- [`src/frontend/features/guest/event/scan/ScanQrPopup.tsx`](../../src/frontend/features/guest/event/scan/ScanQrPopup.tsx)
+- [`src/frontend/components/ui/AppHeader.tsx`](../../src/frontend/components/ui/AppHeader.tsx)
 - [`src/frontend/features/guest/event/vote/VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx)
+- [`src/frontend/components/RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx)
 - [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/) layouts for theming.
 - [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) — new flag.
 - New: `src/frontend/lib/shared/auth/dj-tier.ts` — tier-gate stub for [IDEA-009](../backlog-ideas.md).

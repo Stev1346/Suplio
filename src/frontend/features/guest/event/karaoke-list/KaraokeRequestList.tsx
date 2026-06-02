@@ -16,7 +16,6 @@ import {
   routes,
 } from "@/lib/shared/constants/routes";
 import { Database } from "@/types/database";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -127,7 +126,7 @@ export default function KaraokeRequestListScreen() {
 
   return (
     <PageShell centralize className="flex-col">
-      <AppHeader tagLine="Karaoke Request List" title={event.name} />
+      <AppHeader tagLine="Karaoke Request List" title={event.name} event={event} eventCode={eventCode} />
       {(eventError || requestError) && (
         <p className="mb-2 text-sm text-red-400">
           {requestError ?? eventError}
@@ -138,21 +137,6 @@ export default function KaraokeRequestListScreen() {
         <KaraokeSection title="Performing now" requests={performingNow} className="bg-accent-95 max-w-xl" />
         <KaraokeSection title="Up Next" requests={upNext} className="bg-muted-60/20 max-w-lg" />
         <KaraokeSection title="Remaining Queue" requests={remainingQueue} className="bg-muted-20/10 max-w-md" />
-
-        <div className="mt-2 flex flex-row gap-6">
-          <Link
-            href={routes.guest.eventLanding(eventCode)}
-            className="mr-auto text-lg text-secondary-60 hover:text-secondary-40"
-          >
-            Share Event URL
-          </Link>
-          <Link
-            href={routes.guest.request(eventCode)}
-            className="ml-auto text-lg text-accent-80 hover:text-accent-60"
-          >
-            Submit another request
-          </Link>
-        </div>
       </div>
     </PageShell>
   );
