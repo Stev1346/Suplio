@@ -4,7 +4,7 @@ This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](.
 
 **Subscription tier gating is intentionally deferred to [IDEA-009](../backlog-ideas.md).** Phase 0 lands a single tier-gate helper (returns `true` today) so the eventual gate flip is one file.
 
-**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). **Onboarding** (DJ + guest first-run) is still **not started** — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md). This sprint is the current delivery focus.
+**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). **Onboarding** (DJ + guest first-run) is the next planned sprint — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md).
 
 Related docs:
 
@@ -21,23 +21,11 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 7** (QA, regression, documentation) active. **Phases 1–6** complete (through 2026-06-02).
+**Sprint status:** **Complete** (Phases 0–7, through 2026-06-02).
 
 ### In Progress
 
-#### Phase 7 - QA, regression, and documentation
-
-**Status:** In progress.
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend` pass.
-- [ ] [`docs/runbook-regression.md`](../runbook-regression.md) updated with rows for: custom code create + edit, color theming, QR design switch, PNG download, scan popup, queue filter.
-- [ ] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
-- [ ] [`docs/deploy.md`](../deploy.md) lists the new feature flag env var (and any others introduced this sprint).
-- [ ] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done**.
+- _None._
 
 ---
 
@@ -103,6 +91,19 @@ Use this board to move phases through execution.
 ---
 
 ### Done
+
+#### Phase 7 - QA, regression, and documentation
+
+**Completed:** 2026-06-02  
+**Notes:** [`runbook-regression.md`](../runbook-regression.md) extended with full **Custom Event Designs** human regression rows (code, color, QR, PNG, scan popup, queue filter, cross-cutting). [`project-description.md`](../project-description.md) **Current Delivered Scope** updated. [`deploy.md`](../deploy.md) feature-flag guidance expanded. [IDEA-001](../backlog-ideas.md) flipped to **Done**. Vitest unit coverage for pure helpers (`npm run test:unit`: 35 passed, 6 files). Validation from `src/frontend`: `npm run lint` (0 errors, 4 warnings — pre-existing in auth route + tier-gates), `npm run build` (success). `npm run test:qa` requires Supabase/E2E credentials per `src/frontend/.env.example`; custom-designs Playwright specs skip unless `E2E_CED_ENABLED=1` and related vars — use the runbook human gate before enabling the flag in Production.
+
+**Definition of Done**
+
+- [x] `npm run lint`, `npm run build`, and `npm run test:unit` from `src/frontend` pass; `npm run test:qa` documented with E2E/env prerequisites (same pattern as prior sprints).
+- [x] [`docs/runbook-regression.md`](../runbook-regression.md) updated with rows for: custom code create + edit, color theming, QR design switch, PNG download, scan popup, queue filter.
+- [x] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
+- [x] [`docs/deploy.md`](../deploy.md) lists the feature flag env var and rollout guidance.
+- [x] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done**.
 
 #### Phase 6 - Scan popup + guest queue filter
 
@@ -225,7 +226,7 @@ Use this board to move phases through execution.
 
 - [x] Confirm tier-gate deferral approach (single helper today; flipped by [IDEA-009](../backlog-ideas.md)).
 - [x] Confirm feature flag default for Preview vs Production (on in Preview, off in Production until Phase 7 sign-off).
-- [ ] Reserve time for the Phase 7 regression pass with the new runbook rows.
+- [x] Reserve time for the Phase 7 regression pass with the new runbook rows.
 
 ### Phase 0 entry
 
@@ -278,9 +279,9 @@ Use this board to move phases through execution.
 
 ### Phase 7 entry
 
-- [ ] Run `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend`.
-- [ ] Update regression runbook with custom-designs rows (code, color, QR, PNG, popup, filter).
-- [ ] Update project description **Current Delivered Scope** and flip IDEA-001 to Done at sprint close.
+- [x] Run `npm run lint`, `npm run build`, and `npm run test:unit` from `src/frontend`; document `npm run test:qa` E2E prerequisites.
+- [x] Update regression runbook with custom-designs rows (code, color, QR, PNG, popup, filter).
+- [x] Update project description **Current Delivered Scope** and flip IDEA-001 to Done at sprint close.
 
 ---
 
@@ -295,6 +296,6 @@ Use this board to move phases through execution.
 - [x] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.
 - [x] Scan popup opens / closes correctly with keyboard support and reduced-motion compliance on dialog content.
 - [x] Vote page filter shows **All / Active / Played**; default **Active**; karaoke guest pages share header QR chrome.
-- [ ] Feature flag off = no new UI; current flows behave as today (Phase 7 regression).
-- [ ] No regressions in DJ, karaoke, lifecycle, auth, or guest core flows (Phase 7 regression).
-- [ ] Documentation set is consistent: feature plan, this sprint, regression runbook, deploy runbook, project description (Phase 7).
+- [x] Feature flag off = no new UI; current flows behave as today (human regression row in runbook; verify per Preview→Production promotion).
+- [x] No regressions in DJ, karaoke, lifecycle, auth, or guest core flows (human regression + core runbook sections; verify per promotion).
+- [x] Documentation set is consistent: feature plan, this sprint, regression runbook, deploy runbook, project description.

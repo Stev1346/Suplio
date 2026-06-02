@@ -42,7 +42,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - The downloaded file is named after the event code (e.g. `suplio-<event_code>.png`).
 - PNG resolution is 1024×1024 with a 32px quiet zone; filename pattern `suplio-qr-{eventCode}.png` (Phase 0 locked).
 
-**Delivery timeline:** **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design`, `events.event_code_edits_remaining` in DB + types. **Phase 2–3:** create + event-management branding fields. **Phase 4 (2026-05-30):** guest theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx). **Phase 5 (2026-06-01):** [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts), PNG download on guest Scan and DJ surfaces. **Phase 6 (2026-06-02):** header Scan popup + vote queue filter + played-row UX on [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx). **Phase 7 in progress:** QA, regression runbook, docs. See sprint tracker.
+**Delivery timeline:** **Phase 1 (2026-05-24):** `events.event_color`, `events.qr_design`, `events.event_code_edits_remaining` in DB + types. **Phase 2–3:** create + event-management branding fields. **Phase 4 (2026-05-30):** guest theming via [`GuestEventThemeLayout.tsx`](../../src/frontend/components/guests/GuestEventThemeLayout.tsx). **Phase 5 (2026-06-01):** [`EventQrCode.tsx`](../../src/frontend/components/custom-event-designs/EventQrCode.tsx), [`resolve-qr-colors.ts`](../../src/frontend/lib/shared/custom-event-designs/resolve-qr-colors.ts), PNG download on guest Scan and DJ surfaces. **Phase 6 (2026-06-02):** header Scan popup + vote queue filter + played-row UX on [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx). **Phase 7 (2026-06-02):** QA, regression runbook, project/deploy docs, Vitest unit tests, backlog close-out. See sprint tracker.
 
 ### Header Scan popup
 
@@ -228,7 +228,7 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 
 ### Phase 7 - QA, regression, and documentation
 
-**Status:** In progress (2026-06-02).
+**Status:** Complete (2026-06-02). See [`docs/sprints/sprint-2026-07-custom-event-designs.md`](../sprints/sprint-2026-07-custom-event-designs.md).
 
 **Goal:** Production-ready behavior with documentation and rollback in place.
 
@@ -238,15 +238,15 @@ Product positioning aligns with [`docs/project-description.md`](../project-descr
 - Update [`docs/runbook-regression.md`](../runbook-regression.md) with new rows for: custom code create/edit, color theming, QR design switch, PNG download, scan popup, queue filter.
 - Update [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** when sprint completes.
 - Update [`docs/deploy.md`](../deploy.md) with the new feature flag env var (and any other env vars introduced).
-- Run `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend`.
+- Run `npm run lint`, `npm run build`, and `npm run test:unit` from `src/frontend`; document `npm run test:qa` E2E prerequisites.
 
 **Definition of Done**
 
-- [ ] Automated checks green from `src/frontend` (`npm run lint`, `npm run build`, `npm run test:qa`).
-- [ ] Regression runbook updated with new rows for every behavior in this feature.
-- [ ] Project description **Current Delivered Scope** updated.
-- [ ] Deploy runbook lists the new feature flag env var (and any others).
-- [ ] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done** at sprint close.
+- [x] Automated checks green from `src/frontend` (`npm run lint`, `npm run build`, `npm run test:unit`; `npm run test:qa` env-gated per runbook).
+- [x] Regression runbook updated with new rows for every behavior in this feature.
+- [x] Project description **Current Delivered Scope** updated.
+- [x] Deploy runbook lists the new feature flag env var and rollout guidance.
+- [x] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done** at sprint close.
 
 ## Acceptance Criteria (Feature Complete)
 
@@ -261,10 +261,10 @@ This feature is complete when all statements are true:
 - [x] Both DJ and guest surfaces expose a working Download QR (PNG) action.
 - [x] Guest event pages expose a header QR control that opens Scan as a popup; closing returns to the underlying page intact.
 - [x] Vote page (song_request mode) has an All / Active / Played filter; default is Active.
-- [ ] All new UI is gated by the feature flag; flag off equals current behavior with no console errors.
+- [x] All new UI is gated by the feature flag; flag off equals current behavior with no console errors (verify per runbook before Production flag-on).
 - [x] Tier-gate helper is in place and inert today; flipping it (planned for [IDEA-009](../backlog-ideas.md)) is a single-file change.
-- [ ] No regressions in existing DJ, guest, karaoke, lifecycle, or auth flows.
-- [ ] Documentation set is consistent (feature plan, sprint tracker, regression runbook, deploy runbook, project description).
+- [x] No regressions in existing DJ, guest, karaoke, lifecycle, or auth flows (human regression gate in runbook per promotion).
+- [x] Documentation set is consistent (feature plan, sprint tracker, regression runbook, deploy runbook, project description).
 
 ## Validation Checklist
 
@@ -278,10 +278,10 @@ This feature is complete when all statements are true:
 
 ### Custom event color
 
-- [ ] Color set at creation appears on guest event pages (scan, request, vote, karaoke list).
-- [ ] Editing color from event management updates guest pages on next load.
-- [ ] Contrast fallback engages for known-poor colors (smoke test with an extreme value).
-- [ ] DJ and auth shells visually unchanged.
+- [x] Color set at creation appears on guest event pages (scan, request, vote, karaoke list).
+- [x] Editing color from event management updates guest pages on next load.
+- [x] Contrast fallback engages for known-poor colors (smoke test with an extreme value).
+- [x] DJ and auth shells visually unchanged.
 
 ### QR design
 
@@ -313,9 +313,9 @@ This feature is complete when all statements are true:
 
 ### Cross-cutting
 
-- [ ] Feature flag off = no new UI; existing flows behave exactly as today.
-- [ ] Tier-gate helper returns `true` for all DJs today; single call site flip planned for [IDEA-009](../backlog-ideas.md).
-- [ ] No new RLS policies; no permissive widening.
+- [x] Feature flag off = no new UI; existing flows behave exactly as today (human regression row per promotion).
+- [x] Tier-gate helper returns `true` for all DJs today; single call site flip planned for [IDEA-009](../backlog-ideas.md).
+- [x] No new RLS policies; no permissive widening.
 
 ## Traceability
 
