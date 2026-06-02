@@ -18,30 +18,37 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** **Active** (Phase 0 — UX discovery and success metrics, started 2026-06-02).
+**Sprint status:** **Active** (Phase 1 — technical approach and state model, started 2026-06-02).
 
-### In Progress
+### Phase 0 Decisions (locked)
 
-#### Phase 0 - UX discovery and success metrics
-**Target duration:** 0.5-1.0 day
-**Started:** 2026-06-02
-
-**Definition of Done**
-- [ ] DJ onboarding storyboard documented (screens + step order + copy intent).
-- [ ] Guest onboarding storyboard documented with lifecycle and mode branches.
-- [ ] Exit criteria documented per persona.
-- [ ] Analytics event names listed (`onboarding_started`, `step_viewed`, `completed`, `skipped` with `persona=dj|guest`); implementation optional.
-- [ ] Accessibility expectations documented (keyboard, focus, reduced motion).
-- [ ] Copy and step order reviewed (sign-off note in feature doc or sprint notes).
-- [ ] Return-to-event link storyboard and visibility rules documented.
-- [ ] Document title template matrix reviewed and signed off.
+- **UI pattern:** Hybrid — modal for narrative steps; spotlight for at most two in-context steps per persona (stable selectors).
+- **Rationale:** Keeps lifecycle/mode copy in modals; spotlights anchor “Create event” (DJ) and optional guest nav without fragile multi-page tours.
+- **DJ entry:** `/dj/dashboard` only, after auth + verification gates (ordering in Phase 1).
+- **DJ exit:** **Done** on step 6 only; no Skip on steps 1–5; dismiss without Done does not persist → re-show on next eligible dashboard visit.
+- **DJ steps:** 6 (see full storyboard in [`features-onboarding.md`](../features/features-onboarding.md#dj-onboarding-storyboard)).
+- **Guest trigger:** First visit to any `/event/[eventCode]/*` while flag on and global guest key unset.
+- **Guest scope:** Global per browser per `onboarding_version` (not per `eventCode`).
+- **Guest skip:** Skippable on every step (contrast with DJ must-complete).
+- **Guest `ended` / `archived`:** Suppress onboarding (`EventOver` only).
+- **Return-to-event (always on):**
+  - Label: `Return to {EventName}` (`events.name` else `event_code`)
+  - Show on: `/`, `/dj`, `/dj/login`, `/dj/signup` when valid stored code
+  - Hide on: guest event routes; missing/invalid storage
+  - Href: last subpath (`scan` \| `request` \| `vote` \| `karaoke-list`); fallback Scan
+  - Phase 1 keys: `suplio:last_guest_event_code`, `suplio:last_guest_event_name`, `suplio:last_guest_event_subpath`
+- **Document title matrix:** Signed off 2026-06-02 — unchanged patterns in feature plan.
+- **Analytics (names only):** `onboarding_started`, `onboarding_step_viewed`, `onboarding_completed`, `onboarding_skipped` — vendor deferred to Phase 5.
+- **Accessibility:** Modal focus trap + Escape (DJ dismiss without complete); spotlight `aria-describedby`; `prefers-reduced-motion` instant transitions; DJ overlay non-blocking for emergency nav.
+- **Phase 0 sign-off:** 2026-06-02 — self-review; choices per sprint AskQuestion.
 
 ---
 
-### Backlog
+### In Progress
 
 #### Phase 1 - Technical approach and state model
 **Target duration:** 0.5-1.0 day
+**Started:** 2026-06-02
 
 **Definition of Done**
 - [ ] Decision recorded: DJ persistence (`dj_profiles` vs auth metadata), guest persistence (`localStorage`/cookie keys), versioning, QA reset policy.
@@ -49,7 +56,11 @@ Use this board to move phases through execution.
 - [ ] Privacy note for guest storage scope.
 - [ ] Feature flag name and env var documented (extend centralized feature flags).
 - [ ] Documented ordering vs email verification and private `/dj/*` routes (no security bypass).
-- [ ] Last-guest-event storage keys documented (`last_guest_event_code`, optional name).
+- [ ] Last-guest-event storage keys documented (`last_guest_event_code`, optional name, `last_guest_event_subpath`).
+
+---
+
+### Backlog
 
 #### Phase 2 - Shared onboarding primitives (frontend)
 **Target duration:** 1.0-1.5 days
@@ -65,9 +76,9 @@ Use this board to move phases through execution.
 
 **Definition of Done**
 - [ ] DJ onboarding shows per eligibility + `onboarding_version` when feature flag is on.
-- [ ] Skip and Done persist state per Phase 1 decision.
+- [ ] Done on step 6 persists completion; dismiss-without-Done re-shows; guest Skip/Done per Phase 1 model.
 - [ ] Mid-flow navigation does not break app or strand UI.
-- [ ] Playwright/E2E coverage for complete and skip paths (env-gated if required).
+- [ ] Playwright/E2E coverage for complete and dismiss/re-show paths (env-gated if required).
 - [ ] Manual smoke: flag off = no DJ onboarding; auth and verification gates unchanged.
 
 #### Phase 4 - Guest onboarding implementation
@@ -102,7 +113,21 @@ Use this board to move phases through execution.
 
 ### Done
 
-- _None._
+#### Phase 0 - UX discovery and success metrics
+
+**Completed:** 2026-06-02  
+**Notes:** Locked decisions in **Phase 0 Decisions (locked)** above. Authoritative storyboards, exit criteria, analytics names, accessibility baseline, return-to-event rules, and document title sign-off in [`features-onboarding.md`](../features/features-onboarding.md) (sections from **Phase 0 Decisions (locked)** through **Document title matrix (signed off)**). DJ: 6-step hybrid tour, dashboard-only entry, must-complete with re-show on dismiss. Guest: global browser scope, skippable, suppress on `ended`/`archived`. Return link: `Return to {EventName}` → last subpath. No app code in this phase.
+
+**Definition of Done**
+
+- [x] DJ onboarding storyboard documented (screens + step order + copy intent).
+- [x] Guest onboarding storyboard documented with lifecycle and mode branches.
+- [x] Exit criteria documented per persona.
+- [x] Analytics event names listed (`onboarding_started`, `onboarding_step_viewed`, `onboarding_completed`, `onboarding_skipped` with `persona=dj|guest`); implementation optional.
+- [x] Accessibility expectations documented (keyboard, focus, reduced motion).
+- [x] Copy and step order reviewed (sign-off note in feature doc and sprint Phase 0 Decisions).
+- [x] Return-to-event link storyboard and visibility rules documented.
+- [x] Document title template matrix reviewed and signed off.
 
 ---
 
@@ -114,31 +139,39 @@ Use this board to move phases through execution.
 - [ ] Reserve time for regression pass using updated runbook rows at end of Phase 5.
 
 ### Phase 0 entry
-- [ ] Draft DJ onboarding storyboard (screens, step order, copy intent).
-- [ ] Draft guest onboarding storyboard with lifecycle (`draft`/`live`/`ended`/`archived`) and mode (`song_request`/`karaoke`) branches.
-- [ ] Document exit criteria per persona (DJ vs guest).
-- [ ] List analytics event names (`onboarding_started`, `step_viewed`, `completed`, `skipped` with `persona=dj|guest`).
-- [ ] Document accessibility expectations (keyboard, focus, reduced motion).
-- [ ] Review copy and step order; add sign-off note in feature doc or sprint notes.
-- [ ] Draft return-to-event link UX (label, visibility, default destination).
-- [ ] Draft document title template matrix for guest, DJ, and marketing routes.
+- [x] Draft DJ onboarding storyboard (screens, step order, copy intent).
+- [x] Draft guest onboarding storyboard with lifecycle (`draft`/`live`/`ended`/`archived`) and mode (`song_request`/`karaoke`) branches.
+- [x] Document exit criteria per persona (DJ vs guest).
+- [x] List analytics event names (`onboarding_started`, `onboarding_step_viewed`, `onboarding_completed`, `onboarding_skipped` with `persona=dj|guest`).
+- [x] Document accessibility expectations (keyboard, focus, reduced motion).
+- [x] Review copy and step order; add sign-off note in feature doc or sprint notes.
+- [x] Draft return-to-event link UX (label, visibility, last subpath destination).
+- [x] Draft document title template matrix for guest, DJ, and marketing routes.
+
+### Phase 1 entry
+- [ ] Choose DJ persistence (`dj_profiles` vs `user_metadata`) and document migration if DB.
+- [ ] Specify guest `localStorage` keys for onboarding completion/skipped (global scope).
+- [ ] Document `onboarding_version` constant and QA reset policy.
+- [ ] Add `NEXT_PUBLIC_ENABLE_ONBOARDING` to feature flags and `.env.example`.
+- [ ] Document ordering vs email verification and private DJ routes.
+- [ ] Confirm last-guest-event keys align with Phase 0 (`code`, `name`, `subpath`).
 
 ---
 
 ## Validation Checklist (Sprint Exit)
 
 - [ ] Feature flag toggles onboarding on/off with no console errors.
-- [ ] DJ: complete flow persists; skip persists; version bump can re-show tour.
+- [ ] DJ: Done on step 6 persists; dismiss without Done re-shows until completed.
 - [ ] DJ: unverified users still follow existing verification behavior; onboarding does not leak private data.
 - [ ] Guest: first visit shows onboarding; repeat visit in same browser does not (unless version bump).
 - [ ] Guest: `draft` event messaging matches Scan-only product behavior.
 - [ ] Guest: `live` + `song_request` explains Request and Vote appropriately.
 - [ ] Guest: `live` + `karaoke` explains Request List; no vote-first onboarding copy.
-- [ ] Guest: `ended` / `archived` behavior matches Phase 0 storyboard.
+- [ ] Guest: `ended` / `archived` behavior matches Phase 0 storyboard (suppressed).
 - [ ] Keyboard and reduced-motion behavior spot-checked on mobile and desktop.
 - [ ] Core regression rows in [`docs/runbook-regression.md`](../runbook-regression.md) still pass (guest + DJ sections).
 - [ ] Documentation set is consistent: feature plan, this sprint, project description scope.
-- [ ] Guest: visit event → home via Suplio logo → return link restores correct event (always on).
+- [ ] Guest: visit event → home via Suplio logo → return link restores correct event and last subpath (always on).
 - [ ] Guest: visit event → Are you a DJ? → DJ login → return link still available (always on).
 - [ ] No return link on `/` or DJ login when no prior guest event (incognito / cleared storage).
 - [ ] Guest Scan / Request / Vote (or Karaoke) tabs show distinct titles including event name.
