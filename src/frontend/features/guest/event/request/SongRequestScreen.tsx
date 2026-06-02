@@ -201,7 +201,7 @@ export default function SongRequestScreen() {
             Requests are paused for {event.name}.
           </h1>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 max-w-sm w-full mb-10">
+          <form onSubmit={handleSubmit} className="space-y-4 max-w-sm w-full mb-6">
             {isCoolingDown && (
               <p
                 role="status"
@@ -266,7 +266,7 @@ export default function SongRequestScreen() {
           <TopRequestList
             requests={topRequests}
             title="Top requested tonight"
-            className="mb-4 max-h-90 overflow-scroll no-scrollbar"
+            className="mb-4 max-h-80 overflow-scroll no-scrollbar"
           />
         )}
       </div>
