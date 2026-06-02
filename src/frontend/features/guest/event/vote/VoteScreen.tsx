@@ -126,7 +126,7 @@ export default function VoteScreen() {
           {requestError ?? eventError}
         </p>
       )}
-      <section className="flex-1 flex-col items-center justify-center">
+      <section className="flex-1 flex-col items-center justify-center w-full max-w-sm">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold mb-3 text-muted-60">
             Song Request Queue
@@ -161,7 +161,7 @@ export default function VoteScreen() {
             </div>
           )}
         </div>
-        <ul className="space-y-1 lg:max-h-178 max-h-167 mb-2 overflow-scroll no-scrollbar">
+        <ul className="space-y-1 lg:max-h-128 max-h-150 overflow-scroll no-scrollbar">
           {visibleRequests.length === 0 ? (
             <li className="text-muted-40 py-4">
               {requests.length === 0

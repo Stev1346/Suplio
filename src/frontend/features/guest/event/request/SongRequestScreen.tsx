@@ -195,13 +195,13 @@ export default function SongRequestScreen() {
           {requestError ?? eventError}
         </p>
       )}
-      <div className="flex-1 flex-col items-center">
+      <div className="flex-1 flex-col items-center max-w-sm w-full">
         {!isRequestEnabled ? (
           <h1 className="text-accent-60 text-3xl text-center mb-4">
             Requests are paused for {event.name}.
           </h1>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 mb-10">
+          <form onSubmit={handleSubmit} className="space-y-4 max-w-sm w-full mb-10">
             {isCoolingDown && (
               <p
                 role="status"

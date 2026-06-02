@@ -41,7 +41,7 @@ export function RequestCard({
       <div className="flex items-center gap-3 shrink-0">
         {
           isPlayed && (
-            <span className="rounded-full bg-muted-10 px-2 py-0.5 text-xs font-medium text-muted-40">
+            <span className="rounded-full bg-muted-10 px-2 py-0.5 text-xs font-medium ml-auto text-muted-40">
               Played
             </span>
           )
