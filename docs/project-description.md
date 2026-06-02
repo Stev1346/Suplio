@@ -50,7 +50,7 @@ Core product goals:
 
 ### In progress — Custom Event Designs (Sprint 2026-07)
 
-Tracked in [`docs/sprints/sprint-2026-07-custom-event-designs.md`](sprints/sprint-2026-07-custom-event-designs.md). **Phases 1–5 complete** (through 2026-06-01): schema/types, create-event branding fields, DJ event-management edits, guest event theming from `event_color`, and QR presets/tint with shared `EventQrCode` plus PNG download on guest Scan and DJ surfaces (transparent export, scannability fallback). **Phase 6 in progress:** corner Scan popup and Vote page queue filter. **Phase 7** (QA, regression runbook, deploy/docs) remains.
+Tracked in [`docs/sprints/sprint-2026-07-custom-event-designs.md`](sprints/sprint-2026-07-custom-event-designs.md). **Phases 1–6 complete** (through 2026-06-02): schema/types, create-event branding fields, DJ event-management edits, guest event theming from `event_color`, QR presets/tint with shared `EventQrCode` plus PNG download, header Scan popup on guest pages, Vote queue filter (default Active), and played-row UX on RequestCard. **Phase 7 in progress:** QA, regression runbook, project-description scope, backlog close-out.
 
 ## Security and Data Model Direction
 

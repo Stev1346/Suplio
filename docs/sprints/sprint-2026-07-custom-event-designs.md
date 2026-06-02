@@ -1,6 +1,6 @@
 # Sprint Tracker: 2026-07 Custom Event Designs
 
-This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](../backlog-ideas.md)). Scope is custom event code (vanity slug, edit-twice cap), custom event color (guest theming), QR design picker, downloadable QR PNG, corner Scan popup, and a guest queue filter on the Vote page (`song_request` mode). Karaoke, auth, RLS, lifecycle, and existing request/vote behavior are unchanged unless a phase explicitly extends them.
+This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](../backlog-ideas.md)). Scope is custom event code (vanity slug, edit-twice cap), custom event color (guest theming), QR design picker, downloadable QR PNG, header Scan popup on guest event pages, and a guest queue filter on the Vote page (`song_request` mode). Karaoke, auth, RLS, lifecycle, and existing request/vote behavior are unchanged unless a phase explicitly extends them.
 
 **Subscription tier gating is intentionally deferred to [IDEA-009](../backlog-ideas.md).** Phase 0 lands a single tier-gate helper (returns `true` today) so the eventual gate flip is one file.
 
@@ -21,11 +21,11 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** In progress — **Phase 6** (scan popup + guest queue filter) active. **Phases 1–5** complete (through 2026-06-01).
+**Sprint status:** In progress — **Phase 7** (QA, regression, documentation) active. **Phases 1–6** complete (through 2026-06-02).
 
 ### In Progress
 
-#### Phase 6 - Scan popup + guest queue filter
+#### Phase 7 - QA, regression, and documentation
 
 **Status:** In progress.
 
@@ -33,13 +33,11 @@ Use this board to move phases through execution.
 
 **Definition of Done**
 
-- [ ] Corner QR icon visible on guest event pages while `live`; opens Scan in a Radix dialog without navigation.
-- [ ] Popup is keyboard-operable (focus trap + Escape) and respects reduced motion.
-- [ ] Underlying page state (e.g. partially typed request) survives popup close.
-- [ ] Icon hidden on `ended` / `archived` (matches `EventOver`).
-- [ ] [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) gains an All / Active only / Played only filter; default **All** matches current behavior.
-- [ ] Filter is client-only (no API changes).
-- [ ] Karaoke pages unchanged.
+- [ ] `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend` pass.
+- [ ] [`docs/runbook-regression.md`](../runbook-regression.md) updated with rows for: custom code create + edit, color theming, QR design switch, PNG download, scan popup, queue filter.
+- [ ] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
+- [ ] [`docs/deploy.md`](../deploy.md) lists the new feature flag env var (and any others introduced this sprint).
+- [ ] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done**.
 
 ---
 
@@ -94,17 +92,7 @@ Use this board to move phases through execution.
 
 ### Backlog
 
-#### Phase 7 - QA, regression, and documentation
-
-**Target duration:** 0.5-1.0 day
-
-**Definition of Done**
-
-- [ ] `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend` pass.
-- [ ] [`docs/runbook-regression.md`](../runbook-regression.md) updated with rows for: custom code create + edit, color theming, QR design switch, PNG download, scan popup, queue filter.
-- [ ] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
-- [ ] [`docs/deploy.md`](../deploy.md) lists the new feature flag env var (and any others introduced this sprint).
-- [ ] Backlog row for [IDEA-001](../backlog-ideas.md) flipped to **Done**.
+- _None._
 
 ---
 
@@ -115,6 +103,21 @@ Use this board to move phases through execution.
 ---
 
 ### Done
+
+#### Phase 6 - Scan popup + guest queue filter
+
+**Completed:** 2026-06-02  
+**Notes:** [`ScanQrPopup.tsx`](../../src/frontend/features/guest/event/scan/ScanQrPopup.tsx) opens Scan content in a Radix dialog (keyboard focus trap, Escape, overlay close; `motion-reduce:animate-none` on content). Trigger lives in [`AppHeader.tsx`](../../src/frontend/components/ui/AppHeader.tsx) beside the DJ profile icon button and a context nav toggle (Request / Vote / Queue); wired on guest request, vote, and karaoke-list pages via `event` + `eventCode` props while `live` and `featureFlags.customEventDesigns`. [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) adds client-only **All / Active / Played** filter (default **Active**). [`RequestCard.tsx`](../../src/frontend/components/RequestCard.tsx) shows a subtle **Played** badge and disables voting on played rows. Product choices vs original Phase 0 brief: header action row (not floating corner); filter defaults to Active; karaoke request/list pages share the same header chrome including QR popup. Validation from `src/frontend`: `npm run lint` (warnings only), `npm run build` pass.
+
+**Definition of Done**
+
+- [x] QR control visible on guest event pages while `live`; opens Scan in a Radix dialog without navigation.
+- [x] Popup is keyboard-operable (focus trap + Escape) and respects reduced motion on dialog content.
+- [x] Underlying page state (e.g. partially typed request) survives popup close.
+- [x] QR control hidden on `ended` / `archived` (matches `EventOver`).
+- [x] [`VoteScreen.tsx`](../../src/frontend/features/guest/event/vote/VoteScreen.tsx) gains All / Active / Played filter; default **Active** (product choice).
+- [x] Filter is client-only (no API changes).
+- [x] Karaoke guest pages use the same header chrome (DJ + QR popup + nav toggle).
 
 #### Phase 5 - QR designs + PNG download
 
@@ -269,9 +272,15 @@ Use this board to move phases through execution.
 
 ### Phase 6 entry
 
-- [ ] Add corner QR icon on guest event chrome (request/vote) while `live`; Radix dialog with Scan content.
-- [ ] Ensure popup keyboard/focus behavior and `prefers-reduced-motion` compliance.
-- [ ] Add Vote page All / Active only / Played only client filter (default All).
+- [x] Add QR control on guest event header chrome (request/vote/karaoke-list) while `live`; Radix dialog with Scan content.
+- [x] Ensure popup keyboard/focus behavior and `prefers-reduced-motion` compliance.
+- [x] Add Vote page All / Active / Played client filter (default Active).
+
+### Phase 7 entry
+
+- [ ] Run `npm run lint`, `npm run build`, and `npm run test:qa` from `src/frontend`.
+- [ ] Update regression runbook with custom-designs rows (code, color, QR, PNG, popup, filter).
+- [ ] Update project description **Current Delivered Scope** and flip IDEA-001 to Done at sprint close.
 
 ---
 
@@ -284,8 +293,8 @@ Use this board to move phases through execution.
 - [x] All curated QR designs render correctly across DJ and guest surfaces.
 - [x] QR module color reflects `event_color` when set; scannability fallback applies for light colors.
 - [x] **Download QR (PNG)** works on both DJ and guest surfaces; transparent background; matches on-screen module color.
-- [ ] Corner Scan popup opens / closes correctly with keyboard support and reduced-motion compliance.
-- [ ] Vote page filter shows **All / Active only / Played only**; default behavior unchanged; karaoke unchanged.
-- [ ] Feature flag off = no new UI; current flows behave as today.
-- [ ] No regressions in DJ, karaoke, lifecycle, auth, or guest core flows.
-- [ ] Documentation set is consistent: feature plan, this sprint, regression runbook, deploy runbook, project description.
+- [x] Scan popup opens / closes correctly with keyboard support and reduced-motion compliance on dialog content.
+- [x] Vote page filter shows **All / Active / Played**; default **Active**; karaoke guest pages share header QR chrome.
+- [ ] Feature flag off = no new UI; current flows behave as today (Phase 7 regression).
+- [ ] No regressions in DJ, karaoke, lifecycle, auth, or guest core flows (Phase 7 regression).
+- [ ] Documentation set is consistent: feature plan, this sprint, regression runbook, deploy runbook, project description (Phase 7).

@@ -12,10 +12,15 @@ import { useEvent } from "@/hooks/guest/useEventByCode";
 import { useEventRequests } from "@/hooks/guest/useEventRequests";
 import { useVoting } from "@/hooks/guest/useVoting";
 import { compareRankedRequests } from "@/lib/request-ranking";
-import { eventMode, lifecycleStatus, requestStatus, routes } from "@/lib/shared/constants/routes";
-import Link from "next/link";
+import {
+  eventMode,
+  lifecycleStatus,
+  requestStatus,
+  routes,
+} from "@/lib/shared/constants/routes";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { featureFlags } from "@/lib/shared/config/feature-flags";
 
 export default function VoteScreen() {
   const eventCode = useEventCode();
@@ -46,6 +51,17 @@ export default function VoteScreen() {
   );
   const isLoading = !!eventCode && (eventLoading || requestLoading);
   const rankedRequests = [...requests].sort(compareRankedRequests);
+
+  const [queueFilter, setQueueFilter] = useState<"all" | "active" | "played">(
+    "active",
+  );
+  const visibleRequests = rankedRequests.filter((r) => {
+    if (queueFilter === "active")
+      return r.status === requestStatus.lower.accepted;
+    if (queueFilter === "played")
+      return r.status === requestStatus.lower.played;
+    return true;
+  });
   const topRequests = requests
     .filter(
       (r) =>
@@ -56,11 +72,11 @@ export default function VoteScreen() {
     .slice(0, 10);
 
   useEffect(() => {
-    if(!eventCode || !event) return;
-    if(event.event_mode === eventMode.lower.karaoke){
+    if (!eventCode || !event) return;
+    if (event.event_mode === eventMode.lower.karaoke) {
       router.replace(routes.guest.karaoke(eventCode));
     }
-  }, [event,eventCode,router]);
+  }, [event, eventCode, router]);
 
   if (isLoading) {
     return (
@@ -99,23 +115,61 @@ export default function VoteScreen() {
 
   return (
     <PageShell centralize className="flex-col items-center">
-      <AppHeader title={event.name} tagLine="Vote for your favourite songs" />
+      <AppHeader
+        title={event.name}
+        tagLine="Vote for your favourite songs"
+        event={event}
+        eventCode={eventCode}
+      />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
         </p>
       )}
-      <section className="flex-1 flex-col items-center justify-center">
-        <h2 className="text-lg font-semibold mb-3 text-muted-60">
-          Song Request Queue
-        </h2>
-        <ul className="space-y-1 lg:max-h-178 max-h-167 mb-2 overflow-scroll no-scrollbar">
-          {requests.length === 0 ? (
+      <section className="flex-1 flex-col items-center justify-center w-full max-w-sm">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold mb-3 text-muted-60">
+            Song Request Queue
+          </h2>
+          {featureFlags.customEventDesigns && (
+            <div
+              className="flex rounded-md border border-secondary-60 p-0.5 text-sm"
+              role="group"
+              aria-label="Filter song queue"
+            >
+              {(
+                [
+                  { id: "all", label: "All" },
+                  { id: "active", label: "Active" },
+                  { id: "played", label: "Played" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  aria-pressed={queueFilter === opt.id}
+                  onClick={() => setQueueFilter(opt.id)}
+                  className={`rounded px-2 py-1 transition-colors ${
+                    queueFilter === opt.id
+                      ? "bg-secondary-20 text-white"
+                      : "text-muted-60 hover:text-white"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <ul className="space-y-1 lg:max-h-128 max-h-150 overflow-scroll no-scrollbar">
+          {visibleRequests.length === 0 ? (
             <li className="text-muted-40 py-4">
-              No requests yet. Be the first!
+              {requests.length === 0
+                ? "No requests yet. Be the first!"
+                : "No songs match this filter."}
             </li>
           ) : (
-            rankedRequests.map((r, i) => (
+            visibleRequests.map((r, i) => (
               <RequestCard
                 key={r.id}
                 request={r}
@@ -128,20 +182,6 @@ export default function VoteScreen() {
             ))
           )}
         </ul>
-        <div className="flex flex-row gap-6">
-          <Link
-            href={`/event/${eventCode}`}
-            className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
-          >
-            Share Event URL
-          </Link>
-          <Link
-            href={`/event/${eventCode}/request`}
-            className="text-lg text-accent-80 hover:text-accent-60 ml-auto"
-          >
-            <h2>Submit another request</h2>
-          </Link>
-        </div>
       </section>
     </PageShell>
   );
