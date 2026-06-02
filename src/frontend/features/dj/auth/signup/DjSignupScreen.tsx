@@ -60,9 +60,9 @@ export default function DjSignupScreen() {
   }
 
   return (
-    <PageShell centralize className="flex flex-col">
-      <AppHeader title="Create DJ Account" />
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
+    <PageShell className="flex-col">
+      <AppHeader title="Create DJ Account" hideDjLink />
+      <form onSubmit={onSubmit} className="flex-1 w-full max-w-sm space-y-4">
         <FormField
           label="Stage name"
           value={stageName}
