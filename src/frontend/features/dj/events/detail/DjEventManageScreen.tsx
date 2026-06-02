@@ -24,6 +24,9 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { DjEventControlsCard } from "../components/DjEventControlsCard";
 import { RequestStatusFilters } from "../components/RequestStatusFilters";
 import { KaraokeDJQueueList } from "../components/KaraokeDJQueueList";
+import { Button } from "@/components/ui/Button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import CreatedEventInfo from "../components/CreatedEventInfo";
 
 function eventCodeFromParams(
   raw: string | string[] | undefined,
@@ -111,6 +114,8 @@ export default function DjEventManageScreen() {
   const isKaraokeEvent = event?.event_mode === eventMode.lower.karaoke;
   const isLoading = !!eventCode && (eventLoading || requestsLoading);
 
+  const [eventInfoOpen, setEventInfoOpen] = useState(false);
+
   const visibleCount = isKaraokeEvent
     ? karaokeVisibleRows.length
     : filteredRequests.length;
@@ -195,6 +200,8 @@ export default function DjEventManageScreen() {
     return <NotFound variant="event" />;
   }
 
+  const displayEventCode = event.event_code ?? eventCode;
+
   return (
     <PageShell className="flex flex-col">
       <header className="mb-3 flex flex-col justify-center items-center">
@@ -205,12 +212,17 @@ export default function DjEventManageScreen() {
           </p>
         )}
         <Link
-          href={routes.guest.eventLanding(eventCode)}
+          href={routes.guest.eventLanding(displayEventCode)}
           target="_blank"
           className="text-accent-80 text-md hover:underline"
         >
-          Event code: {eventCode}
+          Event code: {displayEventCode}
         </Link>
+        <div className="mt-3">
+          <Button variant="outline" onClick={() => setEventInfoOpen(true)}>
+            View Event Info
+          </Button>
+        </div>
       </header>
       {(eventError || requestError) && (
         <p className="mb-2 text-sm text-red-400">
@@ -275,6 +287,20 @@ export default function DjEventManageScreen() {
           </Card>
         </section>
       </div>
+      <Dialog open={eventInfoOpen} onOpenChange={setEventInfoOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{event.name}</DialogTitle>
+          </DialogHeader>
+
+          <CreatedEventInfo
+            createdCode={displayEventCode}
+            eventColor={event.event_color}
+            qrDesign={event.qr_design}
+            title="Event info"
+          />
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }

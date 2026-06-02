@@ -35,7 +35,7 @@ Core product goals:
 3. Moderate request queue (accept/reject/played)
 4. Control event lifecycle and request availability
 
-## Current Delivered Scope (through Public Landing + Karaoke Mode Phase 7)
+## Current Delivered Scope (through Custom Event Designs, Sprint 2026-07)
 
 - DJ auth and private route guards
 - Role-aware navigation (guest and DJ)
@@ -46,7 +46,8 @@ Core product goals:
 - Lifecycle timestamping and cron-driven lifecycle sweeps
 - Karaoke mode delivery: mode-aware intake, karaoke queue views, performer-flow DJ controls, remove/restore behavior, and FIFO ordering.
 - Public marketing landing at `/`: DJ-facing hero, Why Suplio outcomes, guest and DJ “how it works” plus karaoke note, pricing tiers, footer CTAs to signup/login, and page metadata (title, description, social previews).
-- QA and deploy readiness: Playwright E2E + RLS probes, regression runbook, deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
+- Custom Event Designs (flag-gated via `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): optional vanity event codes with edit-twice cap, guest event color theming with per-surface contrast fallback, curated QR designs with color tint and scannability fallback, QR PNG download on DJ and guest Scan surfaces, header Scan popup on guest event pages, Vote-page queue filter (All / Active / Played; default Active), and played-row badge with voting disabled. Tier enforcement deferred to IDEA-009; inert tier-gate helper returns `true` today.
+- QA and deploy readiness: Playwright E2E + RLS probes, Vitest unit tests for custom-designs pure helpers, regression runbook (including custom-designs rows), deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
 
 ## Security and Data Model Direction
 

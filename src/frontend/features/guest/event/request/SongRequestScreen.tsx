@@ -22,7 +22,6 @@ import {
   requestStatus,
   routes,
 } from "@/lib/shared/constants/routes";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -185,19 +184,24 @@ export default function SongRequestScreen() {
 
   return (
     <PageShell centralize className="flex-col">
-      <AppHeader title={event.name} tagLine="Request a song" />
+      <AppHeader
+        title={event.name}
+        tagLine="Request a song"
+        event={event}
+        eventCode={eventCode}
+      />
       {(eventError || requestError) && (
         <p className="text-red-400 text-sm mb-2">
           {requestError ?? eventError}
         </p>
       )}
-      <div className="flex-1 flex-col items-center">
+      <div className="flex-1 flex-col items-center max-w-sm w-full">
         {!isRequestEnabled ? (
           <h1 className="text-accent-60 text-3xl text-center mb-4">
             Requests are paused for {event.name}.
           </h1>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 mb-10">
+          <form onSubmit={handleSubmit} className="space-y-4 max-w-sm w-full mb-6">
             {isCoolingDown && (
               <p
                 role="status"
@@ -262,27 +266,9 @@ export default function SongRequestScreen() {
           <TopRequestList
             requests={topRequests}
             title="Top requested tonight"
-            className="mb-4 max-h-90 overflow-scroll no-scrollbar"
+            className="mb-4 max-h-80 overflow-scroll no-scrollbar"
           />
         )}
-        <div className="flex flex-row gap-6">
-          <Link
-            href={`/event/${eventCode}`}
-            className="text-secondary-60 text-lg hover:text-secondary-40 mr-auto"
-          >
-            Share Event URL
-          </Link>
-          <Link
-            href={
-              isKaraokeMode
-                ? routes.guest.karaoke(eventCode)
-                : routes.guest.vote(eventCode)
-            }
-            className="text-secondary-60 text-lg hover:text-secondary-40 ml-auto"
-          >
-            {isKaraokeMode ? "Karaoke Queue" : "Vote Here"}
-          </Link>
-        </div>
       </div>
     </PageShell>
   );

@@ -43,7 +43,6 @@
   --color-muted-90: hsl(var(--hue) 15% 90%);
   --color-muted-95: hsl(var(--hue) 15% 95%);
 
-
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -136,17 +135,32 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  --guest-primary-button: hsl(var(--accent-hue) 50% 60%);
+  --guest-primary-button-hover: hsl(var(--accent-hue) 50% 40%);
+  --guest-heading-accent: hsl(var(--accent-hue) 50% 80%);
+  --guest-focus-ring: hsl(var(--accent-hue) 50% 60%);
+  --guest-badge-accent: hsl(var(--accent-hue) 50% 80%);
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  *:focus-visible {@apply outline-ring/50}
-  body {
-    @apply bg-background text-foreground;
+  *:focus-visible {
+    @apply outline-ring/50;
   }
+
   html {
     @apply font-sans;
+    background-color: var(--background);
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply text-foreground;
+    background-color: var(--background);
+    overscroll-behavior-y: none;
+    min-height: 100dvh;
   }
 }

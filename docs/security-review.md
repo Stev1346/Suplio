@@ -8,7 +8,7 @@ Related docs:
 - `features/features-dj-login-and-event-management.md`
 - `sprints/sprint-2026-04-dj-login.md` (Phase 9 security sign-off history; there is no separate `phase-9` tracker file)
 - `sprints/sprint-2026-05-karaoke-mode.md` (Karaoke Mode, complete)
-- `sprints/sprint-2026-07-custom-event-designs.md` (current feature work, Phase 1 active)
+- `sprints/sprint-2026-07-custom-event-designs.md` (Custom Event Designs complete 2026-06-02; QR PNG export is client-side compositing only; no new RLS policies)
 - `runbook-regression.md`
 - `deploy.md`
 

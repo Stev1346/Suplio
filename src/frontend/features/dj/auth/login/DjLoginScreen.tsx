@@ -100,8 +100,7 @@ export default function DjLoginScreen() {
 
   return (
     <PageShell className="flex-col">
-      <AppHeader title="Log In" />
-      <div className="flex-1 space-y-4 items-center justify-center flex flex-col">
+      <AppHeader title="Log In" hideDjLink />
         <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
           {urlError && (
             <p className="text-amber-800 dark:text-amber-200 text-sm">
@@ -141,7 +140,6 @@ export default function DjLoginScreen() {
             No account? Sign Up Here
           </Link>
         </div>
-      </div>
     </PageShell>
   );
 }

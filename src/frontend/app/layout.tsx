@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", inter.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} text-foreground antialiased`}
       >
         <EventCodeProvider>
           <GuestDjProfileModalProvider>

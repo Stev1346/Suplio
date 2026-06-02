@@ -1,4 +1,8 @@
-import { EVENT_LIFECYCLE_STATUS, EVENT_MODES } from "@/lib/shared/constants/routes";
+import { parseCreateDesignFields } from "@/lib/server/custom-event-designs/parse-create-design-fields";
+import { isTierAllowedForFeature } from "@/lib/server/tier-gates";
+import { featureFlags } from "@/lib/shared/config/feature-flags";
+import { EVENT_LIFECYCLE_STATUS, EVENT_MODES, lifecycleStatus } from "@/lib/shared/constants/routes";
+import { QrDesignPresetId } from "@/lib/shared/custom-event-designs/qr-presets";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -43,60 +47,137 @@ export async function POST(req: Request) {
     const rawDate = body?.event_date;
 
     let event_mode: "song_request" | "karaoke" | undefined;
-    if(rawMode !== undefined && rawMode !== null && rawMode !== ""){
+    if (rawMode !== undefined && rawMode !== null && rawMode !== "") {
         const m = String(rawMode).trim();
-        if(!(EVENT_MODES as readonly string[]).includes(m)){
-            return NextResponse.json({error: "Invalid event_mode"}, {status: 400});
+        if (!(EVENT_MODES as readonly string[]).includes(m)) {
+            return NextResponse.json({ error: "Invalid event_mode" }, { status: 400 });
         }
         event_mode = m as "song_request" | "karaoke";
     }
 
     let event_date: string | null | undefined;
-    if(rawDate !== undefined && rawDate !== null && String(rawDate).trim() !== ""){
+    if (rawDate !== undefined && rawDate !== null && String(rawDate).trim() !== "") {
         const d = String(rawDate).trim();
-        if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){
-            return NextResponse.json({error: "Invalid event_date"}, {status: 400});
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+            return NextResponse.json({ error: "Invalid event_date" }, { status: 400 });
         }
         event_date = d;
     } else {
         event_date = undefined;
     }
 
-    let eventCode = generateEventCode(8);
+    const bodyRecord =
+        body && typeof body === "object" ? (body as Record<string, unknown>) : null;
 
-    for (let i = 0; i < 10; i++) {
-        const insertPayload: {
+    const designParse = parseCreateDesignFields(bodyRecord);
+
+    if (designParse.ok && designParse.hasAny && !featureFlags.customEventDesigns) {
+        return NextResponse.json(
+            { error: "Custom event designs are not enabled" },
+            { status: 403 },
+        );
+    }
+
+    if (!designParse.ok) {
+        return NextResponse.json({ error: designParse.error }, { status: 400 });
+    }
+    const design = designParse.fields;
+
+    if (designParse.hasAny) {
+        const allowed = await isTierAllowedForFeature({
+            djId: user.id,
+            feature: "custom_event_designs",
+        });
+        if (!allowed) {
+            return NextResponse.json({ error: "Not allowed for your plan" }, { status: 403 });
+        }
+    }
+
+    const useCustomCode = Boolean(design.customEventCode);
+    let eventCode = design.customEventCode ?? generateEventCode(8);
+
+    if (useCustomCode) {
+        const { data: existing } = await supabase
+            .from("events")
+            .select("id")
+            .eq("event_code", eventCode)
+            .neq("lifecycle_status", lifecycleStatus.lower.archived)
+            .maybeSingle();
+
+        if (existing) {
+            return NextResponse.json(
+                { error: "That event code is already in use" },
+                { status: 409 },
+            );
+        }
+    }
+
+    type InsertPayload = {
         name: string;
         event_code: string;
         dj_id: string;
         lifecycle_status: "draft";
         event_mode?: "song_request" | "karaoke";
         event_date?: string;
-    } = {
-            name,
-            event_code: eventCode,
-            dj_id: user.id,
-            lifecycle_status: "draft"
-        };
-        if(event_mode !== undefined) insertPayload.event_mode = event_mode
-        if(event_date !== undefined) insertPayload.event_date = event_date
+        event_color?: string | null;
+        qr_design?: QrDesignPresetId;
+        event_code_edits_remaining?: number;
+    };
 
+    const buildPayload = (code: string): InsertPayload => {
+        const insertPayload: InsertPayload = {
+            name,
+            event_code: code,
+            dj_id: user.id,
+            lifecycle_status: "draft",
+        };
+        if (event_mode !== undefined) insertPayload.event_mode = event_mode;
+        if (event_date !== undefined) insertPayload.event_date = event_date;
+        if (design.event_color !== undefined) insertPayload.event_color = design.event_color;
+        if (design.qr_design !== undefined) insertPayload.qr_design = design.qr_design;
+        if (useCustomCode) insertPayload.event_code_edits_remaining = 2;
+        return insertPayload;
+    };
+
+    if (useCustomCode) {
         const { data, error } = await supabase
             .from("events")
-            .insert(insertPayload)
+            .insert(buildPayload(eventCode))
             .select("event_code")
             .single();
 
         if (!error) {
-            return NextResponse.json({ data: { event_code: data.event_code } }, { status: 201 })
+            return NextResponse.json({ data: { event_code: data.event_code } }, { status: 201 });
+        }
+        if (error.code === "23505") {
+            return NextResponse.json(
+                { error: "That event code is already in use" },
+                { status: 409 },
+            );
+        }
+        return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    for (let i = 0; i < 10; i++) {
+        const { data, error } = await supabase
+            .from("events")
+            .insert(buildPayload(eventCode))
+            .select("event_code")
+            .single();
+
+        if (!error) {
+            return NextResponse.json({ data: { event_code: data.event_code } }, { status: 201 });
         }
         if (error.code === "23505") {
             eventCode = generateEventCode(8);
             continue;
         }
-        return NextResponse.json({ error: error.message }, { status: 400 })
+        return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    return NextResponse.json({ error: "Could not generate unique code. Try again." }, { status: 500 });
+    return NextResponse.json(
+        { error: "Could not generate unique code. Try again." },
+        { status: 500 },
+    );
 }
 
 export async function GET(req: Request) {
@@ -123,7 +204,8 @@ export async function GET(req: Request) {
         : null;
 
     let query = supabase.from("events")
-        .select("id, name, event_code, allow_requests, created_at, lifecycle_status, event_mode, event_date",  { count: "exact" })
+        .select("id, name, event_code, allow_requests, created_at, lifecycle_status, event_mode, event_date, event_color, qr_design",
+            { count: "exact" })
         .eq("dj_id", user.id);
 
     if (lifecycle) {

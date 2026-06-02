@@ -9,7 +9,7 @@ backend/data layer used to run the platform.
 
 ## Current Status
 
-- Active sprint: **Custom Event Designs** (Phase 1: Data model and types) — tracker [`docs/sprints/sprint-2026-07-custom-event-designs.md`](docs/sprints/sprint-2026-07-custom-event-designs.md), feature plan [`docs/features/features-custom-event-designs.md`](docs/features/features-custom-event-designs.md).
+- Active sprint: **Custom Event Designs** (Phases 1–5 complete; **Phase 6** scan popup + vote filter in progress) — tracker [`docs/sprints/sprint-2026-07-custom-event-designs.md`](docs/sprints/sprint-2026-07-custom-event-designs.md), feature plan [`docs/features/features-custom-event-designs.md`](docs/features/features-custom-event-designs.md).
 - Karaoke Mode sprint ([`docs/sprints/sprint-2026-05-karaoke-mode.md`](docs/sprints/sprint-2026-05-karaoke-mode.md)) is complete through **Phase 7 (QA, Regression, Documentation)**.
 - Core DJ flows (auth, dashboard, event management, profile) and guest flows are implemented.
 - Karaoke flow is implemented end-to-end (karaoke intake, queue list, performer-flow statuses, no-vote guest path).
