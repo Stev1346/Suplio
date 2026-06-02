@@ -1,10 +1,13 @@
 # Sprint Tracker: 2026-08 Onboarding (DJ + Guest)
 
-This file tracks delivery for first-run onboarding for **DJs** (post-auth dashboard and related flows) and **Guests** (event pages under `/event/[eventCode]`). Standard song-request, karaoke, auth, and RLS behavior remain unchanged unless Phase 1 explicitly adds `dj_profiles` fields and matching server updates.
+This file tracks delivery for first-run onboarding ([IDEA-010](../backlog-ideas.md)) for **DJs** (post-auth dashboard and related flows) and **Guests** (event pages under `/event/[eventCode]`). The sprint also includes **guest return-to-event navbar navigation** and **route-aware document titles** — both **always on** when implemented (not gated by `NEXT_PUBLIC_ENABLE_ONBOARDING`). Standard song-request, karaoke, auth, and RLS behavior remain unchanged unless Phase 1 explicitly adds `dj_profiles` fields and matching server updates.
+
+**Related sprint order:** Custom Event Designs is **complete** — see [`sprint-2026-07-custom-event-designs.md`](sprint-2026-07-custom-event-designs.md). **This sprint is active.**
 
 Related docs:
 
 - Feature plan: [`../features/features-onboarding.md`](../features/features-onboarding.md)
+- Backlog: [`../backlog-ideas.md`](../backlog-ideas.md) (IDEA-010)
 - Project description: [`../project-description.md`](../project-description.md)
 - Regression runbook: [`../runbook-regression.md`](../runbook-regression.md)
 - Deploy runbook: [`../deploy.md`](../deploy.md)
@@ -15,18 +18,13 @@ Related docs:
 
 Use this board to move phases through execution.
 
-**Sprint status:** Not started (all phases in Backlog).
+**Sprint status:** **Active** (Phase 0 — UX discovery and success metrics, started 2026-06-02).
 
 ### In Progress
 
-- _None._
-
----
-
-### Backlog
-
 #### Phase 0 - UX discovery and success metrics
 **Target duration:** 0.5-1.0 day
+**Started:** 2026-06-02
 
 **Definition of Done**
 - [ ] DJ onboarding storyboard documented (screens + step order + copy intent).
@@ -35,6 +33,12 @@ Use this board to move phases through execution.
 - [ ] Analytics event names listed (`onboarding_started`, `step_viewed`, `completed`, `skipped` with `persona=dj|guest`); implementation optional.
 - [ ] Accessibility expectations documented (keyboard, focus, reduced motion).
 - [ ] Copy and step order reviewed (sign-off note in feature doc or sprint notes).
+- [ ] Return-to-event link storyboard and visibility rules documented.
+- [ ] Document title template matrix reviewed and signed off.
+
+---
+
+### Backlog
 
 #### Phase 1 - Technical approach and state model
 **Target duration:** 0.5-1.0 day
@@ -45,6 +49,7 @@ Use this board to move phases through execution.
 - [ ] Privacy note for guest storage scope.
 - [ ] Feature flag name and env var documented (extend centralized feature flags).
 - [ ] Documented ordering vs email verification and private `/dj/*` routes (no security bypass).
+- [ ] Last-guest-event storage keys documented (`last_guest_event_code`, optional name).
 
 #### Phase 2 - Shared onboarding primitives (frontend)
 **Target duration:** 1.0-1.5 days
@@ -73,6 +78,7 @@ Use this board to move phases through execution.
 - [ ] Mode-aware (`song_request` vs `karaoke`) and lifecycle-aware (`draft`/`live`/`ended`/`archived`) behavior matches feature plan.
 - [ ] Automated test coverage for at least one guest path.
 - [ ] No unacceptable LCP/layout-shift regression.
+- [ ] Return-to-event link on home and DJ entry when valid last event exists; hidden otherwise (always on).
 
 #### Phase 5 - Polish, ops, and launch
 **Target duration:** 0.5-1.0 day
@@ -82,7 +88,9 @@ Use this board to move phases through execution.
 - [ ] [`docs/runbook-regression.md`](../runbook-regression.md) updated with DJ + guest onboarding checks.
 - [ ] [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** updated.
 - [ ] Feature flag off = zero onboarding UI, no errors.
-- [ ] Optional: in-app replay entry (“?”); optional analytics wiring per Phase 0.
+- [ ] Optional: in-app replay entry ("?"); optional analytics wiring per Phase 0.
+- [ ] Per-route `metadata.title` implemented per Phase 0 matrix (always on).
+- [ ] Return-to-event and document-title regression rows pass.
 
 ---
 
@@ -105,6 +113,16 @@ Use this board to move phases through execution.
 - [ ] Confirm Phase 1 persistence choice before large UI work (avoid rework).
 - [ ] Reserve time for regression pass using updated runbook rows at end of Phase 5.
 
+### Phase 0 entry
+- [ ] Draft DJ onboarding storyboard (screens, step order, copy intent).
+- [ ] Draft guest onboarding storyboard with lifecycle (`draft`/`live`/`ended`/`archived`) and mode (`song_request`/`karaoke`) branches.
+- [ ] Document exit criteria per persona (DJ vs guest).
+- [ ] List analytics event names (`onboarding_started`, `step_viewed`, `completed`, `skipped` with `persona=dj|guest`).
+- [ ] Document accessibility expectations (keyboard, focus, reduced motion).
+- [ ] Review copy and step order; add sign-off note in feature doc or sprint notes.
+- [ ] Draft return-to-event link UX (label, visibility, default destination).
+- [ ] Draft document title template matrix for guest, DJ, and marketing routes.
+
 ---
 
 ## Validation Checklist (Sprint Exit)
@@ -120,3 +138,9 @@ Use this board to move phases through execution.
 - [ ] Keyboard and reduced-motion behavior spot-checked on mobile and desktop.
 - [ ] Core regression rows in [`docs/runbook-regression.md`](../runbook-regression.md) still pass (guest + DJ sections).
 - [ ] Documentation set is consistent: feature plan, this sprint, project description scope.
+- [ ] Guest: visit event → home via Suplio logo → return link restores correct event (always on).
+- [ ] Guest: visit event → Are you a DJ? → DJ login → return link still available (always on).
+- [ ] No return link on `/` or DJ login when no prior guest event (incognito / cleared storage).
+- [ ] Guest Scan / Request / Vote (or Karaoke) tabs show distinct titles including event name.
+- [ ] DJ login and dashboard tabs are not generic `"Suplio"` only.
+- [ ] Return link and document titles work when onboarding flag is off.

@@ -1,11 +1,22 @@
 # Onboarding Feature Plan
 
+**Backlog: [IDEA-010](../backlog-ideas.md)**
+
+Related docs:
+
+- Backlog: [`../backlog-ideas.md`](../backlog-ideas.md) (IDEA-010)
+- Sprint tracker: [`../sprints/sprint-2026-08-onboarding.md`](../sprints/sprint-2026-08-onboarding.md)
+- Project description: [`../project-description.md`](../project-description.md)
+- Regression runbook: [`../runbook-regression.md`](../runbook-regression.md)
+- Deploy runbook: [`../deploy.md`](../deploy.md)
+
 ## Overview
 
 Onboarding adds guided first-run (and optionally versioned “what’s new”) experiences for **DJs** and **Guests** so each persona understands the product before operating under time pressure at a live event.
 
 - **DJ onboarding** orients authenticated DJs after login: profile completeness, creating an event, lifecycle (`draft` → `live` → `ended`), moderation or karaoke queue controls, and where to find share/QR surfaces.
 - **Guest onboarding** orients visitors on `/event/[eventCode]`: what Scan / Request / third tab mean, request etiquette and throttle expectations, and mode-specific behavior (`song_request` vs `karaoke`).
+- **Guest return-to-event navigation** and **route-aware document titles** ship in the same sprint but are **always on** (not gated by `NEXT_PUBLIC_ENABLE_ONBOARDING`).
 
 This feature is additive: existing auth guards, event lifecycle rules, and guest APIs remain unchanged unless Phase 1 chooses a DB column on `dj_profiles` for DJ completion state.
 
@@ -27,6 +38,43 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 - Mentions **request throttle** (60s between requests) at a high level so guests are not surprised by `429` responses.
 - **Skippable**; repeat visits in the same browser should not spam (keyed by `eventCode` and/or `onboarding_version` per Phase 1 decision).
 
+### Guest navigation — return to event
+
+When a guest leaves an event context via the **Suplio** home link ([`routes.home`](../../src/frontend/lib/shared/constants/routes.ts)) or **Are you a DJ?** ([`routes.dj.entry`](../../src/frontend/lib/shared/constants/routes.ts)), the navbar should offer a way back to the last event they visited. Implemented in [`TopNavShell.tsx`](../../src/frontend/components/navigation/TopNavShell.tsx).
+
+| Trigger | Navbar behavior |
+| -------- | ---------------- |
+| Guest visited `/event/[eventCode]/*` | Persist `last_guest_event_code` (+ optional `last_guest_event_name` for label) per Phase 1 storage decision |
+| Guest on `/`, `/dj/login`, `/dj/signup`, or other non–guest-event paths where `TopNavShell` renders | Show link e.g. **Return to [Event Name]** or **Back to event** → default destination Scan (`routes.guest.scan(code)`); Phase 0 may allow last subpath |
+| No stored event, invalid event, or cleared storage | Hide link (no dead links) |
+| Guest still on guest event routes | Existing Scan / Request / Vote (or Karaoke) links unchanged; return link not shown redundantly |
+
+**Always on:** not gated by `NEXT_PUBLIC_ENABLE_ONBOARDING`.
+
+### Document titles and metadata
+
+Replace the generic root [`metadata.title`](../../src/frontend/app/layout.tsx) (`"Suplio"`) with per-route titles so browser tabs reflect page context. URL paths stay `/event/[eventCode]/…`; “URL name” here means **browser tab title** (and aligned `openGraph` / `twitter` where applicable).
+
+**Title template matrix** (Phase 0 locks copy; implementation Phase 5):
+
+| Surface | Example tab title pattern |
+| -------- | --------------------------- |
+| Marketing `/` | Keep existing: `Suplio \| DJ Song Requests and Voting` ([`app/page.tsx`](../../src/frontend/app/page.tsx)) |
+| Guest Scan | `{EventName} — Scan \| Suplio` |
+| Guest Request | `{EventName} — Request \| Suplio` |
+| Guest Vote | `{EventName} — Vote \| Suplio` |
+| Guest Karaoke list | `{EventName} — Queue \| Suplio` |
+| DJ login / signup | `DJ Login \| Suplio` / `DJ Sign Up \| Suplio` |
+| DJ dashboard | `Dashboard \| Suplio` |
+| DJ event management | `{EventName} — Manage \| Suplio` (or agreed label) |
+
+- Root [`app/layout.tsx`](../../src/frontend/app/layout.tsx): change to a default template (e.g. `"%s \| Suplio"`) or rely on route-level `generateMetadata` overriding static `title: "Suplio"`.
+- Guest: `generateMetadata` in [`app/(guest)/event/[eventCode]/layout.tsx`](../../src/frontend/app/(guest)/event/[eventCode]/layout.tsx) and/or per-page (`scan`, `request`, `vote`, `karaoke-list`), optionally via a shared helper under `lib/shared/metadata/`.
+- DJ: metadata on [`(dj-public)`](../../src/frontend/app/(dj-public)) and [`(dj-private)`](../../src/frontend/app/(dj-private)) route segments.
+- `{EventName}`: `events.name` when present, else `event_code`; document loading/fallback while event fetch is pending.
+
+**Always on:** not gated by `NEXT_PUBLIC_ENABLE_ONBOARDING`.
+
 ### Cross-cutting
 
 - **Feature flag**: onboarding UI is gated (extend [`src/frontend/lib/shared/config/feature-flags.ts`](../../src/frontend/lib/shared/config/feature-flags.ts) with e.g. `NEXT_PUBLIC_ENABLE_ONBOARDING`); flag off = no onboarding UI and no errors.
@@ -43,6 +91,8 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 
 - DJ storyboard: profile → create event → dashboard/event management → go live → moderate or karaoke queue.
 - Guest storyboard: landing → Scan → Request → Vote or karaoke Request List; throttle and realtime tips as needed.
+- Return-to-event link UX: label, visibility rules, default destination tab (Scan).
+- Document title template matrix sign-off.
 - Exit criteria: e.g. “dismissed or completed” vs “created first event” for DJ; “skipped or completed” for guest.
 - Analytics event list (names only) and accessibility expectations.
 
@@ -54,6 +104,8 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 - [ ] Analytics event names listed (implementation optional).
 - [ ] Accessibility expectations documented (keyboard, focus, reduced motion).
 - [ ] Copy and step order reviewed (stakeholder or self-review with sign-off note).
+- [ ] Return-to-event link storyboard and visibility rules documented.
+- [ ] Document title template matrix reviewed and signed off.
 
 ### Phase 1 - Technical approach and state model
 
@@ -63,6 +115,7 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 
 - DJ: `dj_profiles` columns vs Supabase Auth `user_metadata` — document chosen approach, migration if DB, RLS implications (owner read/update only).
 - Guest: `localStorage` / cookie key strategy (`eventCode`, global guest key), privacy note (no unnecessary PII).
+- Guest last-event keys: `last_guest_event_code`, optional `last_guest_event_name` (alongside onboarding keys).
 - **Versioning**: integer or semver `onboarding_version`; bump to re-show “what’s new.”
 - Feature flag key and default (off in production until ready).
 - Document interaction with email verification and private DJ routes.
@@ -74,6 +127,7 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 - [ ] Privacy review note for guest storage scope.
 - [ ] Feature flag name and env var documented.
 - [ ] Documented ordering vs auth/verification gates (no bypass of security).
+- [ ] Last-guest-event storage keys documented (`last_guest_event_code`, optional name); privacy note covers public event code/name only.
 
 ### Phase 2 - Shared onboarding primitives (frontend)
 
@@ -118,6 +172,7 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 
 - Trigger on guest event routes under [`src/frontend/app/(guest)/event/[eventCode]/`](../../src/frontend/app/(guest)/event/[eventCode]/).
 - Respect `draft` / `live` / `ended` / `archived` and `event_mode`.
+- Guest return-to-event link in [`TopNavShell.tsx`](../../src/frontend/components/navigation/TopNavShell.tsx) on home and DJ entry surfaces (always on).
 
 **Definition of Done**
 
@@ -126,6 +181,7 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 - [ ] Lifecycle-specific behavior matches product rules (align with [`docs/runbook-regression.md`](../runbook-regression.md)).
 - [ ] Tests for at least one guest path (storage mocked or isolated).
 - [ ] No major layout shift or LCP regression; defer heavy overlays if needed.
+- [ ] Return-to-event link visible on `/` and DJ entry when a valid last event exists; hidden when none (always on, not onboarding-flagged).
 
 ### Phase 5 - Polish, ops, and launch
 
@@ -135,6 +191,7 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 
 - Copy polish, optional in-app “?” replay.
 - Update [`docs/runbook-regression.md`](../runbook-regression.md) with onboarding checks.
+- Per-route `metadata.title` per Phase 0 matrix (guest, DJ, marketing).
 - Update [`docs/project-description.md`](../project-description.md) **Current Delivered Scope** when sprint completes.
 - QA reset instructions for operators.
 
@@ -144,6 +201,8 @@ This feature is additive: existing auth guards, event lifecycle rules, and guest
 - [ ] Regression runbook includes DJ and guest onboarding rows.
 - [ ] Feature flag off removes all onboarding UI without errors.
 - [ ] Metrics wired if Phase 0 required them (otherwise explicitly deferred in sprint notes).
+- [ ] All title-matrix routes emit correct `metadata.title`; tab titles differ across Scan vs Vote vs DJ login (always on).
+- [ ] Return-to-event and document-title regression rows pass.
 
 ## Acceptance Criteria (Feature Complete)
 
@@ -156,6 +215,9 @@ This feature is complete when all statements are true:
 - [ ] Both flows are skippable and keyboard-accessible; reduced-motion respected.
 - [ ] Feature flag provides instant rollback with no console errors.
 - [ ] Documentation and regression checklist updated; no regression in core DJ or guest flows.
+- [ ] Guest who visited an event can return from `/` or DJ entry via navbar without re-scanning QR (always on).
+- [ ] Browser tab title reflects route + event (guest) or route (DJ) per Phase 0 matrix (always on).
+- [ ] Return link and document titles behave correctly when onboarding flag is off.
 
 ## Validation Checklist
 
@@ -197,8 +259,13 @@ This feature is complete when all statements are true:
 - [`src/frontend/app/(guest)/event/[eventCode]/page.tsx`](../../src/frontend/app/(guest)/event/[eventCode]/page.tsx) and sibling routes (`scan`, `request`, `vote`, `karaoke-list`) — guest onboarding entry points.
 - New feature module e.g. `src/frontend/features/onboarding/` — provider, steps, UI shells.
 - Custom hooks under `src/frontend/hooks/onboarding/` if step state is reused.
+- [`src/frontend/components/navigation/TopNavShell.tsx`](../../src/frontend/components/navigation/TopNavShell.tsx) — return-to-event link (always on).
+- [`src/frontend/app/layout.tsx`](../../src/frontend/app/layout.tsx) — default title template.
+- Guest event layout/pages and DJ route layouts/pages — `generateMetadata`.
+- Optional shared helper e.g. `src/frontend/lib/shared/metadata/` — title builders.
 
 ### Documentation
 
-- Sprint tracker: [`docs/sprints/sprint-2026-08-onboarding.md`](../sprints/sprint-2026-08-onboarding.md)
-- Post-delivery updates: [`docs/project-description.md`](../project-description.md), [`docs/runbook-regression.md`](../runbook-regression.md)
+- Backlog: [`../backlog-ideas.md`](../backlog-ideas.md) (IDEA-010)
+- Sprint tracker: [`../sprints/sprint-2026-08-onboarding.md`](../sprints/sprint-2026-08-onboarding.md)
+- Post-delivery updates: [`../project-description.md`](../project-description.md), [`../runbook-regression.md`](../runbook-regression.md)

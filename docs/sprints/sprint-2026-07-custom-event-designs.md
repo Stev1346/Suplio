@@ -4,7 +4,7 @@ This file tracks delivery for the **Custom Event Designs** feature ([IDEA-001](.
 
 **Subscription tier gating is intentionally deferred to [IDEA-009](../backlog-ideas.md).** Phase 0 lands a single tier-gate helper (returns `true` today) so the eventual gate flip is one file.
 
-**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). **Onboarding** (DJ + guest first-run) is the next planned sprint — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md).
+**Related sprint order:** The public marketing landing is **complete** — see [`sprint-2026-06-public-landing.md`](sprint-2026-06-public-landing.md). Onboarding ([IDEA-010](../backlog-ideas.md)) is the **active** sprint — see [`sprint-2026-08-onboarding.md`](sprint-2026-08-onboarding.md).
 
 Related docs:
 

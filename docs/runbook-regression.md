@@ -26,11 +26,36 @@ Related docs:
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
 - `features/features-public-landing.md`
+- `features/features-onboarding.md`
 - `sprints/sprint-2026-05-karaoke-mode.md`
 - `sprints/sprint-2026-07-custom-event-designs.md`
 - `sprints/sprint-2026-06-public-landing.md`
+- `sprints/sprint-2026-08-onboarding.md`
 - `deploy.md`
 - `security-review.md`
+
+## Sprint 2026-08 Onboarding (and navigation/metadata)
+
+Onboarding tours require `NEXT_PUBLIC_ENABLE_ONBOARDING=true` when exercising flag-gated UI. **Return-to-event link** and **document titles** are always on (not gated by the onboarding flag). Human rows below remain the gate until implementation is complete and checked on Preview.
+
+### Onboarding (flag-gated)
+
+- [ ] With flag on: DJ first-run onboarding shows on agreed entry route; skip/done persist per Phase 1.
+- [ ] With flag on: guest first-run onboarding shows per first-visit rules; not on every in-event navigation.
+- [ ] With flag off: no onboarding UI; no console errors.
+
+### Return to event (always on)
+
+- [ ] Visit live guest event → go to `/` via Suplio logo → **Return to event** (or equivalent) visible → returns to correct `eventCode`.
+- [ ] Same flow via **Are you a DJ?** → DJ login → return link still available → returns to event.
+- [ ] Incognito / no prior event → no return link on `/` or DJ login.
+- [ ] Mobile sheet menu shows return link when applicable.
+
+### Document titles (always on)
+
+- [ ] Guest Scan / Request / Vote (or Karaoke) tabs show distinct titles including event name.
+- [ ] DJ login and dashboard tabs are not generic `"Suplio"` only.
+- [ ] Marketing `/` title unchanged from approved landing copy.
 
 ## Custom Event Designs (flag-gated)
 

@@ -49,6 +49,10 @@ Core product goals:
 - Custom Event Designs (flag-gated via `NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): optional vanity event codes with edit-twice cap, guest event color theming with per-surface contrast fallback, curated QR designs with color tint and scannability fallback, QR PNG download on DJ and guest Scan surfaces, header Scan popup on guest event pages, Vote-page queue filter (All / Active / Played; default Active), and played-row badge with voting disabled. Tier enforcement deferred to IDEA-009; inert tier-gate helper returns `true` today.
 - QA and deploy readiness: Playwright E2E + RLS probes, Vitest unit tests for custom-designs pure helpers, regression runbook (including custom-designs rows), deploy/smoke runbook, security review checklist, centralized feature flags, server error logging baseline (`captureServerError`)
 
+## Active Sprint (2026-08)
+
+- **Onboarding ([IDEA-010](backlog-ideas.md)):** DJ + guest first-run guided tours (feature-flagged). Also in sprint scope (always on): guest **return-to-event** navbar when leaving for home or DJ entry, and **per-route document titles** for guest, DJ, and marketing pages. Tracker: [sprint-2026-08-onboarding.md](sprints/sprint-2026-08-onboarding.md). Feature plan: [features-onboarding.md](features/features-onboarding.md).
+
 ## Security and Data Model Direction
 
 - Supabase Auth-only session strategy

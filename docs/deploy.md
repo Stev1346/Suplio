@@ -5,8 +5,10 @@ Related docs:
 - `project-description.md`
 - `features/features-dj-login-and-event-management.md`
 - `features/features-custom-event-designs.md`
+- `features/features-onboarding.md`
 - `sprints/sprint-2026-05-karaoke-mode.md`
 - `sprints/sprint-2026-07-custom-event-designs.md` (complete 2026-06-02)
+- `sprints/sprint-2026-08-onboarding.md` (active)
 - `runbook-regression.md`
 - `security-review.md`
 
@@ -47,6 +49,7 @@ Feature flags are centralized in `src/frontend/lib/shared/config/feature-flags.t
 - Use `NEXT_PUBLIC_ENABLE_*` variables for client-visible toggles.
 - Recommended staged rollout: enable in Preview, validate smoke checks, then promote and mirror the same value in Production.
 - Custom Event Designs (`NEXT_PUBLIC_ENABLE_CUSTOM_EVENT_DESIGNS`): enable in Preview for validation; keep off in Production until human regression rows in [`runbook-regression.md`](runbook-regression.md) pass on Preview. When on: DJ create/manage expose optional custom code, color, and QR design; guest event pages theme from `event_color`; guest Scan and DJ surfaces expose **Download QR (PNG)**; guest event headers show a Scan popup; Vote page shows an All/Active/Played queue filter (default Active). Schema Phase 1 (`events.event_color`, `events.qr_design`, `events.event_code_edits_remaining`): apply [`supabase/migrations/20260524120000_custom_event_designs_phase1.sql`](../supabase/migrations/20260524120000_custom_event_designs_phase1.sql) via `supabase db push` before Preview/Production smoke that depends on new columns. Local: set the flag in `src/frontend/.env.local` and restart the dev server after changing `NEXT_PUBLIC_*` values (build-time for client bundles).
+- Onboarding (`NEXT_PUBLIC_ENABLE_ONBOARDING`): env var and rollout steps documented when Sprint 2026-08 Phase 1 lands; default off; enable in Preview only after Phase 5 regression rows exist in [`runbook-regression.md`](runbook-regression.md).
 
 ## Observability baseline
 - Server route exceptions are logged via `captureServerError()` in `src/frontend/lib/server/observability.ts`.
