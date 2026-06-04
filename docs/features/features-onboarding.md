@@ -94,8 +94,8 @@ Replace the generic root [`metadata.title`](../../src/frontend/app/layout.tsx) (
 - **Guest `ended` / `archived`:** Suppress onboarding entirely.
 - **Return-to-event (always on):** Label `Return to {EventName}`; href = last subpath with Scan fallback; see [Return-to-event navigation (locked)](#return-to-event-navigation-locked).
 - **Document titles (always on):** Matrix signed off 2026-06-02 — see [Document title matrix (signed off)](#document-title-matrix-signed-off).
-- **DJ persistence:** Recommended `dj_profiles` server fields — **locked in Phase 1** (not Phase 0).
-- **Feature flag (implementation Phase 1+):** `NEXT_PUBLIC_ENABLE_ONBOARDING` → `featureFlags.onboarding`; default off until Phase 5 sign-off.
+- **DJ persistence:** `dj_profiles` server fields — **locked in [Phase 1 Decisions (locked)](#phase-1-decisions-locked)**.
+- **Feature flag:** Documented in Phase 1; wire `NEXT_PUBLIC_ENABLE_ONBOARDING` → `featureFlags.onboarding` in Phase 2; default off until Phase 5 sign-off.
 
 ## DJ onboarding storyboard
 
@@ -207,6 +207,107 @@ Extends [Guest navigation — return to event](#guest-navigation--return-to-even
 - Implementation: Phase 5 via `generateMetadata` and optional helper under `lib/shared/metadata/`.
 - Return link and titles must work when onboarding flag is off.
 
+## Phase 1 Decisions (locked)
+
+**Phase 1 sign-off:** 2026-06-02 — technical defaults per feature plan and Custom Event Designs flag pattern. Migration SQL specified here; **apply in Phase 3** with DJ UI (no migration commit in Phase 1).
+
+### DJ persistence (`dj_profiles`)
+
+**Chosen approach:** Server-side columns on `dj_profiles` (not Supabase Auth `user_metadata`) so completion survives device changes and supports version bumps.
+
+| Column | Type | Semantics |
+| ------ | ---- | --------- |
+| `onboarding_completed_at` | `timestamptz null` | Set only when DJ taps **Done** on step 6 |
+| `onboarding_version_seen` | `integer not null default 0` | Last `ONBOARDING_VERSION` for which completion was recorded |
+
+**Eligibility (Phase 3 UI):** Show tour when `featureFlags.onboarding` && `onboarding_version_seen < ONBOARDING_VERSION` && route is `/dj/dashboard` && user passed proxy verification gates.
+
+**Dismiss without Done:** Do not update either column; re-show on next eligible dashboard visit (Phase 0).
+
+**Done on step 6:** Set `onboarding_completed_at = now()` and `onboarding_version_seen = ONBOARDING_VERSION`.
+
+**API (Phase 3):** Prefer a dedicated `PATCH /api/dj/profile/onboarding` (or equivalent) that only accepts onboarding fields — avoids widening [`parseProfilePatch`](../../src/frontend/lib/server/validators/dj-profile-validation.ts) with unrelated profile fields. Extend [`GET /api/dj/profile`](../../src/frontend/app/api/dj/profile/route.ts) `select` to include the new columns.
+
+**RLS:** Existing owner read/update on `dj_profiles` must cover new columns; verify policies when migration lands.
+
+### Guest persistence (`localStorage`, client-only)
+
+Separate keys under the `suplio:` prefix (Phase 2 implements helpers in `lib/shared/onboarding/constants.ts`).
+
+| Key | Type | Purpose |
+| --- | ---- | ------- |
+| `suplio:guest_onboarding_version_seen` | integer (stringified) | Last guest tour version acknowledged |
+| `suplio:guest_onboarding_status` | `"completed"` \| `"skipped"` | Global tour ended for current version |
+| `suplio:last_guest_event_code` | string | Return-to-event link (always on) |
+| `suplio:last_guest_event_name` | string (optional) | Label `Return to {EventName}` |
+| `suplio:last_guest_event_subpath` | `scan` \| `request` \| `vote` \| `karaoke-list` | Last tab for return href |
+
+**Guest onboarding eligibility:** Flag on && `Number(guest_onboarding_version_seen) < ONBOARDING_VERSION` && no `guest_onboarding_status` for current flow && lifecycle not `ended`/`archived` && first trigger on any `/event/[eventCode]/*`.
+
+**End tour:** **Skip** or **Done** → set `guest_onboarding_status` and `guest_onboarding_version_seen = ONBOARDING_VERSION` (global scope — applies to all events in browser until version bump).
+
+**Last-event persistence:** Update code, name, and subpath on every `/event/[eventCode]/*` navigation (Phase 4 return link; not gated by onboarding flag).
+
+### Privacy (guest storage)
+
+Store only public `event_code`, event display name, and route subpath. No guest identity, email, or request content. Clearing browser storage removes all keys.
+
+### Versioning
+
+- Shared constant: `ONBOARDING_VERSION = 1` (integer) in `src/frontend/lib/shared/onboarding/constants.ts` — **create in Phase 2**.
+- Re-show tours: bump `ONBOARDING_VERSION` in code; DJs with `onboarding_version_seen < new version` become eligible; guests with `guest_onboarding_version_seen < new version` become eligible (clear or overwrite `guest_onboarding_status` per Phase 2 helper design).
+
+### Auth and route ordering
+
+Aligns with [`src/frontend/proxy.ts`](../../src/frontend/proxy.ts):
+
+1. `updateSession` resolves `user`.
+2. `needsVerify = user && user.email && !user.email_confirmed_at` → redirect to `/dj/login?error=verify_email` on non-safe paths (onboarding never mounts here).
+3. `canAccessDjApp = user && !needsVerify` required for private `/dj/*`.
+4. Unauthenticated access to `isDjPrivatePath` → redirect to `/dj/login`.
+5. Onboarding UI mounts **inside** `(dj-private)` on `/dj/dashboard` only, **after** steps 1–4 pass — additive; does not weaken auth.
+
+DJ tour does **not** mount on `/dj/events`, `/dj/profile`, or other private routes in v1.
+
+### Feature flag
+
+| Item | Value |
+| ---- | ----- |
+| Env var | `NEXT_PUBLIC_ENABLE_ONBOARDING` |
+| Code key | `featureFlags.onboarding` |
+| Default when unset | `false` ([`readBool`](../../src/frontend/lib/shared/config/feature-flags.ts)) |
+| Preview / local | `true` when exercising tours |
+| Production | `false` until Phase 5 sign-off |
+| Not gated | Return-to-event link, document titles |
+
+**Wire in Phase 2** in `feature-flags.ts`. Document for operators: `NEXT_PUBLIC_ENABLE_ONBOARDING=false` in local env; restart dev server after changing `NEXT_PUBLIC_*` (build-time for client bundles).
+
+### QA reset policy
+
+| Persona | Reset |
+| ------- | ----- |
+| **DJ** | Supabase: set `onboarding_completed_at = null`, `onboarding_version_seen = 0` for test `user_id`; or use a fresh test account |
+| **Guest** | DevTools → Application → Local Storage → remove all five `suplio:guest_*` and `suplio:last_guest_*` keys listed above |
+| **Version bump test** | Increment `ONBOARDING_VERSION` in code; confirm both personas can see tours again per eligibility rules |
+
+### Migration spec (apply Phase 3)
+
+Idempotent migration file name (documented; commit in Phase 3): `supabase/migrations/20260602120000_onboarding_dj_profiles.sql`
+
+```sql
+-- Onboarding: DJ profile completion (IDEA-010)
+-- Idempotent: safe to re-run in local/preview.
+
+alter table public.dj_profiles
+  add column if not exists onboarding_completed_at timestamptz null;
+
+alter table public.dj_profiles
+  add column if not exists onboarding_version_seen integer not null default 0
+  check (onboarding_version_seen >= 0);
+```
+
+After apply: regenerate or hand-update [`src/frontend/types/database.ts`](../../src/frontend/types/database.ts) `dj_profiles` Row/Insert/Update.
+
 ## Implementation Phases
 
 ### Phase 0 - UX discovery and success metrics
@@ -248,12 +349,12 @@ Extends [Guest navigation — return to event](#guest-navigation--return-to-even
 
 **Definition of Done**
 
-- [ ] ADR or short “Decision” subsection: DJ persistence, guest persistence, versioning, reset policy for QA.
-- [ ] Data shape specified (column names or storage keys).
-- [ ] Privacy review note for guest storage scope.
-- [ ] Feature flag name and env var documented.
-- [ ] Documented ordering vs auth/verification gates (no bypass of security).
-- [ ] Last-guest-event storage keys documented (`last_guest_event_code`, optional name, `last_guest_event_subpath`); privacy note covers public event code/name only.
+- [x] ADR or short “Decision” subsection: DJ persistence, guest persistence, versioning, reset policy for QA.
+- [x] Data shape specified (column names or storage keys).
+- [x] Privacy review note for guest storage scope.
+- [x] Feature flag name and env var documented.
+- [x] Documented ordering vs auth/verification gates (no bypass of security).
+- [x] Last-guest-event storage keys documented (`suplio:last_guest_event_*`); privacy note covers public event code/name only.
 
 ### Phase 2 - Shared onboarding primitives (frontend)
 
